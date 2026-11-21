@@ -1,0 +1,37 @@
+name: cresco_app
+description: "Cresco — muscu, cardio, nutrition, sommeil et jeûne."
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
+
+dependencies:
+  cresco_data: ^0.1.0
+  cresco_engine: ^0.1.0
+  cresco_ui: ^0.1.0
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_tts: ^4.2.3
+  intl: ^0.20.2
+  mobile_scanner: ^7.0.1
+  stacked: ^3.5.0
+  stacked_services: ^1.6.0
+  url_launcher: ^6.3.2
+  wakelock_plus: ^1.3.2
+
+dev_dependencies:
+  build_runner: ^2.16.0
+  flutter_test:
+    sdk: flutter
+  http: ^1.5.0
+  shared_preferences: ^2.5.3
+  stacked_generator: ^2.0.4
+  very_good_analysis: ^11.0.0
+
+flutter:
+  uses-material-design: true

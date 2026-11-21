@@ -9,7 +9,6 @@
 # Flutter / Dart
 .dart_tool/
 build/
-.fvm/flutter_sdk
 *.iml
 .idea/
 pubspec_overrides.yaml
@@ -23,3 +22,6 @@ coverage/
 # Système
 .DS_Store
 Thumbs.db
+
+# FVM Version Cache
+.fvm/

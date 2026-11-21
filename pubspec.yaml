@@ -1,0 +1,51 @@
+name: cresco_workspace
+description: Monorepo Cresco — app Flutter et moteur de calcul Dart.
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - packages/cresco_engine
+  - packages/cresco_ui
+  - packages/cresco_data
+  - apps/cresco_app
+
+dev_dependencies:
+  melos: ^8.9.0
+  very_good_analysis: ^11.0.0
+
+melos:
+  # SDK épinglé par FVM (.fvmrc → 3.47.5), comme dym.
+  sdkPath: .fvm/flutter_sdk
+
+  scripts:
+    generate:
+      description: Génération de code (routes et injection Stacked).
+      exec:
+        command: dart run build_runner build --delete-conflicting-outputs
+        concurrency: 1
+      packageFilters:
+        dependsOn: build_runner
+
+    analyze:
+      description: Analyse statique de tous les packages et de l'app.
+      run: dart analyze --fatal-infos packages apps
+
+    test:
+      description: Tests Flutter (app, UI, données).
+      exec:
+        command: flutter test
+        concurrency: 1
+      packageFilters:
+        dirExists: test
+        dependsOn: flutter
+
+    test:dart:
+      description: Tests des packages Dart purs (moteur).
+      exec:
+        command: dart test
+        concurrency: 1
+      packageFilters:
+        dirExists: test
+        noDependsOn: flutter
