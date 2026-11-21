@@ -132,7 +132,7 @@ class IntervallesViewModel extends BaseViewModel {
       'dureeMin': DateTime.now().difference(debut).inMinutes.clamp(1, 600),
       'rpe': 7,
       'series': [
-        for (final e in etapes.take(index + 1)) {'vitesseMs': e.vitesseMs, 'dureeS': e.secondes},
+        for (final e in etapes.take(index + 1)) {'vitesseMs': ?e.vitesseMs, 'dureeS': e.secondes},
       ],
     });
     _nav.back<void>();

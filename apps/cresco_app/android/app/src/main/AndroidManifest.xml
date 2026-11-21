@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- API Cresco -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Scanner de codes-barres (Nutrition) -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <!-- Vibration des préavis d'intervalles -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <application
-        android:label="cresco_app"
+        android:label="Cresco"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -40,6 +47,15 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Synthèse vocale des annonces d'intervalles (Android 11+) -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
+        <!-- Ouverture des liens vidéo personnels -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

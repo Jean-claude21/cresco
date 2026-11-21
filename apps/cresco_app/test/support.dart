@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cresco_app/app/app.locator.dart';
+import 'package:cresco_app/ui/commun.dart' show maintenant;
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Heure figée des captures : jeudi 15 janvier 2026, 13 h 30.
+final heureDesCaptures = DateTime(2026, 1, 15, 13, 30);
 
 /// Réponses de l'API, au format des services du serveur (apps/server/src/services.ts).
 final reponses = <String, Object?>{
@@ -131,8 +135,8 @@ final reponses = <String, Object?>{
       'type': 'intermittent',
       'motif': 'spirituel',
       'intention': 'Faire de la place au silence.',
-      'debut': DateTime.now().toUtc().subtract(const Duration(hours: 17, minutes: 30)).toIso8601String(),
-      'fin_prevue': DateTime.now().toUtc().add(const Duration(minutes: 30)).toIso8601String(),
+      'debut': heureDesCaptures.toUtc().subtract(const Duration(hours: 17, minutes: 30)).toIso8601String(),
+      'fin_prevue': heureDesCaptures.toUtc().add(const Duration(minutes: 30)).toIso8601String(),
       'heures': 17.5,
       'phase': 'bascule',
     },
@@ -157,6 +161,7 @@ final reponses = <String, Object?>{
 
 /// Prépare le localisateur avec une fausse API et les polices réelles (pour des captures lisibles).
 Future<void> preparer() async {
+  maintenant = () => heureDesCaptures;
   TestWidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('fr_FR');
   SharedPreferences.setMockInitialValues({'jeton': 'cr_test'});
@@ -164,6 +169,8 @@ Future<void> preparer() async {
   await setupLocator();
   final session = await Session.charger();
   final client = MockClient((requete) async {
+    // Les écritures sont acceptées comme par le vrai serveur.
+    if (requete.method != 'GET') return http.Response(jsonEncode({'id': 'cree'}), 201);
     final corps = reponses[requete.url.path];
     if (corps == null) return http.Response(jsonEncode({'erreur': 'Introuvable'}), 404);
     return http.Response.bytes(utf8.encode(jsonEncode(corps)), 200, headers: {'content-type': 'application/json'});

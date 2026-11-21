@@ -29,6 +29,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   http: ^1.5.0
+  integration_test:
+    sdk: flutter
   shared_preferences: ^2.5.3
   stacked_generator: ^2.0.4
   very_good_analysis: ^11.0.0

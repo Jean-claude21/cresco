@@ -113,7 +113,8 @@ class SeanceViewModel extends BaseViewModel {
   void validerSerie() {
     final s = courante;
     if (s == null || rirChoisi == null) return;
-    faites.add({'exerciceId': s.exerciceId, 'reps': s.reps, 'chargeKg': s.chargeKg, 'rir': rirChoisi});
+    // Clés absentes plutôt que null : l'API refuse null (zod), et une charge inconnue n'est pas 0.
+    faites.add({'exerciceId': s.exerciceId, 'reps': s.reps, 'chargeKg': ?s.chargeKg, 'rir': rirChoisi});
     final facteur = nombre(moteur.ajustementSerie({'rirReel': rirChoisi, 'rirCible': s.rirCible})['facteur'], 1);
     if (facteur != 1 && s.chargeKg != null) {
       for (final suivante in series.skip(index + 1).where((x) => x.exerciceId == s.exerciceId)) {
@@ -152,15 +153,23 @@ class SeanceViewModel extends BaseViewModel {
   }
 
   Future<void> terminer(int rpe) async {
-    await _api.enregistrerSeance({
-      'type': 'muscu',
-      'rpe': rpe,
-      'dureeMin': DateTime.now().difference(debut).inMinutes.clamp(1, 600),
-      'decision': seance?['decision'],
-      'series': faites,
-    });
-    _snack.showSnackbar(message: 'Séance enregistrée (${faites.length} séries)', duration: const Duration(seconds: 2));
+    try {
+      // Hors ligne, la séance part en file d'attente (envoyée au prochain lancement).
+      await _api.enregistrerSeance({
+        'type': 'muscu',
+        'rpe': rpe,
+        'dureeMin': DateTime.now().difference(debut).inMinutes.clamp(1, 600),
+        'decision': ?seance?['decision'],
+        'series': faites,
+      });
+    } on ErreurApi catch (e) {
+      _snack.showSnackbar(message: 'Séance non enregistrée : ${e.message}');
+      return;
+    }
+    // Quitter l'écran d'abord : avec une barre de message ouverte, back() fermerait la barre
+    // au lieu de l'écran (NavigationService s'appuie sur GetX).
     _nav.back<void>();
+    _snack.showSnackbar(message: 'Séance enregistrée (${faites.length} séries)', duration: const Duration(seconds: 2));
   }
 
   Future<void> ouvrirVideo(BuildContext context) async {

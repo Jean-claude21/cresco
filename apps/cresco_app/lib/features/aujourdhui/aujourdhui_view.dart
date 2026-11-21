@@ -44,7 +44,7 @@ class AujourdhuiView extends StatelessWidget {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: CrescoCouleurs.pin),
                 ),
                 const Spacer(),
-                Text(DateFormat('EEE d MMMM', 'fr_FR').format(DateTime.now()), style: CrescoTextes.secondaire),
+                Text(DateFormat('EEE d MMMM', 'fr_FR').format(maintenant()), style: CrescoTextes.secondaire),
                 const SizedBox(width: 4),
                 IconButton(
                   tooltip: 'Profil et réglages',
@@ -59,9 +59,22 @@ class AujourdhuiView extends StatelessWidget {
             if (vm.hasError) MessageErreur(vm.modelError.toString(), reessayer: vm.rafraichir),
             if (d != null) ...[
               _CarteForme(d['forme']! as Json),
-              _CarteSeance(d['seance']! as Json, onOuvrir: () => vm.nav.navigateTo<void>(Routes.seanceView)),
+              _CarteSeance(
+                d['seance']! as Json,
+                // Au retour, la forme et l'énergie tiennent compte de la séance faite.
+                onOuvrir: () async {
+                  await vm.nav.navigateTo<void>(Routes.seanceView);
+                  await vm.rafraichir();
+                },
+              ),
               _CarteEnergie(d['energie']! as Json),
-              _CarteJeune(d['jeune'] as Json?, onTap: () => vm.nav.navigateTo<void>(Routes.jeuneView)),
+              _CarteJeune(
+                d['jeune'] as Json?,
+                onTap: () async {
+                  await vm.nav.navigateTo<void>(Routes.jeuneView);
+                  await vm.rafraichir();
+                },
+              ),
             ],
           ],
         );

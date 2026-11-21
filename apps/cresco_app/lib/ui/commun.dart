@@ -143,3 +143,6 @@ Future<void> sansEchec(Future<void> Function() appel) async {
     // Fonction de confort indisponible sur cet appareil : on continue sans.
   }
 }
+
+/// Heure courante des affichages (remplaçable dans les tests pour des captures stables).
+DateTime Function() maintenant = DateTime.now;

@@ -40,11 +40,13 @@ class ScanViewModel extends BaseViewModel {
         {'alimentId': produit!['id'], 'masse': masse},
       ],
     });
+    // Quitter l'écran d'abord : avec une barre de message ouverte, back() fermerait la barre
+    // au lieu de l'écran (NavigationService s'appuie sur GetX).
+    _nav.back<void>();
     _snack.showSnackbar(
       message: 'Ajouté : ${entier(nombre(produit!['kcal100']) * masse / 100)} kcal',
       duration: const Duration(seconds: 2),
     );
-    _nav.back<void>();
   }
 }
 

@@ -48,7 +48,7 @@ class JeuneViewModel extends BaseViewModel {
 
   double get heures {
     final debut = DateTime.tryParse(jeune?['debut'] as String? ?? '');
-    return debut == null ? 0 : DateTime.now().difference(debut).inMinutes / 60;
+    return debut == null ? 0 : maintenant().difference(debut).inMinutes / 60;
   }
 
   bool get questionnaireFait => _session.cache('questionnaire-jeune')?['ok'] == true;

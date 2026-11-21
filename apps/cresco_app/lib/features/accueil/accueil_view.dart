@@ -35,9 +35,11 @@ class AccueilView extends StatelessWidget {
       onViewModelReady: (vm) => vm.synchroniser(),
       builder: (context, vm, _) => Scaffold(
         extendBody: true,
-        body: IndexedStack(
-          index: vm.currentIndex,
-          children: const [AujourdhuiView(), EntrainementView(), NutritionView(), ProgresView()],
+        // Un onglet est reconstruit à chaque visite : ses données sont toujours à jour
+        // (une séance terminée apparaît aussitôt dans Progrès).
+        body: KeyedSubtree(
+          key: ValueKey(vm.currentIndex),
+          child: const [AujourdhuiView(), EntrainementView(), NutritionView(), ProgresView()][vm.currentIndex],
         ),
         bottomNavigationBar: SafeArea(
           child: Padding(
@@ -102,6 +104,7 @@ class _Onglets extends StatelessWidget {
                   button: true,
                   label: _items[i].$2,
                   child: InkWell(
+                    key: ValueKey('onglet-${_items[i].$2}'),
                     borderRadius: BorderRadius.circular(30),
                     onTap: () => onTap(i),
                     child: Column(
