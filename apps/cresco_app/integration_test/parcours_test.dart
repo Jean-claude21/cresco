@@ -127,7 +127,16 @@ void main() {
 
     // ---------------------------------------------------------------- Intervalles
     await toucher(t, onglet('Entraînement'));
-    await toucher(t, find.text('Intervalles sur tapis'));
+
+    // ---------------------------------------------------------------- Ma salle : Basic-Fit, liste proposée puis enregistrée
+    await toucher(t, find.text('Décris ta salle'));
+    await toucher(t, find.widgetWithText(ChoiceChip, 'Basic-Fit'));
+    await toucher(t, find.textContaining('Enregistrer ·'));
+    await attendre(t, find.textContaining('Ma salle est enregistrée'));
+    await retour(t);
+    await attendre(t, find.textContaining('Ma salle ·'));
+
+    await toucher(t, find.text('Intervalles sur tapis'), defiler: true);
     await attendre(t, find.text('TEMPS RESTANT'));
     // Le minuteur démarre seul : on vérifie qu'il défile, puis on met en pause.
     await t.pump(const Duration(seconds: 3));

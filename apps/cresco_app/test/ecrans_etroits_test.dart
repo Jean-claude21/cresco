@@ -1,13 +1,15 @@
 import 'package:cresco_app/features/accueil/accueil_view.dart';
 import 'package:cresco_app/features/body/body_map_view.dart';
 import 'package:cresco_app/features/connexion/connexion_view.dart';
-import 'package:cresco_app/features/entrainement/entrainement_view.dart';
+import 'package:cresco_app/features/gym/gym_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
 import 'package:cresco_app/features/jeune/jeune_view.dart';
 import 'package:cresco_app/features/nutrition/nutrition_view.dart';
 import 'package:cresco_app/features/profil/profil_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
+import 'package:cresco_app/features/training/template_editor_view.dart';
+import 'package:cresco_app/features/training/training_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,7 +23,9 @@ void main() {
   final ecrans = <String, Widget Function()>{
     'connexion': () => const ConnexionView(),
     'aujourd’hui': () => const AccueilView(),
-    'entraînement': () => const Scaffold(body: EntrainementView()),
+    'entraînement': () => const Scaffold(body: TrainingView()),
+    'ma salle': () => const GymView(),
+    'nouvelle séance': () => const TemplateEditorView(),
     'séance': () => const SeanceView(),
     'intervalles': () => const IntervallesView(modele: intervallesParDefaut),
     'jeûne': () => const JeuneView(),

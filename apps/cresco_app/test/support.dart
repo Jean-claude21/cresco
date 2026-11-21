@@ -46,6 +46,39 @@ final reponses = <String, Object?>{
     },
     'jeune': null,
   },
+  '/v1/gym': {
+    'gym': {'id': 'g1', 'name': 'Basic-Fit Bastille', 'chain': 'Basic-Fit'},
+    'equipment': ['exercise:leg-curl', 'exercise:presse-cuisses', 'material:halteres'],
+    'catalog': [
+      {'key': 'exercise:leg-curl', 'label': 'Leg curl', 'kind': 'machine'},
+      {'key': 'exercise:presse-cuisses', 'label': 'Presse à cuisses', 'kind': 'machine'},
+      {'key': 'exercise:tirage-vertical', 'label': 'Tirage vertical', 'kind': 'machine'},
+      {'key': 'material:barre', 'label': 'Barres et disques', 'kind': 'free'},
+      {'key': 'material:halteres', 'label': 'Haltères', 'kind': 'free'},
+      {'key': 'material:tapis', 'label': 'Tapis de course', 'kind': 'cardio'},
+    ],
+    'presets': {
+      'Basic-Fit': ['exercise:leg-curl', 'material:barre'],
+    },
+  },
+  '/v1/modeles-seance': [
+    {
+      'id': '7b1c2a4e-0000-4000-8000-000000000001',
+      'nom': 'Haut du corps',
+      'type': 'muscu',
+      'cree_par': 'ia',
+      'contenu': {
+        'blocs': [
+          {
+            'repeter': 3,
+            'etapes': [
+              {'exercice_id': 'developpe-couche-barre', 'duree': {'reps': 8}, 'cible': {'rir': 2, 'charge_kg': 'auto'}, 'repos_s': 120},
+            ],
+          },
+        ],
+      },
+    },
+  ],
   '/v1/muscles': {
     'rule': 'C-PERF-5',
     'days': 7,

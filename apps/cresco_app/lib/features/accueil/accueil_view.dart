@@ -1,9 +1,9 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/features/accueil/saisie_rapide.dart';
-import 'package:cresco_app/features/entrainement/entrainement_view.dart';
 import 'package:cresco_app/features/nutrition/nutrition_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/today/today_view.dart';
+import 'package:cresco_app/features/training/training_view.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +39,7 @@ class AccueilView extends StatelessWidget {
         // (une séance terminée apparaît aussitôt dans Progrès).
         body: KeyedSubtree(
           key: ValueKey(vm.currentIndex),
-          child: const [TodayView(), EntrainementView(), NutritionView(), ProgresView()][vm.currentIndex],
+          child: const [TodayView(), TrainingView(), NutritionView(), ProgresView()][vm.currentIndex],
         ),
         bottomNavigationBar: SafeArea(
           child: Padding(

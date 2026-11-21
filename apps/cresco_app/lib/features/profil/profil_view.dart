@@ -16,6 +16,8 @@ class ProfilViewModel extends BaseViewModel {
   final NavigationService _nav = locator<NavigationService>();
   final Messages _snack = locator<Messages>();
 
+  Future<void> openGym() => _nav.navigateTo<void>(Routes.gymView) ?? Future.value();
+
   Json? profil;
   String? jetonMcp;
 
@@ -145,6 +147,26 @@ class ProfilView extends StatelessWidget {
                             selected: {p['objectif']! as String},
                             onSelectionChanged: (s) => vm.modifier({'objectif': s.first}),
                           ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    CrescoCarte(
+                      onTap: vm.openGym,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.place_outlined),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Ma salle', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                                Text('Le matériel que tes séances et ton IA utilisent', style: context.mutedStyle),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right),
                         ],
                       ),
                     ),

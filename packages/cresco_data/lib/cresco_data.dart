@@ -156,8 +156,42 @@ class CrescoApi {
 
   // ----------------------------------------------------------------- Synthèses
   Future<Json> aujourdhui() => _lireAvecCache('aujourdhui', '/v1/aujourdhui');
-  Future<Json> seanceDuJour() => _lireAvecCache('seance-du-jour', '/v1/seances/du-jour');
+  /// Today's session, adjusted by the engine; [templateId] picks one of "Mes séances" instead of the latest.
+  Future<Json> seanceDuJour({String? templateId}) => templateId == null
+      ? _lireAvecCache('seance-du-jour', '/v1/seances/du-jour')
+      : _lireAvecCache('seance-du-jour-$templateId', '/v1/seances/du-jour?modele=$templateId');
+
+  /// The user's session templates, newest first (cached for offline use).
+  Future<List<Json>> templates() async {
+    try {
+      final r = ((await requete('GET', '/v1/modeles-seance'))! as List).cast<Json>();
+      await session.mettreEnCache('templates', {'items': r});
+      return r;
+    } on ErreurApi catch (e) {
+      final c = session.cache('templates');
+      if (e.horsLigne && c != null) return (c['items']! as List).cast<Json>();
+      rethrow;
+    }
+  }
+
+  /// Creates ([id] null) or replaces a template. The server refuses unsafe sessions (422).
+  Future<Json> saveTemplate(Json template, {String? id}) async =>
+      (await requete(id == null ? 'POST' : 'PUT', id == null ? '/v1/modeles-seance' : '/v1/modeles-seance/$id', corps: template))!
+          as Json;
+
+  Future<void> deleteTemplate(String id) async => await requete('DELETE', '/v1/modeles-seance/$id');
+
+  /// Exercise catalog; with [gymOnly], only what the user's gym allows.
+  Future<List<Json>> exercises({bool gymOnly = false}) async =>
+      ((await requete('GET', gymOnly ? '/v1/exercices?gym=1' : '/v1/exercices'))! as List).cast<Json>();
   Future<Json> progression() => _lireAvecCache('progression', '/v1/progression');
+
+  /// The main gym ("Ma salle"), its equipment, the catalog and chain presets.
+  Future<Json> gym() => _lireAvecCache('gym', '/v1/gym');
+
+  /// Saves the main gym and the equipment really available there.
+  Future<Json> saveGym({required String name, required List<String> equipment, String? chain}) async =>
+      (await requete('PUT', '/v1/gym', corps: {'name': name, 'chain': ?chain, 'equipment': equipment}))! as Json;
 
   /// Effective sets per muscle over the last 7 days (C-PERF-5), cached for offline use.
   Future<Json> muscleVolume() => _lireAvecCache('muscles', '/v1/muscles');

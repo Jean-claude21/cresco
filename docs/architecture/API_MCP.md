@@ -12,9 +12,10 @@
 
 | Ressource | Opérations |
 |---|---|
-| `/exercices`, `/salle` | lire, créer, modifier (liens vidéo perso) |
-| `/modeles-seance` | CRUD, `POST /modeles-seance/valider` (contrôles de sécurité) |
-| `/seances` | lire, créer (séance réalisée), `GET /seances/du-jour` (séance ajustée) |
+| `/exercices` | lire (`?gym=1` : seulement ce que la salle permet, champ `availableAtGym`), liens vidéo perso |
+| `/gym` | `GET` salle principale, équipement coché, catalogue et listes proposées par chaîne ; `PUT` enregistre la salle et son équipement |
+| `/modeles-seance` | lire, créer, `PUT /:id`, `DELETE /:id`, `POST /modeles-seance/valider` (contrôles de sécurité) ; la réponse liste `unavailableAtGym` |
+| `/seances` | lire, créer (séance réalisée), `GET /seances/du-jour` (séance ajustée ; `?modele=<id>` pour une séance choisie) |
 | `/aliments`, `/plats` | rechercher (texte, code-barres), créer un plat à partir d'ingrédients |
 | `/repas` | CRUD |
 | `/nuits`, `/mesures`, `/ressentis` | lire, créer (import ou saisie) |
@@ -41,6 +42,7 @@ Exposé par le backend, avec les mêmes permissions OAuth. Chaque outil appelle 
 | `programmer_seance` | Crée un modèle de séance (validé par le moteur avant enregistrement) |
 | `lister_seances`, `obtenir_progression` | Historique, tendances e1RM, verdict |
 | `muscle_volume` | Séries efficaces par muscle sur 7 jours (C-PERF-5) |
+| `get_gym`, `set_gym` | Lire et enregistrer « Ma salle » : l’IA ne programme que le matériel disponible |
 | `chercher_aliment`, `creer_plat`, `ajouter_repas` | Nutrition, y compris « Mes plats » : l'IA fournit les ingrédients et les masses, le moteur calcule |
 | `obtenir_bilan_energie` | Déficit, maintien ou surplus avec confiance |
 | `obtenir_sommeil`, `obtenir_forme` | Nuits, score de forme et composantes |

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cresco_app/app/app.locator.dart';
+import 'package:cresco_app/features/exercises/exercise_picker.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
@@ -34,6 +35,10 @@ class SerieAFaire {
 }
 
 class SeanceViewModel extends BaseViewModel {
+  new({this.templateId});
+
+  /// Template picked in "Mes séances"; null runs today's latest one.
+  final String? templateId;
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService _nav = locator<NavigationService>();
   final Messages _snack = locator<Messages>();
@@ -60,7 +65,7 @@ class SeanceViewModel extends BaseViewModel {
     await runBusyFuture(
       Future(() async {
         try {
-          seance = await _api.seanceDuJour();
+          seance = await _api.seanceDuJour(templateId: templateId);
           try {
             exercices = {for (final e in await _api.exercices()) e['id']! as String: e};
           } on ErreurApi {
@@ -95,6 +100,30 @@ class SeanceViewModel extends BaseViewModel {
       }),
     );
     charge = true;
+    notifyListeners();
+  }
+
+  /// Adds [sets] × [reps] of [exercise] at the end of the session (also after it was finished).
+  void addExercise(Json exercise, {int sets = 3, int reps = 10, double? loadKg}) {
+    final id = exercise['id']! as String;
+    exercices[id] = exercise;
+    for (var n = 1; n <= sets; n++) {
+      series.add(
+        SerieAFaire(
+          exerciceId: id,
+          nom: exercise['nom']! as String,
+          numero: n,
+          total: sets,
+          reps: reps,
+          rirCible: 2,
+          reposS: 90,
+          chargeKg: loadKg,
+        ),
+      );
+    }
+    _minuteur?.cancel();
+    repos = 0;
+    _snack.afficher(message: '${exercise['nom']} ajouté : $sets × $reps');
     notifyListeners();
   }
 
@@ -218,18 +247,32 @@ class SeanceViewModel extends BaseViewModel {
 
 /// Écran 2 (maquette 02-seance) : série en cours, RIR en un tap, repos, charge suivante.
 class SeanceView extends StatelessWidget {
-  const new({super.key});
+  const new({super.key, this.templateId});
+
+  /// Template picked in "Mes séances"; null runs today's latest one.
+  final String? templateId;
 
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<SeanceViewModel>.reactive(
-      viewModelBuilder: SeanceViewModel.new,
+      viewModelBuilder: () => SeanceViewModel(templateId: templateId),
       onViewModelReady: (vm) => vm.charger(),
       builder: (context, vm, _) {
         final s = vm.courante;
         return Scaffold(
           appBar: AppBar(
             title: const Text('Séance en cours', style: TextStyle(fontWeight: FontWeight.w700)),
+            actions: [
+              if (vm.charge && vm.erreur == null)
+                IconButton(
+                  tooltip: 'Ajouter un exercice',
+                  icon: const Icon(Icons.playlist_add),
+                  onPressed: () async {
+                    final e = await showExercisePicker(context);
+                    if (e != null) vm.addExercise(e);
+                  },
+                ),
+            ],
           ),
           body: vm.isBusy || !vm.charge
               ? const Chargement()

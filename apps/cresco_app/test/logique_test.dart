@@ -1,5 +1,5 @@
-import 'package:cresco_app/features/entrainement/entrainement_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
+import 'package:cresco_app/features/training/training_view.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:flutter_test/flutter_test.dart';
 
