@@ -37,7 +37,8 @@ class ConnexionViewModel extends BaseViewModel {
           } else {
             await _api.connexion(email.trim(), motDePasse);
           }
-          await _nav.clearStackAndShow<void>(Routes.accueilView);
+          // A new account first goes through the startup questions (goal, rhythm, gym, faith).
+          await _nav.clearStackAndShow<void>(inscription ? Routes.onboardingView : Routes.accueilView);
         } on ErreurApi catch (e) {
           erreur = e.message;
         }

@@ -13,14 +13,15 @@ import 'package:cresco_app/features/connexion/connexion_view.dart' as _i2;
 import 'package:cresco_app/features/gym/gym_view.dart' as _i10;
 import 'package:cresco_app/features/intervalles/intervalles_view.dart' as _i5;
 import 'package:cresco_app/features/jeune/jeune_view.dart' as _i6;
+import 'package:cresco_app/features/onboarding/onboarding_view.dart' as _i11;
 import 'package:cresco_app/features/profil/profil_view.dart' as _i8;
 import 'package:cresco_app/features/scan/scan_view.dart' as _i7;
 import 'package:cresco_app/features/seance/seance_view.dart' as _i4;
-import 'package:cresco_app/features/training/template_editor_view.dart' as _i11;
-import 'package:flutter/material.dart' as _i12;
+import 'package:cresco_app/features/training/template_editor_view.dart' as _i12;
+import 'package:flutter/material.dart' as _i13;
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart' as _i1;
-import 'package:stacked_services/stacked_services.dart' as _i13;
+import 'package:stacked_services/stacked_services.dart' as _i14;
 
 class Routes {
   static const connexionView = '/';
@@ -41,6 +42,8 @@ class Routes {
 
   static const gymView = '/gym-view';
 
+  static const onboardingView = '/onboarding-view';
+
   static const templateEditorView = '/template-editor-view';
 
   static const all = <String>{
@@ -53,6 +56,7 @@ class Routes {
     profilView,
     bodyMapView,
     gymView,
+    onboardingView,
     templateEditorView,
   };
 }
@@ -68,7 +72,8 @@ class StackedRouter extends _i1.RouterBase {
     _i1.RouteDef(Routes.profilView, page: _i8.ProfilView),
     _i1.RouteDef(Routes.bodyMapView, page: _i9.BodyMapView),
     _i1.RouteDef(Routes.gymView, page: _i10.GymView),
-    _i1.RouteDef(Routes.templateEditorView, page: _i11.TemplateEditorView),
+    _i1.RouteDef(Routes.onboardingView, page: _i11.OnboardingView),
+    _i1.RouteDef(Routes.templateEditorView, page: _i12.TemplateEditorView),
   ];
 
   final _pagesMap = <Type, _i1.StackedRouteFactory>{
@@ -76,7 +81,7 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<ConnexionViewArguments>(
         orElse: () => const ConnexionViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) => _i2.ConnexionView(key: args.key),
         settings: data,
       );
@@ -85,7 +90,7 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<AccueilViewArguments>(
         orElse: () => const AccueilViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) => _i3.AccueilView(key: args.key),
         settings: data,
       );
@@ -94,7 +99,7 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<SeanceViewArguments>(
         orElse: () => const SeanceViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) =>
             _i4.SeanceView(key: args.key, templateId: args.templateId),
         settings: data,
@@ -102,7 +107,7 @@ class StackedRouter extends _i1.RouterBase {
     },
     _i5.IntervallesView: (data) {
       final args = data.getArgs<IntervallesViewArguments>(nullOk: false);
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) =>
             _i5.IntervallesView(modele: args.modele, key: args.key),
         settings: data,
@@ -112,7 +117,7 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<JeuneViewArguments>(
         orElse: () => const JeuneViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) => _i6.JeuneView(key: args.key),
         settings: data,
       );
@@ -121,7 +126,7 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<ScanViewArguments>(
         orElse: () => const ScanViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) => _i7.ScanView(key: args.key),
         settings: data,
       );
@@ -130,7 +135,7 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<ProfilViewArguments>(
         orElse: () => const ProfilViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) => _i8.ProfilView(key: args.key),
         settings: data,
       );
@@ -139,7 +144,7 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<BodyMapViewArguments>(
         orElse: () => const BodyMapViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) => _i9.BodyMapView(key: args.key),
         settings: data,
       );
@@ -148,18 +153,27 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<GymViewArguments>(
         orElse: () => const GymViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) => _i10.GymView(key: args.key),
         settings: data,
       );
     },
-    _i11.TemplateEditorView: (data) {
+    _i11.OnboardingView: (data) {
+      final args = data.getArgs<OnboardingViewArguments>(
+        orElse: () => const OnboardingViewArguments(),
+      );
+      return _i13.MaterialPageRoute<dynamic>(
+        builder: (context) => _i11.OnboardingView(key: args.key),
+        settings: data,
+      );
+    },
+    _i12.TemplateEditorView: (data) {
       final args = data.getArgs<TemplateEditorViewArguments>(
         orElse: () => const TemplateEditorViewArguments(),
       );
-      return _i12.MaterialPageRoute<dynamic>(
+      return _i13.MaterialPageRoute<dynamic>(
         builder: (context) =>
-            _i11.TemplateEditorView(key: args.key, template: args.template),
+            _i12.TemplateEditorView(key: args.key, template: args.template),
         settings: data,
       );
     },
@@ -175,7 +189,7 @@ class StackedRouter extends _i1.RouterBase {
 class ConnexionViewArguments {
   const ConnexionViewArguments({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -197,7 +211,7 @@ class ConnexionViewArguments {
 class AccueilViewArguments {
   const AccueilViewArguments({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -219,7 +233,7 @@ class AccueilViewArguments {
 class SeanceViewArguments {
   const SeanceViewArguments({this.key, this.templateId});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final String? templateId;
 
@@ -245,7 +259,7 @@ class IntervallesViewArguments {
 
   final Map<String, Object?> modele;
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -267,7 +281,7 @@ class IntervallesViewArguments {
 class JeuneViewArguments {
   const JeuneViewArguments({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -289,7 +303,7 @@ class JeuneViewArguments {
 class ScanViewArguments {
   const ScanViewArguments({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -311,7 +325,7 @@ class ScanViewArguments {
 class ProfilViewArguments {
   const ProfilViewArguments({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -333,7 +347,7 @@ class ProfilViewArguments {
 class BodyMapViewArguments {
   const BodyMapViewArguments({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -355,7 +369,7 @@ class BodyMapViewArguments {
 class GymViewArguments {
   const GymViewArguments({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -374,10 +388,32 @@ class GymViewArguments {
   }
 }
 
+class OnboardingViewArguments {
+  const OnboardingViewArguments({this.key});
+
+  final _i13.Key? key;
+
+  @override
+  String toString() {
+    return '{"key": "$key"}';
+  }
+
+  @override
+  bool operator ==(covariant OnboardingViewArguments other) {
+    if (identical(this, other)) return true;
+    return other.key == key;
+  }
+
+  @override
+  int get hashCode {
+    return key.hashCode;
+  }
+}
+
 class TemplateEditorViewArguments {
   const TemplateEditorViewArguments({this.key, this.template});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final Map<String, Object?>? template;
 
@@ -398,9 +434,9 @@ class TemplateEditorViewArguments {
   }
 }
 
-extension NavigatorStateExtension on _i13.NavigationService {
+extension NavigatorStateExtension on _i14.NavigationService {
   Future<dynamic> navigateToConnexionView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -418,7 +454,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> navigateToAccueilView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -436,7 +472,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> navigateToSeanceView({
-    _i12.Key? key,
+    _i13.Key? key,
     String? templateId,
     int? routerId,
     bool preventDuplicates = true,
@@ -456,7 +492,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
 
   Future<dynamic> navigateToIntervallesView({
     required Map<String, Object?> modele,
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -474,7 +510,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> navigateToJeuneView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -492,7 +528,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> navigateToScanView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -510,7 +546,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> navigateToProfilView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -528,7 +564,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> navigateToBodyMapView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -546,7 +582,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> navigateToGymView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -563,8 +599,26 @@ extension NavigatorStateExtension on _i13.NavigationService {
     );
   }
 
+  Future<dynamic> navigateToOnboardingView({
+    _i13.Key? key,
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+    transition,
+  }) async {
+    return navigateTo<dynamic>(
+      Routes.onboardingView,
+      arguments: OnboardingViewArguments(key: key),
+      id: routerId,
+      preventDuplicates: preventDuplicates,
+      parameters: parameters,
+      transition: transition,
+    );
+  }
+
   Future<dynamic> navigateToTemplateEditorView({
-    _i12.Key? key,
+    _i13.Key? key,
     Map<String, Object?>? template,
     int? routerId,
     bool preventDuplicates = true,
@@ -583,7 +637,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithConnexionView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -601,7 +655,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithAccueilView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -619,7 +673,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithSeanceView({
-    _i12.Key? key,
+    _i13.Key? key,
     String? templateId,
     int? routerId,
     bool preventDuplicates = true,
@@ -639,7 +693,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
 
   Future<dynamic> replaceWithIntervallesView({
     required Map<String, Object?> modele,
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -657,7 +711,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithJeuneView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -675,7 +729,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithScanView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -693,7 +747,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithProfilView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -711,7 +765,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithBodyMapView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -729,7 +783,7 @@ extension NavigatorStateExtension on _i13.NavigationService {
   }
 
   Future<dynamic> replaceWithGymView({
-    _i12.Key? key,
+    _i13.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -746,8 +800,26 @@ extension NavigatorStateExtension on _i13.NavigationService {
     );
   }
 
+  Future<dynamic> replaceWithOnboardingView({
+    _i13.Key? key,
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+    transition,
+  }) async {
+    return replaceWith<dynamic>(
+      Routes.onboardingView,
+      arguments: OnboardingViewArguments(key: key),
+      id: routerId,
+      preventDuplicates: preventDuplicates,
+      parameters: parameters,
+      transition: transition,
+    );
+  }
+
   Future<dynamic> replaceWithTemplateEditorView({
-    _i12.Key? key,
+    _i13.Key? key,
     Map<String, Object?>? template,
     int? routerId,
     bool preventDuplicates = true,

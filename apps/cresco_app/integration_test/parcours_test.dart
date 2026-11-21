@@ -90,6 +90,15 @@ void main() {
     await t.pump(const Duration(milliseconds: 600));
     await toucher(t, find.text('Créer le compte'));
 
+    // ---------------------------------------------------------------- Démarrage : objectif, rythme, salle (plus tard), foi
+    await attendre(t, find.text('Qu’est-ce que tu veux changer ?'));
+    await toucher(t, find.text('Prendre du muscle'));
+    for (var i = 0; i < 3; i++) {
+      await toucher(t, find.text('Continuer'));
+      await t.pump(const Duration(milliseconds: 500));
+    }
+    await toucher(t, find.text('C’est parti'));
+
     // ---------------------------------------------------------------- Aujourd'hui
     await attendre(t, find.text('FORME DU JOUR'));
     expect(find.text('SÉANCE DU JOUR'), findsOneWidget);

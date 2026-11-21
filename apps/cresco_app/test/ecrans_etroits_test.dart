@@ -5,6 +5,7 @@ import 'package:cresco_app/features/gym/gym_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
 import 'package:cresco_app/features/jeune/jeune_view.dart';
 import 'package:cresco_app/features/nutrition/nutrition_view.dart';
+import 'package:cresco_app/features/onboarding/onboarding_view.dart';
 import 'package:cresco_app/features/profil/profil_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
@@ -25,6 +26,7 @@ void main() {
     'aujourd’hui': () => const AccueilView(),
     'entraînement': () => const Scaffold(body: TrainingView()),
     'ma salle': () => const GymView(),
+    'démarrage': () => const OnboardingView(),
     'nouvelle séance': () => const TemplateEditorView(),
     'séance': () => const SeanceView(),
     'intervalles': () => const IntervallesView(modele: intervallesParDefaut),

@@ -8,6 +8,7 @@ import 'package:cresco_app/features/gym/gym_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
 import 'package:cresco_app/features/jeune/jeune_view.dart';
 import 'package:cresco_app/features/nutrition/nutrition_view.dart';
+import 'package:cresco_app/features/onboarding/onboarding_view.dart';
 import 'package:cresco_app/features/profil/profil_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
@@ -62,6 +63,7 @@ void main() {
     testWidgets('$nom (sombre)', (t) => capturer(t, ecran, '$fichier-sombre', brightness: Brightness.dark));
   }
   testWidgets('12 Ma salle', (t) => capturer(t, const GymView(), '12-ma-salle'));
+  testWidgets('13 Démarrage', (t) => capturer(t, const OnboardingView(), '13-demarrage'));
   testWidgets('10 Mon corps', (t) => capturer(t, const BodyMapView(), '10-mon-corps'));
   testWidgets(
     '11 Mon corps (sombre)',
