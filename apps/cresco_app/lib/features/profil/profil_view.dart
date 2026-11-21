@@ -5,6 +5,7 @@ import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
@@ -97,6 +98,8 @@ class ProfilView extends StatelessWidget {
                           const Surtitre('Profil'),
                           const SizedBox(height: 8),
                           SegmentedButton<String>(
+                            showSelectedIcon: false,
+                            expandedInsets: EdgeInsets.zero,
                             segments: const [
                               ButtonSegment(value: 'homme', label: Text('Homme')),
                               ButtonSegment(value: 'femme', label: Text('Femme')),
@@ -110,14 +113,16 @@ class ProfilView extends StatelessWidget {
                             valeur: p['taille_cm'],
                             onChanged: (v) => vm.modifier({'taille_cm': v}),
                           ),
-                          _ChampTexte(
-                            libelle: 'Date de naissance (AAAA-MM-JJ)',
-                            valeur: p['naissance'] as String? ?? '',
-                            onChanged: (v) => vm.modifier({'naissance': v}),
+                          _ChampDate(
+                            valeur: DateTime.tryParse(p['naissance'] as String? ?? ''),
+                            onChanged: (d) => vm.modifier({'naissance': DateFormat('yyyy-MM-dd').format(d)}),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 16),
                           const Text('Niveau', style: TextStyle(fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 6),
                           SegmentedButton<String>(
+                            showSelectedIcon: false,
+                            expandedInsets: EdgeInsets.zero,
                             segments: const [
                               ButtonSegment(value: 'debutant', label: Text('Débutant')),
                               ButtonSegment(value: 'intermediaire', label: Text('Interm.')),
@@ -129,6 +134,8 @@ class ProfilView extends StatelessWidget {
                           const SizedBox(height: 10),
                           const Text('Objectif', style: TextStyle(fontWeight: FontWeight.w700)),
                           SegmentedButton<String>(
+                            showSelectedIcon: false,
+                            expandedInsets: EdgeInsets.zero,
                             segments: const [
                               ButtonSegment(value: 'perte', label: Text('Perte')),
                               ButtonSegment(value: 'maintien', label: Text('Maintien')),
@@ -271,20 +278,38 @@ class _ChampNombre extends StatelessWidget {
   }
 }
 
-class _ChampTexte extends StatelessWidget {
-  const new({required this.libelle, required this.valeur, required this.onChanged});
-  final String libelle;
-  final String valeur;
-  final ValueChanged<String> onChanged;
+/// Date de naissance : sélecteur natif plutôt qu'une saisie au format technique.
+class _ChampDate extends StatelessWidget {
+  const new({required this.valeur, required this.onChanged});
+  final DateTime? valeur;
+  final ValueChanged<DateTime> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: TextFormField(
-        initialValue: valeur,
-        decoration: InputDecoration(labelText: libelle),
-        onFieldSubmitted: onChanged,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(CrescoMesures.rayonPetit),
+        onTap: () async {
+          final maintenant = DateTime.now();
+          final choix = await showDatePicker(
+            context: context,
+            initialDate: valeur ?? DateTime(maintenant.year - 30),
+            firstDate: DateTime(maintenant.year - 100),
+            lastDate: DateTime(maintenant.year - 12),
+            initialEntryMode: DatePickerEntryMode.calendarOnly,
+            helpText: 'Date de naissance',
+          );
+          if (choix != null) onChanged(choix);
+        },
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'Date de naissance',
+            suffixIcon: Icon(Icons.calendar_today_outlined),
+          ),
+          isEmpty: valeur == null,
+          child: Text(valeur == null ? '' : DateFormat('d MMMM y', 'fr_FR').format(valeur!), style: CrescoTextes.corps),
+        ),
       ),
     );
   }

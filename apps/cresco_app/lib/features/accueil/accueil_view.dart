@@ -1,5 +1,4 @@
 import 'package:cresco_app/app/app.locator.dart';
-import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/features/accueil/saisie_rapide.dart';
 import 'package:cresco_app/features/aujourdhui/aujourdhui_view.dart';
 import 'package:cresco_app/features/entrainement/entrainement_view.dart';
@@ -66,17 +65,6 @@ class AccueilView extends StatelessWidget {
             ),
           ),
         ),
-        floatingActionButton: vm.currentIndex == 0
-            ? Padding(
-                padding: const EdgeInsets.only(bottom: 70),
-                child: IconButton(
-                  tooltip: 'Profil et réglages',
-                  onPressed: () => vm.nav.navigateTo<void>(Routes.profilView),
-                  icon: const Icon(Icons.person_outline),
-                ),
-              )
-            : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       ),
     );
   }

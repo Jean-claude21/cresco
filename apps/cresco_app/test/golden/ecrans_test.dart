@@ -2,6 +2,7 @@
 library;
 
 import 'package:cresco_app/features/accueil/accueil_view.dart';
+import 'package:cresco_app/features/connexion/connexion_view.dart';
 import 'package:cresco_app/features/entrainement/entrainement_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
 import 'package:cresco_app/features/jeune/jeune_view.dart';
@@ -43,4 +44,5 @@ void main() {
   testWidgets('06 Nutrition', (t) => capturer(t, const Scaffold(body: NutritionView()), '06-nutrition'));
   testWidgets('07 Entraînement', (t) => capturer(t, const Scaffold(body: EntrainementView()), '07-entrainement'));
   testWidgets('08 Profil', (t) => capturer(t, const ProfilView(), '08-profil'));
+  testWidgets('09 Connexion', (t) => capturer(t, const ConnexionView(), '09-connexion'));
 }

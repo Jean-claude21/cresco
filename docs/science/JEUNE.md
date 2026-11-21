@@ -85,7 +85,8 @@ Les jours de jeûne, les cibles de `C-ENERGIE-7` sont **suspendues** : aucune in
 ```
 pour chaque indicateur X ∈ {e1RM vs tendance, écart RIR, score forme, VFC, sommeil, clarté mentale 1–5, ressenti spirituel 1–5 (optionnel)} :
   effet(X) = moyenne(X | jours de jeûne de même type et phase) − moyenne(X | jours sans jeûne, mêmes jours de semaine)
-  incertitude = intervalle de confiance à 80 % (bootstrap)
+  incertitude = intervalle à 80 % par approximation normale : effet ± 1,2816 × √(var_pendant/n + var_hors/m)
+                (déterministe, pour que les moteurs Dart et TypeScript donnent le même résultat)
 verdict affiché si ≥ 6 jeûnes comparables, sinon « encore N jeûnes pour conclure »
 ```
 Exemple : « Pendant tes jeûnes de 16 à 24 h : force stable (−1 %), clarté mentale +0,8, sommeil −15 min. »

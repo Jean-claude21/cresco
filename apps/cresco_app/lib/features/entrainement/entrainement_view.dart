@@ -130,11 +130,21 @@ class EntrainementView extends StatelessWidget {
                 ],
               ),
             ),
-            const CrescoCarte(
-              child: Text(
-                'Demande à ton assistant IA (via le MCP de Cresco) de te programmer une séance : elle apparaîtra ici, '
-                'avec les charges calculées par le moteur.',
-                style: CrescoTextes.secondaire,
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 6, 4, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.auto_awesome_outlined, size: 20, color: CrescoCouleurs.texteSecondaire),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Ton assistant IA peut te programmer une séance via le MCP de Cresco : elle apparaîtra ici, '
+                      'avec les charges calculées par le moteur.',
+                      style: CrescoTextes.secondaire,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

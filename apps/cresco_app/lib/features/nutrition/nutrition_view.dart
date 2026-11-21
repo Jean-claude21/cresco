@@ -135,9 +135,12 @@ class _NutritionViewState extends State<NutritionView> {
                   children: [
                     const Surtitre('Bilan estimé · 7 jours'),
                     const SizedBox(height: 8),
-                    Row(
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Expanded(child: ChiffreUnite(signe(nombre(bilan?['moyen7j']).round()), 'kcal/j')),
+                        ChiffreUnite(signe(nombre(bilan?['moyen7j']).round()), 'kcal/j'),
                         Pastille(
                           'Confiance ${bilan?['confiance'] ?? ''}',
                           fond: CrescoCouleurs.sable,

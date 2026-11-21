@@ -103,7 +103,7 @@ final reponses = <String, Object?>{
   ],
   '/v1/progression': {
     'verdict': 'maintien_reussite',
-    'explication': 'Ta force reste stable malgré des nuits de 6 h 12 en moyenne.',
+    'explication': 'Ta force reste stable malgré des nuits de 6 h 12 en moyenne.',
     'exercices': [
       {
         'nom': 'Développé couché',
@@ -178,7 +178,14 @@ Future<void> _chargerPolices() async {
   final dossier =
       '${Platform.environment['FLUTTER_ROOT'] ?? '../../.fvm/flutter_sdk'}/bin/cache/artifacts/material_fonts';
   Future<ByteData> lire(String f) async => ByteData.sublistView(await File('$dossier/$f').readAsBytes());
-  for (final famille in ['Roboto', 'Georgia', 'Noto Serif', 'serif']) {
+  // La police de titre embarquée par cresco_ui, sous le nom qu'utilise le thème.
+  Future<ByteData> lirePaquet(String f) async =>
+      ByteData.sublistView(await File('../../packages/cresco_ui/fonts/$f').readAsBytes());
+  final serif = FontLoader(CrescoTextes.serif)
+    ..addFont(lirePaquet('Gelasio[wght].ttf'))
+    ..addFont(lirePaquet('Gelasio-Italic[wght].ttf'));
+  await serif.load();
+  for (final famille in ['Roboto']) {
     final loader = FontLoader(famille)
       ..addFont(lire('roboto-regular.ttf'))
       ..addFont(lire('roboto-bold.ttf'))

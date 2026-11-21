@@ -16,3 +16,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   very_good_analysis: ^11.0.0
+
+flutter:
+  fonts:
+    # Gelasio — SIL Open Font License (fonts/OFL-Gelasio.txt). Métriques compatibles Georgia.
+    - family: Gelasio
+      fonts:
+        - asset: fonts/Gelasio[wght].ttf
+        - asset: fonts/Gelasio-Italic[wght].ttf
+          style: italic

@@ -29,6 +29,6 @@ Application mobile de musculation, cardio, nutrition, sommeil et jeûne, qui pro
 
 ## État
 
-Phase de conception : la documentation est posée, le code n'a pas commencé.
+Premier socle en ligne : moteur de calcul, API, MCP et app Flutter. Ce qui est fait, vérifié et restant : [docs/ETAT.md](docs/ETAT.md).
 
 > Cresco est une application de bien-être et de performance. Ce n'est pas un dispositif médical : elle ne pose aucun diagnostic.

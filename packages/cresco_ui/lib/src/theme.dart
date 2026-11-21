@@ -28,8 +28,11 @@ abstract final class CrescoMesures {
 
 /// Titres à empattements (Georgia, repli serif), données en sans-serif.
 abstract final class CrescoTextes {
-  static const _serif = 'Georgia';
-  static const _serifRepli = ['Noto Serif', 'serif'];
+  /// Gelasio (OFL, embarquée dans cresco_ui) : métriques de Georgia, la voix « carnet » de DESIGN.md,
+  /// identique sur iOS et Android.
+  static const serif = 'packages/cresco_ui/Gelasio';
+  static const String _serif = serif;
+  static const _serifRepli = ['Georgia', 'serif'];
 
   static const titrePage = TextStyle(
     fontFamily: _serif,
@@ -123,6 +126,7 @@ ThemeData crescoTheme({String? fontFamily}) {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: CrescoCouleurs.blanc,
+      floatingLabelStyle: const TextStyle(color: CrescoCouleurs.pin, fontWeight: FontWeight.w600),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(CrescoMesures.rayonPetit),
         borderSide: const BorderSide(color: CrescoCouleurs.filet),
@@ -131,6 +135,61 @@ ThemeData crescoTheme({String? fontFamily}) {
         borderRadius: BorderRadius.circular(CrescoMesures.rayonPetit),
         borderSide: const BorderSide(color: CrescoCouleurs.filet),
       ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(CrescoMesures.rayonPetit),
+        borderSide: const BorderSide(color: CrescoCouleurs.pin, width: 1.6),
+      ),
+    ),
+    // Surfaces que l'on ne dessine pas : curseur, sélection, poignées (craft floor).
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: CrescoCouleurs.pin,
+      selectionColor: CrescoCouleurs.pousse.withValues(alpha: 0.7),
+      selectionHandleColor: CrescoCouleurs.pin,
+    ),
+    // Sélections (sexe, niveau, objectif) : pin plein, texte blanc, sans coche qui casse les libellés.
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
+        textStyle: WidgetStatePropertyAll(TextStyle(fontFamily: fontFamily, fontSize: 15, fontWeight: FontWeight.w700)),
+        side: const WidgetStatePropertyAll(BorderSide(color: CrescoCouleurs.filet, width: 1.2)),
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? CrescoCouleurs.pin : CrescoCouleurs.blanc,
+        ),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? CrescoCouleurs.blanc : CrescoCouleurs.encre,
+        ),
+      ),
+    ),
+    // Puces (jours de repos, types de jeûne, RPE) : même langage que les segments.
+    chipTheme: ChipThemeData(
+      backgroundColor: CrescoCouleurs.blanc,
+      selectedColor: CrescoCouleurs.pin,
+      checkmarkColor: CrescoCouleurs.blanc,
+      side: const BorderSide(color: CrescoCouleurs.filet, width: 1.2),
+      shape: const StadiumBorder(),
+      // La puce résout une couleur d'état dans labelStyle : blanc sur pin quand elle est choisie.
+      labelStyle: TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: WidgetStateColor.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? CrescoCouleurs.blanc : CrescoCouleurs.encre,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+    ),
+    switchTheme: SwitchThemeData(
+      trackColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected) ? CrescoCouleurs.pin : CrescoCouleurs.filet,
+      ),
+      thumbColor: const WidgetStatePropertyAll(CrescoCouleurs.blanc),
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+    ),
+    sliderTheme: const SliderThemeData(
+      activeTrackColor: CrescoCouleurs.pin,
+      inactiveTrackColor: CrescoCouleurs.filet,
+      thumbColor: CrescoCouleurs.pin,
     ),
     snackBarTheme: const SnackBarThemeData(
       behavior: SnackBarBehavior.floating,

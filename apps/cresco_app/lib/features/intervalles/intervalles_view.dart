@@ -69,6 +69,9 @@ class IntervallesViewModel extends BaseViewModel {
   int index = 0;
   late int restant = etapes.first.secondes;
   bool enPause = true;
+
+  /// Vrai dès le premier départ : distingue « Démarrer » de « Reprendre ».
+  bool demarre = false;
   bool termine = false;
   Timer? _minuteur;
   final debut = DateTime.now();
@@ -87,6 +90,7 @@ class IntervallesViewModel extends BaseViewModel {
 
   void basculerPause() {
     enPause = !enPause;
+    demarre = true;
     if (enPause) {
       _minuteur?.cancel();
     } else {
@@ -268,7 +272,7 @@ class IntervallesView extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: vm.basculerPause,
                   icon: Icon(vm.enPause ? Icons.play_arrow : Icons.pause),
-                  label: Text(vm.enPause ? 'Reprendre' : 'Mettre en pause'),
+                  label: Text(vm.enPause ? (vm.demarre ? 'Reprendre' : 'Démarrer') : 'Mettre en pause'),
                 ),
             ],
           ),

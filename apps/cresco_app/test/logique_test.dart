@@ -22,7 +22,7 @@ void main() {
 
   group('formats', () {
     test('durées et décimales à la française', () {
-      expect(duree(365), '6 h 05');
+      expect(duree(365), '6 h 05');
       expect(dureeCourte(90), '1 min 30 s');
       expect(dureeCourte(45), '45 s');
       expect(decimal(72.5), '72,5');

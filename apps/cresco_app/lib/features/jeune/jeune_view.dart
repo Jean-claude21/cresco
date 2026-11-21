@@ -394,6 +394,8 @@ class _DemarrerState extends State<_Demarrer> {
               const Surtitre('Motif'),
               const SizedBox(height: 6),
               SegmentedButton<String>(
+                showSelectedIcon: false,
+                expandedInsets: EdgeInsets.zero,
                 segments: const [
                   ButtonSegment(value: 'spirituel', label: Text('Spirituel')),
                   ButtonSegment(value: 'sante', label: Text('Santé')),

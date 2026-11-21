@@ -82,13 +82,16 @@ class _LignesCroissance extends CustomPainter {
 }
 
 class Surtitre extends StatelessWidget {
-  const new(this.texte, {super.key, this.couleur});
+  const new(this.texte, {super.key, this.couleur, this.majuscules = true});
   final String texte;
   final Color? couleur;
 
+  /// Faux pour garder une casse imposée (ex. « e1RM »).
+  final bool majuscules;
+
   @override
   Widget build(BuildContext context) =>
-      Text(texte.toUpperCase(), style: CrescoTextes.surtitre.copyWith(color: couleur));
+      Text(majuscules ? texte.toUpperCase() : texte, style: CrescoTextes.surtitre.copyWith(color: couleur));
 }
 
 /// Grand nombre suivi de son unité, sur la même ligne de base.
@@ -101,7 +104,9 @@ class ChiffreUnite extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // L'unité ne se coupe jamais : « kcal/j » reste d'un seul tenant à côté du nombre.
     return Row(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
@@ -110,9 +115,7 @@ class ChiffreUnite extends StatelessWidget {
           style: CrescoTextes.chiffre.copyWith(fontSize: taille, color: couleur),
         ),
         const SizedBox(width: 10),
-        Flexible(
-          child: Text(unite, style: CrescoTextes.unite.copyWith(color: couleur?.withValues(alpha: 0.8))),
-        ),
+        Text(unite, softWrap: false, style: CrescoTextes.unite.copyWith(color: couleur?.withValues(alpha: 0.8))),
       ],
     );
   }

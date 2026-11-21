@@ -71,7 +71,7 @@ class ProgresView extends StatelessWidget {
                     children: [
                       const Row(
                         children: [
-                          Expanded(child: Surtitre('Force estimée · e1RM')),
+                          Expanded(child: Surtitre('FORCE ESTIMÉE · e1RM', majuscules: false)),
                           Text('28 jours', style: CrescoTextes.secondaire),
                         ],
                       ),
@@ -80,7 +80,8 @@ class ProgresView extends StatelessWidget {
                         value: vm.exercice.clamp(0, exercices.length - 1),
                         isExpanded: true,
                         underline: const SizedBox.shrink(),
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: CrescoCouleurs.encre),
+                        style: Theme.of(context).textTheme.titleLarge!
+                            .copyWith(fontSize: 22, fontWeight: FontWeight.w800, color: CrescoCouleurs.encre),
                         items: [
                           for (var i = 0; i < exercices.length; i++)
                             DropdownMenuItem(value: i, child: Text(exercices[i]['nom']! as String)),
@@ -117,9 +118,12 @@ class ProgresView extends StatelessWidget {
                     children: [
                       const Surtitre('Bilan énergie estimé · 7 jours'),
                       const SizedBox(height: 8),
-                      Row(
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Expanded(child: ChiffreUnite(signe(nombre(energie['moyen7j']).round()), 'kcal/j')),
+                          ChiffreUnite(signe(nombre(energie['moyen7j']).round()), 'kcal/j'),
                           Pastille(
                             'Confiance ${energie['confiance']}',
                             fond: CrescoCouleurs.sable,

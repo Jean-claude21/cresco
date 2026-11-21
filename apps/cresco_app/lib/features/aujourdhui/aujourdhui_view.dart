@@ -45,7 +45,12 @@ class AujourdhuiView extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(DateFormat('EEE d MMMM', 'fr_FR').format(DateTime.now()), style: CrescoTextes.secondaire),
-                const SizedBox(width: 44),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: 'Profil et réglages',
+                  onPressed: () => vm.nav.navigateTo<void>(Routes.profilView),
+                  icon: const Icon(Icons.account_circle_outlined, color: CrescoCouleurs.encre),
+                ),
               ],
             ),
           ),

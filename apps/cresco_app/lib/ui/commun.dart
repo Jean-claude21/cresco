@@ -10,7 +10,8 @@ String entier(Object? v) => v is num ? v.round().toString() : '—';
 String duree(Object? minutes) {
   if (minutes is! num) return '—';
   final m = minutes.round();
-  return '${m ~/ 60} h ${(m % 60).toString().padLeft(2, '0')}';
+  // Espaces insécables : « 6 h 05 » ne se coupe jamais en fin de ligne.
+  return '${m ~/ 60} h ${(m % 60).toString().padLeft(2, '0')}';
 }
 
 /// Entier signé avec le vrai signe moins (−260, +12).

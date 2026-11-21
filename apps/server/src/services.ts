@@ -716,7 +716,8 @@ export async function progression(tx: Tx, userId: string) {
 }
 
 function explicationVerdict(verdict: string, causes: string[], sommeilMin: number) {
-  const h = `${Math.floor(sommeilMin / 60)} h ${String(Math.round(sommeilMin % 60)).padStart(2, '0')}`;
+  // Espaces insécables : « 6 h 12 » ne se coupe jamais en fin de ligne.
+  const h = `${Math.floor(sommeilMin / 60)} h ${String(Math.round(sommeilMin % 60)).padStart(2, '0')}`;
   switch (verdict) {
     case 'progression':
       return 'Ta force estimée monte au rythme attendu pour ton niveau.';
