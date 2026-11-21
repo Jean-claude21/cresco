@@ -104,12 +104,7 @@ class PageCresco extends StatelessWidget {
 class Chargement extends StatelessWidget {
   const new({super.key});
   @override
-  Widget build(BuildContext context) => const Center(
-    child: Padding(
-      padding: EdgeInsets.all(40),
-      child: CircularProgressIndicator(color: CrescoCouleurs.pin),
-    ),
-  );
+  Widget build(BuildContext context) => const LoadingState();
 }
 
 class MessageErreur extends StatelessWidget {
@@ -118,20 +113,7 @@ class MessageErreur extends StatelessWidget {
   final VoidCallback? reessayer;
 
   @override
-  Widget build(BuildContext context) {
-    return CrescoCarte(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(message, style: CrescoTextes.corps),
-          if (reessayer != null) ...[
-            const SizedBox(height: 12),
-            OutlinedButton(onPressed: reessayer, child: const Text('Réessayer')),
-          ],
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => ErrorState(message: message, onRetry: reessayer);
 }
 
 /// Appel de plugin toléré : un plugin absent (web, test, appareil sans support) ne doit jamais

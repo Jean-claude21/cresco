@@ -2,6 +2,7 @@
 library;
 
 import 'package:cresco_app/features/accueil/accueil_view.dart';
+import 'package:cresco_app/features/body/body_map_view.dart';
 import 'package:cresco_app/features/connexion/connexion_view.dart';
 import 'package:cresco_app/features/entrainement/entrainement_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
@@ -10,6 +11,7 @@ import 'package:cresco_app/features/nutrition/nutrition_view.dart';
 import 'package:cresco_app/features/profil/profil_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
+import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,9 +21,13 @@ import '../support.dart';
 void main() {
   setUp(preparer);
 
-  Future<void> capturer(WidgetTester tester, Widget ecran, String nom) async {
+  Future<void> capturer(WidgetTester tester, Widget ecran, String nom, {Brightness brightness = Brightness.light}) async {
     await taillerTelephone(tester);
-    await tester.pumpWidget(enveloppe(ecran));
+    await tester.pumpWidget(
+      brightness == Brightness.light
+          ? enveloppe(ecran)
+          : MaterialApp(debugShowCheckedModeBanner: false, theme: crescoTheme(fontFamily: 'Roboto', brightness: brightness), home: ecran),
+    );
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 200));
     }
@@ -45,4 +51,9 @@ void main() {
   testWidgets('07 Entraînement', (t) => capturer(t, const Scaffold(body: EntrainementView()), '07-entrainement'));
   testWidgets('08 Profil', (t) => capturer(t, const ProfilView(), '08-profil'));
   testWidgets('09 Connexion', (t) => capturer(t, const ConnexionView(), '09-connexion'));
+  testWidgets('10 Mon corps', (t) => capturer(t, const BodyMapView(), '10-mon-corps'));
+  testWidgets(
+    '11 Mon corps (sombre)',
+    (t) => capturer(t, const BodyMapView(), '11-mon-corps-sombre', brightness: Brightness.dark),
+  );
 }

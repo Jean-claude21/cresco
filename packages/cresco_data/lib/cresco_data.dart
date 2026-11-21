@@ -158,6 +158,9 @@ class CrescoApi {
   Future<Json> aujourdhui() => _lireAvecCache('aujourdhui', '/v1/aujourdhui');
   Future<Json> seanceDuJour() => _lireAvecCache('seance-du-jour', '/v1/seances/du-jour');
   Future<Json> progression() => _lireAvecCache('progression', '/v1/progression');
+
+  /// Effective sets per muscle over the last 7 days (C-PERF-5), cached for offline use.
+  Future<Json> muscleVolume() => _lireAvecCache('muscles', '/v1/muscles');
   Future<Json> energie() => _lireAvecCache('energie', '/v1/energie');
 
   // ----------------------------------------------------------------- Entraînement

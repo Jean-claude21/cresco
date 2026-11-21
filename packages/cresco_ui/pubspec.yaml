@@ -1,5 +1,5 @@
 name: cresco_ui
-description: Design system Cresco (vert pin, cartes calcaire) — docs/design/propositions/DESIGN.md.
+description: Design system Cresco (noir et citron vert) — docs/design/DESIGN.md.
 version: 0.1.0
 publish_to: none
 resolution: workspace
@@ -19,6 +19,10 @@ dev_dependencies:
 
 flutter:
   fonts:
+    # Inter — SIL Open Font License (fonts/OFL-Inter.txt). Police variable : graisses 100 à 900.
+    - family: Inter
+      fonts:
+        - asset: fonts/Inter[opsz,wght].ttf
     # Gelasio — SIL Open Font License (fonts/OFL-Gelasio.txt). Métriques compatibles Georgia.
     - family: Gelasio
       fonts:

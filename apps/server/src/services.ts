@@ -773,3 +773,32 @@ export async function exporter(tx: Tx, userId: string) {
   out.aliments_perso = (await tx.query(`select * from aliment where user_id is not null`)).rows;
   return out;
 }
+
+// ---------------------------------------------------------------- Muscles
+
+/**
+ * Effective sets per muscle over the last `days` days (C-PERF-5), with the weekly guideline.
+ * Sets without a recorded RIR are not counted: the rule needs it. Cardio is not a muscle.
+ */
+export async function muscleVolume(tx: Tx, days: number) {
+  const { rows } = await tx.query<{ rir: string; primary: string[]; secondary: string[] }>(
+    `select s.rir, e.muscles_primaires as primary, e.muscles_secondaires as secondary
+       from serie s
+       join seance se on se.id = s.seance_id
+       join exercice e on e.id = s.exercice_id
+      where se.le > now() - make_interval(days => $1) and s.rir is not null`,
+    [days],
+  );
+  const notCardio = (m: string) => m !== 'cardio';
+  const totals = moteur.seriesEfficaces({
+    series: rows.map((r) => ({ rir: Number(r.rir), primaires: r.primary.filter(notCardio), secondaires: r.secondary.filter(notCardio) })),
+  });
+  return {
+    rule: 'C-PERF-5',
+    days,
+    guideline: moteur.EFFECTIVE_SETS_GUIDELINE,
+    muscles: Object.entries(totals)
+      .map(([muscle, effectiveSets]) => ({ muscle, effectiveSets }))
+      .sort((a, b) => b.effectiveSets - a.effectiveSets),
+  };
+}

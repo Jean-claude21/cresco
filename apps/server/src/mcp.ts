@@ -94,6 +94,11 @@ function construire(ctx: Ctx) {
     { description: 'BMR, TDEE (adaptatif si assez de données), cibles de macros, bilan du jour et verdict déficit / maintien / surplus avec confiance.' },
     run('nutrition:lecture', (t, u) => svc.energie(t, u)),
   );
+  server.registerTool(
+    'muscle_volume',
+    { description: 'Effective sets per muscle over the last 7 days (C-PERF-5) and the 10-set weekly guideline.' },
+    run('entrainement:lecture', (t) => svc.muscleVolume(t, 7)),
+  );
   server.registerTool('obtenir_forme', { description: 'Score de forme du jour et ses composantes.' }, run('sommeil:lecture', (t, u) => svc.forme(t, u)));
   server.registerTool(
     'ajouter_nuit',

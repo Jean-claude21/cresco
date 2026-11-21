@@ -82,6 +82,15 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect(liste.corps[0].series[0].e1rm).toBeCloseTo(120, 1);
   });
 
+  it('computes weekly effective sets per muscle (C-PERF-5)', async () => {
+    const r = await appel('GET', '/v1/muscles');
+    expect(r.status).toBe(200);
+    expect(r.corps.rule).toBe('C-PERF-5');
+    expect(r.corps.guideline).toBe(10);
+    const sets = Object.fromEntries(r.corps.muscles.map((m: { muscle: string; effectiveSets: number }) => [m.muscle, m.effectiveSets]));
+    expect(sets).toEqual({ pectoraux: 1, triceps: 0.5, epaules: 0.5 });
+  });
+
   it('isole les données entre utilisateurs (RLS)', async () => {
     const liste = await appel('GET', '/v1/seances', undefined, autreJeton);
     expect(liste.corps).toHaveLength(0);

@@ -133,6 +133,10 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
     const s = svc.SeanceEntree.parse(await c.req.json());
     return c.json(await tx(c, (t, u) => svc.enregistrerSeance(t, u, s)), 201);
   });
+  app.get('/v1/muscles', async (c) => {
+    exige(c, 'entrainement:lecture');
+    return c.json(await tx(c, (t) => svc.muscleVolume(t, jours(c, 7))));
+  });
   app.get('/v1/seances/du-jour', async (c) => {
     exige(c, 'entrainement:lecture');
     return c.json(await tx(c, (t, u) => svc.seanceDuJour(t, u)));

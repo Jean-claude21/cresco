@@ -141,7 +141,7 @@ class JeuneView extends StatelessWidget {
       Row(
         children: [
           const Expanded(child: Text('Jeûne', style: CrescoTextes.titrePage)),
-          Pastille(libellesTypeJeune[j['type']] ?? '', fond: CrescoCouleurs.blanc, texteCouleur: CrescoCouleurs.pin),
+          Pastille(libellesTypeJeune[j['type']] ?? '', fond: CrescoCouleurs.blanc),
         ],
       ),
       const SizedBox(height: 14),

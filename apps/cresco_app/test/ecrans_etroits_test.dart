@@ -1,4 +1,5 @@
 import 'package:cresco_app/features/accueil/accueil_view.dart';
+import 'package:cresco_app/features/body/body_map_view.dart';
 import 'package:cresco_app/features/connexion/connexion_view.dart';
 import 'package:cresco_app/features/entrainement/entrainement_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
@@ -27,6 +28,7 @@ void main() {
     'nutrition': () => const Scaffold(body: NutritionView()),
     'progrès': () => const Scaffold(body: ProgresView()),
     'profil': () => const ProfilView(),
+    'mon corps': () => const BodyMapView(),
   };
 
   for (final echelle in [1.0, 1.3]) {

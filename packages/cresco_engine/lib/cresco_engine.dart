@@ -55,6 +55,9 @@ Json seriesEfficaces(Json e) {
   return total;
 }
 
+/// C-PERF-5 guideline: at least 10 effective sets per muscle per week for hypertrophy [S-05].
+const effectiveSetsGuideline = 10;
+
 // ------------------------------------------------------------------ C-CHARGE
 
 Json srpe(Json e) => {'valeur': _n(e['rpe']) * _n(e['minutes'])};

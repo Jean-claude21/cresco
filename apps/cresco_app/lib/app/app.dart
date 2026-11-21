@@ -1,4 +1,5 @@
 import 'package:cresco_app/features/accueil/accueil_view.dart';
+import 'package:cresco_app/features/body/body_map_view.dart';
 import 'package:cresco_app/features/connexion/connexion_view.dart';
 import 'package:cresco_app/features/intervalles/intervalles_view.dart';
 import 'package:cresco_app/features/jeune/jeune_view.dart';
@@ -17,6 +18,7 @@ import 'package:stacked_services/stacked_services.dart';
     MaterialRoute(page: JeuneView),
     MaterialRoute(page: ScanView),
     MaterialRoute(page: ProfilView),
+    MaterialRoute(page: BodyMapView),
   ],
   dependencies: [LazySingleton<NavigationService>(classType: NavigationService)],
 )

@@ -21,6 +21,7 @@
 | `/jeunes` | démarrer, terminer, ajouter un événement, `GET /jeunes/en-cours/decision` |
 | `/calculs/{regle}` | exécuter une règle sur des entrées (ex. `C-PERF-2`) : le moteur en libre-service |
 | `/progression` | tendances, verdict hebdo, bilan énergie |
+| `/muscles?jours=7` | séries efficaces par muscle (C-PERF-5) et repère hebdomadaire de 10 séries |
 | `/regles`, `/sources` | lire le catalogue des règles (version, paramètres, sources) et la bibliothèque de sources |
 
 ### Permissions (scopes)
@@ -39,6 +40,7 @@ Exposé par le backend, avec les mêmes permissions OAuth. Chaque outil appelle 
 | `obtenir_seance_du_jour` | Séance ajustée avec explication et sources |
 | `programmer_seance` | Crée un modèle de séance (validé par le moteur avant enregistrement) |
 | `lister_seances`, `obtenir_progression` | Historique, tendances e1RM, verdict |
+| `muscle_volume` | Séries efficaces par muscle sur 7 jours (C-PERF-5) |
 | `chercher_aliment`, `creer_plat`, `ajouter_repas` | Nutrition, y compris « Mes plats » : l'IA fournit les ingrédients et les masses, le moteur calcule |
 | `obtenir_bilan_energie` | Déficit, maintien ou surplus avec confiance |
 | `obtenir_sommeil`, `obtenir_forme` | Nuits, score de forme et composantes |

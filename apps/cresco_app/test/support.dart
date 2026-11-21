@@ -46,6 +46,18 @@ final reponses = <String, Object?>{
     },
     'jeune': null,
   },
+  '/v1/muscles': {
+    'rule': 'C-PERF-5',
+    'days': 7,
+    'guideline': 10,
+    'muscles': [
+      {'muscle': 'quadriceps', 'effectiveSets': 12},
+      {'muscle': 'pectoraux', 'effectiveSets': 8.5},
+      {'muscle': 'dos', 'effectiveSets': 6},
+      {'muscle': 'epaules', 'effectiveSets': 4},
+      {'muscle': 'triceps', 'effectiveSets': 3.5},
+    ],
+  },
   '/v1/seances/du-jour': {
     'decision': {'decision': 'ADAPTEE', 'volume': -0.2},
     'raison': 'Volume réduit après une nuit courte',
@@ -195,6 +207,8 @@ Future<void> _chargerPolices() async {
     ..addFont(lirePaquet('Gelasio[wght].ttf'))
     ..addFont(lirePaquet('Gelasio-Italic[wght].ttf'));
   await serif.load();
+  final sans = FontLoader(CrescoTextes.sans)..addFont(lirePaquet('Inter[opsz,wght].ttf'));
+  await sans.load();
   for (final famille in ['Roboto']) {
     final loader = FontLoader(famille)
       ..addFont(lire('roboto-regular.ttf'))

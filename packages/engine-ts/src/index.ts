@@ -50,6 +50,9 @@ export function seriesEfficaces(e: { series: readonly { rir: number; primaires: 
   return total;
 }
 
+/** C-PERF-5 guideline: at least 10 effective sets per muscle per week for hypertrophy [S-05]. */
+export const EFFECTIVE_SETS_GUIDELINE = 10;
+
 /** C-PERF-6 */
 export const efficaciteCardio = (vitesseMs: number, fcMoyenne: number) => (fcMoyenne > 0 ? vitesseMs / fcMoyenne : 0);
 
