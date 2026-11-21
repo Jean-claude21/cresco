@@ -1,6 +1,7 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/ui/commun.dart';
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ import 'package:stacked_services/stacked_services.dart';
 class NutritionViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService nav = locator<NavigationService>();
-  final SnackbarService _snack = locator<SnackbarService>();
+  final Messages _snack = locator<Messages>();
 
   Json? energie;
   List<Json> plats = [];
@@ -36,7 +37,7 @@ class NutritionViewModel extends BaseViewModel {
     try {
       resultats = await _api.chercherAliments(q.trim());
     } on ErreurApi catch (e) {
-      _snack.showSnackbar(message: e.message);
+      _snack.afficher(message: e.message);
     }
     notifyListeners();
   }
@@ -48,7 +49,7 @@ class NutritionViewModel extends BaseViewModel {
         {'alimentId': ?alimentId, 'platId': ?platId, 'masse': masse},
       ],
     });
-    _snack.showSnackbar(message: 'Repas ajouté', duration: const Duration(seconds: 2));
+    _snack.afficher(message: 'Repas ajouté', duration: const Duration(seconds: 2));
     resultats = [];
     await charger();
   }
@@ -70,7 +71,7 @@ class NutritionViewModel extends BaseViewModel {
       });
       await charger();
     } on ErreurApi catch (e) {
-      _snack.showSnackbar(message: e.message);
+      _snack.afficher(message: e.message);
     }
   }
 }

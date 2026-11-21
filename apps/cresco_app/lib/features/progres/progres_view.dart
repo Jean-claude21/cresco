@@ -141,12 +141,10 @@ class ProgresView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.straighten, size: 20),
-                              SizedBox(width: 8),
-                              Text('Poids lissé', style: TextStyle(fontWeight: FontWeight.w700)),
-                            ],
+                          const IconeLibelle(
+                            Icons.straighten,
+                            'Poids lissé',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                           ),
                           const SizedBox(height: 8),
                           ChiffreUnite(decimal(d['poidsLisse']), 'kg', taille: 34),
@@ -160,12 +158,10 @@ class ProgresView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.bedtime_outlined, size: 20),
-                              SizedBox(width: 8),
-                              Text('Sommeil moyen', style: TextStyle(fontWeight: FontWeight.w700)),
-                            ],
+                          const IconeLibelle(
+                            Icons.bedtime_outlined,
+                            'Sommeil moyen',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                           ),
                           const SizedBox(height: 8),
                           Text(duree(d['sommeilMoyenMin']), style: CrescoTextes.chiffre.copyWith(fontSize: 34)),

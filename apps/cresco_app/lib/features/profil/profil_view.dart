@@ -1,6 +1,7 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/ui/commun.dart';
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ class ProfilViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
   final Session session = locator<Session>();
   final NavigationService _nav = locator<NavigationService>();
-  final SnackbarService _snack = locator<SnackbarService>();
+  final Messages _snack = locator<Messages>();
 
   Json? profil;
   String? jetonMcp;
@@ -28,7 +29,7 @@ class ProfilViewModel extends BaseViewModel {
     try {
       profil = await _api.modifierProfil(patch);
     } on ErreurApi catch (e) {
-      _snack.showSnackbar(message: e.message);
+      _snack.afficher(message: e.message);
     }
     notifyListeners();
   }

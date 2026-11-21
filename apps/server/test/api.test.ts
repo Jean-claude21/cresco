@@ -98,6 +98,17 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect(dc.cible.charge_kg).toBe(90);
   });
 
+  it('garde le plan normal tant que la confiance est basse (nouveau compte, une séance)', async () => {
+    const nouveau = await appel('POST', '/v1/auth/inscription', { email: 'debutant@cresco.test', motDePasse: 'un-mot-de-passe-long' }, '');
+    const j = nouveau.corps.jeton;
+    await appel('POST', '/v1/seances', { type: 'muscu', rpe: 7, dureeMin: 1, series: [{ exerciceId: 'squat-barre', reps: 5, chargeKg: 60, rir: 2 }] }, j);
+    const r = await appel('GET', '/v1/seances/du-jour', undefined, j);
+    expect(r.corps.forme.confiance).toBe('basse');
+    expect(r.corps.forme.composantes.ratioAiguChronique).toBeNull();
+    expect(r.corps.decision).toEqual({ decision: 'NORMALE', volume: 0 });
+    expect(r.corps.raison).toMatch(/pas encore assez de données/u);
+  });
+
   it('refuse une séance hors bornes', async () => {
     const r = await appel('POST', '/v1/modeles-seance', {
       nom: 'Trop',

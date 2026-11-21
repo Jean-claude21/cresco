@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -70,8 +71,7 @@ class _Action extends StatelessWidget {
   }
 }
 
-void _confirmer(String message) =>
-    locator<SnackbarService>().showSnackbar(message: message, duration: const Duration(seconds: 2));
+void _confirmer(String message) => locator<Messages>().afficher(message: message, duration: const Duration(seconds: 2));
 
 Future<void> _saisirNombre(BuildContext context, String libelle, String type) async {
   final controleur = TextEditingController();

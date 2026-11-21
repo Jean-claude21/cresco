@@ -392,7 +392,12 @@ export async function forme(tx: Tx, userId: string) {
     zFcRepos: await z('fc_repos', true),
     energie: ress[0]?.energie ?? undefined,
     courbatures: ress[0]?.courbatures ?? undefined,
-    ratioAiguChronique: charges.some((c) => c.charge > 0) ? moteur.ratioAiguChronique({ charges: charges.map((c) => c.charge) }).ratio : undefined,
+    // C-CHARGE-4 : la charge chronique n'a de sens qu'avec au moins 21 jours d'historique ;
+    // avant, le ratio explose dès la première séance et fausserait la forme.
+    ratioAiguChronique:
+      charges.slice(0, 7).some((c) => c.charge > 0) && charges.some((c) => c.charge > 0)
+        ? moteur.ratioAiguChronique({ charges: charges.map((c) => c.charge) }).ratio
+        : undefined,
     heuresJeune: j ? (Date.now() - new Date(j.debut).getTime()) / 3_600_000 : 0,
   };
   const score = moteur.scoreForme(entree);
@@ -415,14 +420,20 @@ export async function seanceDuJour(tx: Tx, userId: string) {
   const p = await profil(tx, userId);
   const f = await forme(tx, userId);
   const reposVerrouille = p.preferences.joursReposVerrouilles.includes(new Date().getDay());
-  let decision = moteur.ajustementSeance({ forme: f.valeur, reposVerrouille });
+  // CALCULS.md §9 : une confiance basse n'entraîne jamais de changement automatique du plan.
+  const confianceBasse = f.confiance === 'basse' && !reposVerrouille;
+  let decision = confianceBasse
+    ? moteur.ajustementSeance({ forme: 100, reposVerrouille: false })
+    : moteur.ajustementSeance({ forme: f.valeur, reposVerrouille });
   let raison = reposVerrouille
     ? 'Jour de repos verrouillé'
-    : f.valeur >= 75
-      ? 'Bonne forme : plan normal'
-      : f.composantes.sommeil != null && f.composantes.sommeil < 70
-        ? 'Volume réduit après une nuit courte'
-        : 'Volume réduit : récupération incomplète';
+    : confianceBasse
+      ? 'Plan normal : pas encore assez de données de récupération'
+      : f.valeur >= 75
+        ? 'Bonne forme : plan normal'
+        : f.composantes.sommeil != null && f.composantes.sommeil < 70
+          ? 'Volume réduit après une nuit courte'
+          : 'Volume réduit : récupération incomplète';
   const dj = await decisionJeuneEnCours(tx, userId);
   if (dj) {
     const combinee = moteur.combinerDecisions({ a: decision, b: dj.decision });

@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,8 @@ Future<void> main() async {
   final session = await Session.charger();
   locator
     ..registerSingleton<Session>(session)
-    ..registerSingleton<CrescoApi>(CrescoApi(session));
+    ..registerSingleton<CrescoApi>(CrescoApi(session))
+    ..registerSingleton<Messages>(Messages());
   runApp(CrescoApp(connecte: session.connecte));
 }
 
@@ -32,6 +34,7 @@ class CrescoApp extends StatelessWidget {
       supportedLocales: const [Locale('fr', 'FR')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       navigatorKey: StackedService.navigatorKey,
+      scaffoldMessengerKey: locator<Messages>().cle,
       onGenerateRoute: StackedRouter().onGenerateRoute,
       initialRoute: connecte ? Routes.accueilView : Routes.connexionView,
     );

@@ -418,6 +418,31 @@ class _CourbePeintre extends CustomPainter {
   bool shouldRepaint(covariant _CourbePeintre old) => old.v != v;
 }
 
+/// En-tête « icône + libellé » des petites cartes : le libellé passe à la ligne au lieu de déborder
+/// sur les écrans étroits (débordement relevé sur Galaxy S25).
+class IconeLibelle extends StatelessWidget {
+  const new(
+    this.icone,
+    this.libelle, {
+    super.key,
+    this.style = const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+  });
+  final IconData icone;
+  final String libelle;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icone, size: 22),
+        const SizedBox(width: 8),
+        Flexible(child: Text(libelle, style: style)),
+      ],
+    );
+  }
+}
+
 /// Ligne « libellé … valeur » avec icône, utilisée dans les cartes.
 class LigneMesure extends StatelessWidget {
   const new({required this.icone, required this.libelle, required this.valeur, super.key});

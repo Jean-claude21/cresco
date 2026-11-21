@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/ui/commun.dart' show maintenant;
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -177,7 +178,8 @@ Future<void> preparer() async {
   });
   locator
     ..registerSingleton<Session>(session)
-    ..registerSingleton<CrescoApi>(CrescoApi(session, client: client));
+    ..registerSingleton<CrescoApi>(CrescoApi(session, client: client))
+    ..registerSingleton<Messages>(Messages());
   await _chargerPolices();
 }
 

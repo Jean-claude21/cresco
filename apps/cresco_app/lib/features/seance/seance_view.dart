@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/ui/commun.dart';
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_engine/cresco_engine.dart' as moteur;
 import 'package:cresco_ui/cresco_ui.dart';
@@ -35,7 +36,7 @@ class SerieAFaire {
 class SeanceViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService _nav = locator<NavigationService>();
-  final SnackbarService _snack = locator<SnackbarService>();
+  final Messages _snack = locator<Messages>();
 
   Json? seance;
   List<SerieAFaire> series = [];
@@ -163,13 +164,13 @@ class SeanceViewModel extends BaseViewModel {
         'series': faites,
       });
     } on ErreurApi catch (e) {
-      _snack.showSnackbar(message: 'Séance non enregistrée : ${e.message}');
+      _snack.afficher(message: 'Séance non enregistrée : ${e.message}');
       return;
     }
     // Quitter l'écran d'abord : avec une barre de message ouverte, back() fermerait la barre
     // au lieu de l'écran (NavigationService s'appuie sur GetX).
     _nav.back<void>();
-    _snack.showSnackbar(message: 'Séance enregistrée (${faites.length} séries)', duration: const Duration(seconds: 2));
+    _snack.afficher(message: 'Séance enregistrée (${faites.length} séries)', duration: const Duration(seconds: 2));
   }
 
   Future<void> ouvrirVideo(BuildContext context) async {
@@ -367,22 +368,23 @@ class _CarteSerie extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              GestureDetector(
-                onTap: () => vm.changerCharge(2.5),
-                onLongPress: () => vm.changerCharge(-2.5),
-                child: Text(
-                  s.chargeKg == null ? '—' : decimal(s.chargeKg),
-                  style: CrescoTextes.chiffre.copyWith(fontSize: 54),
-                ),
+          // Un seul texte composé : passe à la ligne avec un texte agrandi, chiffres sur la même ligne de base.
+          GestureDetector(
+            onTap: () => vm.changerCharge(2.5),
+            onLongPress: () => vm.changerCharge(-2.5),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: s.chargeKg == null ? '—' : decimal(s.chargeKg),
+                    style: CrescoTextes.chiffre.copyWith(fontSize: 54),
+                  ),
+                  const TextSpan(text: ' kg  ×  ', style: CrescoTextes.unite),
+                  TextSpan(text: '${s.reps}', style: CrescoTextes.chiffre.copyWith(fontSize: 54)),
+                  const TextSpan(text: ' répétitions', style: CrescoTextes.unite),
+                ],
               ),
-              const Text(' kg  ×  ', style: CrescoTextes.unite),
-              Text('${s.reps}', style: CrescoTextes.chiffre.copyWith(fontSize: 54)),
-              const Text(' répétitions', style: CrescoTextes.unite),
-            ],
+            ),
           ),
           Row(
             children: [

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/ui/commun.dart';
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,7 @@ import 'package:stacked_services/stacked_services.dart';
 class ScanViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService _nav = locator<NavigationService>();
-  final SnackbarService _snack = locator<SnackbarService>();
+  final Messages _snack = locator<Messages>();
 
   Json? produit;
   String? erreur;
@@ -43,7 +44,7 @@ class ScanViewModel extends BaseViewModel {
     // Quitter l'écran d'abord : avec une barre de message ouverte, back() fermerait la barre
     // au lieu de l'écran (NavigationService s'appuie sur GetX).
     _nav.back<void>();
-    _snack.showSnackbar(
+    _snack.afficher(
       message: 'Ajouté : ${entier(nombre(produit!['kcal100']) * masse / 100)} kcal',
       duration: const Duration(seconds: 2),
     );

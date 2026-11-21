@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/ui/commun.dart';
+import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:stacked/stacked.dart';
-import 'package:stacked_services/stacked_services.dart';
 
 /// Versets (Louis Segond 1910, domaine public) : FOI.md. Affichés seulement avec le module foi.
 const versets = {
@@ -19,7 +19,7 @@ const symptomes = ['vertiges', 'faiblesse marquée', 'palpitations', 'confusion'
 
 class JeuneViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
-  final SnackbarService _snack = locator<SnackbarService>();
+  final Messages _snack = locator<Messages>();
   final Session _session = locator<Session>();
 
   Json? decision;
@@ -73,16 +73,13 @@ class JeuneViewModel extends BaseViewModel {
       });
       await charger();
     } on ErreurApi catch (e) {
-      _snack.showSnackbar(message: e.message);
+      _snack.afficher(message: e.message);
     }
   }
 
   Future<void> noter(String type, String valeur) async {
     await _api.noterJeune(jeune!['id']! as String, type, valeur);
-    _snack.showSnackbar(
-      message: type == 'symptome' ? 'Noté. Arrête l’effort et pense à rompre le jeûne.' : 'Noté',
-      duration: const Duration(seconds: 3),
-    );
+    _snack.afficher(message: type == 'symptome' ? 'Noté. Arrête l’effort et pense à rompre le jeûne.' : 'Noté');
     await charger();
   }
 
@@ -91,7 +88,7 @@ class JeuneViewModel extends BaseViewModel {
     final reprise = decision?['reprise'] as Json?;
     decision = null;
     notifyListeners();
-    _snack.showSnackbar(
+    _snack.afficher(
       message: 'Jeûne terminé. Reprise ${reprise?['mode'] == 'normale' ? 'normale' : 'progressive'}.',
       duration: const Duration(seconds: 4),
     );
@@ -214,13 +211,7 @@ class JeuneView extends StatelessWidget {
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.local_drink_outlined),
-                        SizedBox(width: 8),
-                        Text('Eau', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
-                      ],
-                    ),
+                    IconeLibelle(Icons.local_drink_outlined, 'Eau'),
                     SizedBox(height: 8),
                     Text(
                       '+ 250 ml',
@@ -237,17 +228,18 @@ class JeuneView extends StatelessWidget {
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  IconeLibelle(Icons.monitor_heart_outlined, 'Symptômes'),
+                  SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.monitor_heart_outlined),
-                      SizedBox(width: 8),
-                      Text('Symptômes', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                      Flexible(
+                        child: Text(
+                          'Signaler',
+                          style: TextStyle(color: CrescoCouleurs.pin, fontWeight: FontWeight.w800, fontSize: 22),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: CrescoCouleurs.pin),
                     ],
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Signaler ›',
-                    style: TextStyle(color: CrescoCouleurs.pin, fontWeight: FontWeight.w800, fontSize: 22),
                   ),
                 ],
               ),

@@ -12,18 +12,39 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  /// Tous les textes à l'écran : joints à chaque échec pour savoir où l'app s'est arrêtée.
+  String ecran() => find
+      .byType(Text)
+      .evaluate()
+      .map((e) => (e.widget as Text).data)
+      .whereType<String>()
+      .where((s) => s.trim().isNotEmpty)
+      .join(' | ');
+
   /// Attend qu'un élément apparaisse (le réseau et les indicateurs animés empêchent pumpAndSettle).
-  Future<void> attendre(WidgetTester t, Finder f, {Duration delai = const Duration(seconds: 40)}) async {
+  /// Avec [defiler], fait défiler la page vers le bas comme un utilisateur (les listes ne construisent
+  /// que ce qui est visible).
+  Future<void> attendre(
+    WidgetTester t,
+    Finder f, {
+    Duration delai = const Duration(seconds: 40),
+    bool defiler = false,
+  }) async {
     final fin = DateTime.now().add(delai);
+    var essais = 0;
     while (DateTime.now().isBefore(fin)) {
       await t.pump(const Duration(milliseconds: 250));
       if (f.evaluate().isNotEmpty) return;
+      final listes = find.byType(Scrollable);
+      if (defiler && ++essais % 4 == 0 && listes.evaluate().isNotEmpty) {
+        await t.drag(listes.first, const Offset(0, -300), warnIfMissed: false);
+      }
     }
-    throw TestFailure('Introuvable après ${delai.inSeconds} s : $f');
+    throw TestFailure('Introuvable après ${delai.inSeconds} s : $f\nÀ l’écran : ${ecran()}');
   }
 
-  Future<void> toucher(WidgetTester t, Finder f) async {
-    await attendre(t, f);
+  Future<void> toucher(WidgetTester t, Finder f, {bool defiler = false}) async {
+    await attendre(t, f, defiler: defiler);
     await t.ensureVisible(f.first);
     await t.pump(const Duration(milliseconds: 200));
     await t.tap(f.first);
@@ -62,6 +83,9 @@ void main() {
     await saisir(t, 'Prénom', 'Testeur');
     await saisir(t, 'E-mail', email);
     await saisir(t, 'Mot de passe (10 caractères minimum)', 'mot-de-passe-de-test');
+    // Ferme le clavier : sa hauteur varie selon les fabricants (Samsung, Google…).
+    FocusManager.instance.primaryFocus?.unfocus();
+    await t.pump(const Duration(milliseconds: 600));
     await toucher(t, find.text('Créer le compte'));
 
     // ---------------------------------------------------------------- Aujourd'hui
@@ -78,7 +102,7 @@ void main() {
       await t.tap(find.byTooltip('Plus 2,5 kg'));
       await t.pump(const Duration(milliseconds: 60));
     }
-    expect(find.text('40'), findsOneWidget);
+    expect(find.textContaining('40 kg', findRichText: true), findsOneWidget);
     var series = 0;
     while (find.textContaining('Valider la').evaluate().isNotEmpty && series < 40) {
       await toucher(t, find.widgetWithText(ChoiceChip, '2'));
@@ -89,7 +113,11 @@ void main() {
     expect(series, greaterThan(3));
     expect(find.text('Séance terminée'), findsOneWidget);
     await toucher(t, find.widgetWithText(ActionChip, '7'));
-    await attendre(t, find.text('FORME DU JOUR'));
+    // L'enregistrement passe par le réseau : délai plus large.
+    await attendre(t, onglet('Aujourd’hui'), delai: const Duration(seconds: 70));
+    expect(find.text('Séance terminée'), findsNothing);
+    // Nouveau compte : la confiance est basse, le plan reste normal (CALCULS.md §9).
+    await attendre(t, find.textContaining('pas encore assez de données'), defiler: true);
 
     // ---------------------------------------------------------------- Intervalles
     await toucher(t, onglet('Entraînement'));
@@ -105,11 +133,11 @@ void main() {
 
     // ---------------------------------------------------------------- Jeûne
     await toucher(t, onglet('Aujourd’hui'));
-    await toucher(t, find.text('Suivi du jeûne'));
+    await toucher(t, find.text('Suivi du jeûne'), defiler: true);
     await toucher(t, find.text('Commencer le jeûne'));
     await attendre(t, find.text('JEÛNE EN COURS'));
     expect(find.text('Phase estimée · Digestion'), findsOneWidget);
-    await toucher(t, find.text('Terminer le jeûne'));
+    await toucher(t, find.text('Terminer le jeûne'), defiler: true);
     await attendre(t, find.text('Commencer le jeûne'));
     await retour(t);
     await t.pump(const Duration(seconds: 1));
@@ -117,7 +145,7 @@ void main() {
     // ---------------------------------------------------------------- Nutrition
     await toucher(t, onglet('Nutrition'));
     await attendre(t, find.text('BILAN ESTIMÉ · 7 JOURS'));
-    await attendre(t, find.text('Mes plats'));
+    await attendre(t, find.text('Mes plats'), defiler: true);
 
     // ---------------------------------------------------------------- Progrès : la séance compte
     await toucher(t, onglet('Progrès'));
@@ -128,8 +156,8 @@ void main() {
     await toucher(t, onglet('Aujourd’hui'));
     await toucher(t, find.byTooltip('Profil et réglages'));
     await attendre(t, find.text(email));
-    await toucher(t, find.text('Module foi'));
-    await toucher(t, find.text('Se déconnecter'));
+    await toucher(t, find.text('Module foi'), defiler: true);
+    await toucher(t, find.text('Se déconnecter'), defiler: true);
     await attendre(t, find.text('Bon retour'));
   });
 }

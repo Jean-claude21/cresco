@@ -18,9 +18,6 @@ import 'package:stacked_services/stacked_services.dart';
     MaterialRoute(page: ScanView),
     MaterialRoute(page: ProfilView),
   ],
-  dependencies: [
-    LazySingleton<NavigationService>(classType: NavigationService),
-    LazySingleton<SnackbarService>(classType: SnackbarService),
-  ],
+  dependencies: [LazySingleton<NavigationService>(classType: NavigationService)],
 )
 class App;
