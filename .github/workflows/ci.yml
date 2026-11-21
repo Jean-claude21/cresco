@@ -55,9 +55,6 @@ jobs:
         with:
           flutter-version: ${{ steps.fvm.outputs.flutter }}
           cache: true
-      # Polices du SDK (Roboto) pour les tests de mise en page : sans elles, la police de test
-      # « Ahem » (carrés pleine largeur) crée de faux débordements.
-      - run: flutter precache --universal
       - run: flutter pub get
       - name: Analyse
         run: dart analyze --fatal-infos packages apps

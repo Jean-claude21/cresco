@@ -184,17 +184,9 @@ Future<void> preparer() async {
 }
 
 Future<void> _chargerPolices() async {
-  // Polices Roboto du SDK : retrouvées depuis le testeur lui-même
-  // (…/bin/cache/artifacts/engine/<plateforme>/flutter_tester), sinon FLUTTER_ROOT ou le SDK FVM.
-  final candidats = [
-    '${File(Platform.resolvedExecutable).parent.parent.parent.path}/material_fonts',
-    '${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts/material_fonts',
-    '../../.fvm/flutter_sdk/bin/cache/artifacts/material_fonts',
-  ];
-  final dossier = candidats.firstWhere(
-    (d) => File('$d/roboto-regular.ttf').existsSync(),
-    orElse: () => throw StateError('Polices du SDK introuvables (flutter precache) : $candidats'),
-  );
+  // Roboto et Material Icons (Apache 2.0, licences dans test/polices) : versionnées avec les tests
+  // pour un rendu identique partout (le SDK Linux de la CI ne les fournit pas).
+  const dossier = 'test/polices';
   Future<ByteData> lire(String f) async => ByteData.sublistView(await File('$dossier/$f').readAsBytes());
   // La police de titre embarquée par cresco_ui, sous le nom qu'utilise le thème.
   Future<ByteData> lirePaquet(String f) async =>
