@@ -64,7 +64,7 @@ class ScoreRing extends StatelessWidget {
 }
 
 class _RingPainter extends CustomPainter {
-  _RingPainter(this.value, this.stroke, this.color, this.track);
+  new(this.value, this.stroke, this.color, this.track);
   final double value;
   final double stroke;
   final Color color;
