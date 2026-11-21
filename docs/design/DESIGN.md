@@ -92,7 +92,7 @@ Tous les médias viennent de ChatGPT (via Codex). Leur fabrication, leur inventa
 | Jeûne | Cadran glacier, début et fin prévue, phase estimée avec la frise des phases (`J-PHASE`), décision du jour, « + 250 ml d’eau » (glacier) et « Signaler un symptôme » côte à côte, intention et verset, « Terminer le jeûne » |
 | Nutrition (« Mes plats ») | Reste du jour (kcal, protéines), recherche « Qu’est-ce que tu as dans ton frigo ? » avec le scan, quatre filtres 2 × 2, grille de plats en photos avec « + » braise, panneau de portion (grammes − +, « Ajouter au déjeuner » selon l’heure) |
 | Progrès | Verdict de la semaine (flèche braise quand tu progresses, séances de la semaine, sommeil moyen), force estimée sur 8 semaines et sa courbe en braise (valeurs de départ et d’arrivée, S1 à S8), record, bilan énergie, poids lissé, « Comment c’est calculé » |
-| Barre d’onglets | Aujourd’hui, Entraînement, « + » rond noir, Nutrition, Progrès ; onglet actif en braise |
+| Barre d’onglets | Aujourd’hui (calendrier), Entraînement, « + » rond noir, Nutrition, Progrès ; pictogrammes noirs fins, libellés noirs, onglet actif en gras et souligné de noir |
 
 Les photos de plats viennent de neuf familles générées avec ChatGPT ([medias/plats](medias/plats/NOTES.md)) ; l’app choisit la famille d’après le nom du plat. Les filtres de « Mes plats » lisent les étiquettes enregistrées sur le plat (`tags` : proteines, rapide, vegetarien, daniel), posées par l’utilisateur ou son IA ; rien n’est deviné.
 

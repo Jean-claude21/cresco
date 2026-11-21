@@ -57,18 +57,19 @@ class _TabBar extends StatelessWidget {
   final ValueChanged<int> onTap;
   final VoidCallback onAdd;
 
-  static const List<(IconData, IconData, String)> _items = [
-    (Icons.home_outlined, Icons.home, 'Aujourd’hui'),
-    (Icons.fitness_center_outlined, Icons.fitness_center, 'Entraînement'),
-    (Icons.restaurant_outlined, Icons.restaurant, 'Nutrition'),
-    (Icons.bar_chart_outlined, Icons.bar_chart, 'Progrès'),
+  // Same thin line icons for every state, as in the mockup: only the label marks the active tab.
+  static const List<(IconData, String)> _items = [
+    (Icons.calendar_today_outlined, 'Aujourd’hui'),
+    (Icons.fitness_center_outlined, 'Entraînement'),
+    (Icons.restaurant_outlined, 'Nutrition'),
+    (Icons.signal_cellular_alt, 'Progrès'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     Widget tab(int i) {
-      final (icon, activeIcon, label) = _items[i];
+      final (icon, label) = _items[i];
       final on = i == index;
       return Expanded(
         child: Semantics(
@@ -80,21 +81,25 @@ class _TabBar extends StatelessWidget {
             key: ValueKey('onglet-$label'),
             onTap: () => onTap(i),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(on ? activeIcon : icon, size: 24, color: on ? p.effort : p.ink),
-                  const SizedBox(height: 2),
+                  Icon(icon, size: 22, color: p.ink),
+                  const SizedBox(height: 3),
                   FittedBox(
                     child: Text(
                       label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: on ? FontWeight.w800 : FontWeight.w500,
-                        color: on ? p.ink : p.muted,
-                      ),
+                      style: TextStyle(fontSize: 12, fontWeight: on ? FontWeight.w800 : FontWeight.w400, color: p.ink),
                     ),
+                  ),
+                  const SizedBox(height: 3),
+                  // Underline of the active tab.
+                  AnimatedContainer(
+                    duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200),
+                    width: on ? 40 : 0,
+                    height: 2.5,
+                    color: p.ink,
                   ),
                 ],
               ),
@@ -113,17 +118,20 @@ class _TabBar extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 64,
+        // Grows with large text instead of clipping the labels.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 66),
           child: Row(
             children: [
               tab(0),
               tab(1),
               SizedBox(
                 width: 72,
+                // heightFactor 1: the bar stays as tall as its content, not the whole screen.
                 child: Center(
+                  heightFactor: 1,
                   child: SizedBox.square(
-                    dimension: 48,
+                    dimension: 44,
                     child: FloatingActionButton(
                       heroTag: 'plus',
                       elevation: 0,
@@ -133,7 +141,7 @@ class _TabBar extends StatelessWidget {
                       foregroundColor: p.onAction,
                       tooltip: 'Ajouter une donnée',
                       onPressed: onAdd,
-                      child: const Icon(Icons.add, size: 28),
+                      child: const Icon(Icons.add, size: 26),
                     ),
                   ),
                 ),
