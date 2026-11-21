@@ -1,0 +1,6 @@
+packages:
+  - apps/server
+  - packages/engine-ts
+
+allowBuilds:
+  esbuild: true

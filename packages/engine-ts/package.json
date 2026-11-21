@@ -1,0 +1,13 @@
+{
+  "name": "@cresco/engine",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Moteur de calcul Cresco (référence serveur). Formules : docs/science/CALCULS.md et JEUNE.md.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "cresco",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Cresco — backend (API, MCP) et moteur de calcul TypeScript.",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @cresco/server dev",
+    "build": "pnpm --filter @cresco/server build",
+    "start": "pnpm --filter @cresco/server start",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test",
+    "db:migrate": "tsx --env-file-if-exists=apps/server/.env.local scripts/migrate.ts",
+    "deploy:staging": "node scripts/deploy.mjs --env staging",
+    "deploy:production": "node scripts/deploy.mjs --env production"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "esbuild": "0.25.12",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12"
+  }
+}

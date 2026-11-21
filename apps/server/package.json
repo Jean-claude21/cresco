@@ -1,0 +1,24 @@
+{
+  "name": "@cresco/server",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Cresco — API REST publique, serveur MCP et tâches, sur Postgres.",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env.local src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --external:pg-native --outfile=dist/server.mjs --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "start": "node dist/server.mjs",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@cresco/engine": "workspace:*",
+    "@hono/node-server": "^1.19.5",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "hono": "^4.10.4",
+    "pg": "^8.23.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
+  }
+}

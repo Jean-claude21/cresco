@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+**/dist
+.local
+.git
+.fvm
+apps/cresco_app
+packages/cresco_engine
+packages/cresco_ui
+**/.dart_tool
+**/build
+docs/design
+*.env
+.env*
