@@ -22,6 +22,7 @@ flutter:
   assets:
     - assets/body/
     - assets/coach/
+    - assets/dishes/
     - assets/icons/
     - assets/photos/
   fonts:
@@ -29,6 +30,13 @@ flutter:
     - family: Inter
       fonts:
         - asset: fonts/Inter[opsz,wght].ttf
+    # Barlow Condensed — SIL Open Font License (fonts/OFL-BarlowCondensed.txt). Chiffres d’affiche.
+    - family: BarlowCondensed
+      fonts:
+        - asset: fonts/BarlowCondensed-Bold.ttf
+          weight: 700
+        - asset: fonts/BarlowCondensed-ExtraBold.ttf
+          weight: 800
     # Gelasio — SIL Open Font License (fonts/OFL-Gelasio.txt). Métriques compatibles Georgia.
     - family: Gelasio
       fonts:

@@ -79,7 +79,8 @@ function construire(ctx: Ctx) {
   server.registerTool(
     'creer_plat',
     {
-      description: 'Crée un plat de « Mes plats » à partir d’ingrédients (identifiants d’aliments et masses crues en g). Le moteur calcule les nutriments.',
+      description:
+        'Crée un plat de « Mes plats » à partir d’ingrédients (identifiants d’aliments et masses crues en g). Le moteur calcule les nutriments. Étiquettes facultatives pour les filtres : proteines, rapide, vegetarien, daniel (autorisé pendant un jeûne de Daniel).',
       inputSchema: svc.PlatEntree.shape,
     },
     async (args) => run('nutrition:ecriture', (t, u) => svc.creerPlat(t, u, svc.PlatEntree.parse(args), 'ia'))(),
@@ -93,6 +94,15 @@ function construire(ctx: Ctx) {
     'obtenir_bilan_energie',
     { description: 'BMR, TDEE (adaptatif si assez de données), cibles de macros, bilan du jour et verdict déficit / maintien / surplus avec confiance.' },
     run('nutrition:lecture', (t, u) => svc.energie(t, u)),
+  );
+  server.registerTool(
+    'tag_dish',
+    {
+      description:
+        'Sets the filter tags of a dish of "Mes plats": proteines (rich in protein), rapide (quick), vegetarien, daniel (allowed during a Daniel fast). Replaces the previous tags.',
+      inputSchema: { id: z.string().uuid(), ...svc.DishTagsInput.shape },
+    },
+    async (args) => run('nutrition:ecriture', (t) => svc.setDishTags(t, args.id, args.tags))(),
   );
   server.registerTool(
     'get_gym',

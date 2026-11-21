@@ -13,6 +13,7 @@ Tous les médias de l’app ont été **générés avec ChatGPT** (outil de gén
 | Duo d’accueil | [accueil-duo/BRIEF.md](accueil-duo/BRIEF.md) | `assets/coach/duo.png` | 1024 px |
 | Corps complet, face et dos | [corps/BRIEF.md](corps/BRIEF.md) | `assets/body/` (calque de base, un masque par muscle, carte des zones) | 1024 × 2048, environ 330 Ko en tout |
 | Icônes 3D (séance, repas, jeûne, sommeil) | [icones-photos/BRIEF.md](icones-photos/BRIEF.md) | `assets/icons/` | 384 px |
+| Photos des 9 familles de plats | [plats/BRIEF.md](plats/BRIEF.md), [notes](plats/NOTES.md) | `assets/dishes/` | 900 px, JPEG |
 | Photos noir et blanc (salle, chest press, tapis, presse à cuisses) | idem | `assets/photos/` | 1200 px, JPEG |
 
 Les poses sont : `salue`, `explique`, `carnet`, `pouce`, `reflechit`, `celebre`. Chaque dossier contient la consigne envoyée (`BRIEF.md`) et la note de ChatGPT (`NOTES.md`). Les planches de référence des coachs sont en JPEG dans leur dossier.
@@ -61,4 +62,4 @@ Les poses sont : `salue`, `explique`, `carnet`, `pouce`, `reflechit`, `celebre`.
 - **Les coachs n’apparaissent jamais pendant l’effort.** Une nouvelle pose se génère avec les deux planches de référence jointes, pour garder les mêmes traits.
 - **Un nouveau muscle** demande une nouvelle couleur clé. Il faut alors l’ajouter dans `extraire.py`, dans `BodyMuscles` et dans `muscleNames`, puis relancer le découpage.
 - **Aucune marque réelle** ni personne reconnaissable dans les médias.
-- **Médias manquants** : une animation par exercice, une photo par plat (la grille « Mes plats » montre l’icône du bol en attendant), et l’icône de l’app.
+- **Médias manquants** : une animation par exercice et l’icône de l’app.

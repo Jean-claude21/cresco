@@ -26,7 +26,7 @@ const libellesVerdict = {
   'donnees_insuffisantes': 'Encore un peu de données',
 };
 
-/// Écran 5 (maquette 05-progres) : verdict expliqué, tendance e1RM, énergie, poids, sommeil.
+/// Progrès (mockup G 08-progres): week verdict, strength curve, record, energy, weight.
 class ProgresView extends StatelessWidget {
   const new({super.key});
 
@@ -37,8 +37,8 @@ class ProgresView extends StatelessWidget {
       builder: (context, vm, _) {
         final d = vm.data;
         final exercices = (d?['exercices'] as List?)?.cast<Json>() ?? const [];
-        final ex = exercices.isEmpty ? null : exercices[vm.exercice.clamp(0, exercices.length - 1)];
         final energie = d?['energie'] as Json?;
+        final record = d?['record'] as Json?;
         return PageCresco(
           titre: 'Progrès',
           onRefresh: vm.initialise,
@@ -46,49 +46,16 @@ class ProgresView extends StatelessWidget {
             if (vm.isBusy && d == null) const Chargement(),
             if (vm.hasError) MessageErreur(vm.modelError.toString(), reessayer: vm.initialise),
             if (d != null) ...[
-              _VerdictCard(verdict: d['verdict'] as String?, explanation: d['explication']! as String),
-              if (ex != null)
-                CrescoCarte(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DropdownButton<int>(
-                        value: vm.exercice.clamp(0, exercices.length - 1),
-                        isExpanded: true,
-                        underline: const SizedBox.shrink(),
-                        style: CrescoTextes.titreCarte.copyWith(fontSize: 22, color: context.palette.ink),
-                        items: [
-                          for (var i = 0; i < exercices.length; i++)
-                            DropdownMenuItem(value: i, child: Text(exercices[i]['nom']! as String)),
-                        ],
-                        onChanged: (i) => vm.choisir(i ?? 0),
-                      ),
-                      Text('e1RM · 28 jours', style: context.mutedStyle),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.end,
-                        children: [
-                          ChiffreUnite(decimal(ex['dernier']), 'kg', taille: 40),
-                          Text(
-                            '${nombre(ex['pctParSemaine']) >= 0 ? '+' : ''}'
-                            '${decimal(ex['pctParSemaine'], chiffres: 2)} % / semaine',
-                            style: TextStyle(
-                              color: nombre(ex['pctParSemaine']) >= 0 ? context.palette.effort : context.palette.muted,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      CourbeTendance(
-                        valeurs: [for (final p in (ex['points']! as List).cast<Json>()) nombre(p['e1rm'])],
-                      ),
-                    ],
-                  ),
+              _VerdictCard(
+                verdict: d['verdict'] as String?,
+                sessions: (d['seancesSemaine'] as num?)?.toInt(),
+                sleepMin: d['sommeilMoyenMin'],
+              ),
+              if (exercices.isNotEmpty)
+                _StrengthCard(
+                  exercises: exercices,
+                  index: vm.exercice.clamp(0, exercices.length - 1),
+                  onPick: vm.choisir,
                 )
               else
                 CrescoCarte(
@@ -97,20 +64,28 @@ class ProgresView extends StatelessWidget {
                     style: context.mutedStyle,
                   ),
                 ),
+              if (record != null)
+                _InfoRow(
+                  icon: Icons.emoji_events_outlined,
+                  title: 'Record',
+                  detail: '${decimal(record['chargeKg'])} kg × ${record['reps']} au ${(record['nom']! as String).toLowerCase()}',
+                ),
               if (energie != null)
                 _InfoRow(
                   icon: Icons.bolt_outlined,
-                  title: 'Bilan énergie · 7 jours',
-                  value: '${signe(nombre(energie['moyen7j']).round())} kcal/j',
-                  detail: 'estimé, confiance ${energie['confiance']}',
+                  title: 'Bilan énergie',
+                  detail:
+                      '${switch (energie['verdict']) {
+                        'surplus' => 'surplus',
+                        'deficit' => 'déficit',
+                        _ => 'équilibre',
+                      }} estimé ${signe(nombre(energie['moyen7j']).round())} kcal/j, confiance ${energie['confiance']}',
                 ),
-              _InfoRow(
-                icon: Icons.monitor_weight_outlined,
-                title: 'Poids lissé',
-                value: '${decimal(d['poidsLisse'])} kg',
+              _InfoRow(icon: Icons.monitor_weight_outlined, title: 'Poids lissé', value: '${decimal(d['poidsLisse'])} kg'),
+              OutlinedButton(
+                onPressed: () => _explain(context, d['explication'] as String? ?? ''),
+                child: const Text('Comment c’est calculé'),
               ),
-              _InfoRow(icon: Icons.bedtime_outlined, title: 'Sommeil moyen', value: duree(d['sommeilMoyenMin'])),
-              OutlinedButton(onPressed: () => _explain(context), child: const Text('Comment c’est calculé')),
             ],
           ],
         );
@@ -119,7 +94,7 @@ class ProgresView extends StatelessWidget {
   }
 }
 
-Future<void> _explain(BuildContext context) => showModalBottomSheet<void>(
+Future<void> _explain(BuildContext context, String explanation) => showModalBottomSheet<void>(
   context: context,
   showDragHandle: true,
   builder: (context) => SafeArea(
@@ -131,10 +106,14 @@ Future<void> _explain(BuildContext context) => showModalBottomSheet<void>(
         children: [
           const Text('Comment c’est calculé', style: CrescoTextes.titreCarte),
           const SizedBox(height: 12),
+          if (explanation.isNotEmpty) ...[
+            Text(explanation, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 10),
+          ],
           const Text(
             'Force estimée : e1RM de tes meilleures séries (règle C-PERF-2), tendance sur 28 jours (C-PROG-1). '
             'Verdict de la semaine : progression comparée au rythme attendu pour ton niveau, en tenant compte '
-            'du sommeil, de l’énergie et des jeûnes (C-VERDICT).',
+            'du sommeil, de l’énergie et des jeûnes (C-VERDICT). Record : ta meilleure série des 8 dernières semaines.',
             style: CrescoTextes.corps,
           ),
           const SizedBox(height: 10),
@@ -145,68 +124,142 @@ Future<void> _explain(BuildContext context) => showModalBottomSheet<void>(
   ),
 );
 
-/// Week verdict: big title, a braise arrow when you progress, and its cause.
+/// Week verdict: big title (braise arrow when you progress), sessions this week, average sleep.
 class _VerdictCard extends StatelessWidget {
-  const new({required this.verdict, required this.explanation});
+  const new({required this.verdict, required this.sessions, required this.sleepMin});
   final String? verdict;
-  final String explanation;
+  final int? sessions;
+  final Object? sleepMin;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    Widget line(IconData icon, String text) => Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 24, color: p.ink),
+          const SizedBox(width: 14),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 17))),
+        ],
+      ),
+    );
+    final count = sessions;
+    final sleep = sleepMin;
     return CrescoCarte(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Verdict de la semaine', style: context.mutedStyle.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
+          const Text('Verdict de la semaine', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
           Row(
             children: [
-              Flexible(
-                child: Text(libellesVerdict[verdict] ?? '', style: CrescoTextes.titrePage.copyWith(fontSize: 30)),
-              ),
+              Flexible(child: Text(libellesVerdict[verdict] ?? '', style: CrescoTextes.titrePage.copyWith(fontSize: 32))),
               if (verdict == 'progression') ...[
-                const SizedBox(width: 8),
-                Icon(Icons.north_east, color: p.effort, size: 30),
+                const SizedBox(width: 10),
+                Icon(Icons.north_east, color: p.effort, size: 34),
               ],
             ],
           ),
-          const SizedBox(height: 8),
-          Text(explanation, style: const TextStyle(fontSize: 15, height: 1.4)),
+          if (count != null) line(Icons.calendar_today_outlined, '$count séance${count > 1 ? 's' : ''} cette semaine'),
+          if (sleep is num) line(Icons.bed_outlined, 'Sommeil moyen ${duree(sleep)}'),
         ],
       ),
     );
   }
 }
 
-/// "Icon · title · value" row of the week summary.
-class _InfoRow extends StatelessWidget {
-  const new({required this.icon, required this.title, required this.value, this.detail});
-  final IconData icon;
-  final String title;
-  final String value;
-  final String? detail;
+/// Strength of one exercise: weekly trend in braise and the e1RM curve over 8 weeks.
+class _StrengthCard extends StatelessWidget {
+  const new({required this.exercises, required this.index, required this.onPick});
+  final List<Json> exercises;
+  final int index;
+  final ValueChanged<int> onPick;
+
+  Future<void> _pick(BuildContext context) async {
+    final pick = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (i, e) in exercises.indexed)
+              ListTile(title: Text(e['nom']! as String), onTap: () => Navigator.pop(context, i)),
+          ],
+        ),
+      ),
+    );
+    if (pick != null) onPick(pick);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final ex = exercises[index];
+    final pct = nombre(ex['pctParSemaine']);
+    final points = [for (final x in (ex['points']! as List).cast<Json>()) nombre(x['e1rm'])];
     return CrescoCarte(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: context.palette.ink),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          InkWell(
+            onTap: exercises.length < 2 ? null : () => _pick(context),
+            child: Row(
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                if (detail != null) Text(detail!, style: context.mutedStyle),
+                Flexible(child: Text(ex['nom']! as String, style: CrescoTextes.titreCarte.copyWith(fontSize: 24))),
+                if (exercises.length > 1) const Icon(Icons.expand_more),
               ],
             ),
           ),
-          Text(value, style: CrescoTextes.chiffre.copyWith(fontSize: 22)),
+          const Text('e1RM · 8 semaines', style: TextStyle(fontSize: 17)),
+          Text(
+            '${pct >= 0 ? '+' : ''}${decimal(pct, chiffres: pct.abs() >= 1 ? 1 : 2)} % / semaine',
+            style: TextStyle(color: pct >= 0 ? p.effort : p.muted, fontWeight: FontWeight.w900, fontSize: 26),
+          ),
+          const SizedBox(height: 12),
+          ProgressChart(values: points, unit: 'kg', color: p.effort),
         ],
+      ),
+    );
+  }
+}
+
+/// "Icon | title and detail (or big value)" row of the week summary.
+class _InfoRow extends StatelessWidget {
+  const new({required this.icon, required this.title, this.detail, this.value});
+  final IconData icon;
+  final String title;
+  final String? detail;
+  final String? value;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return CrescoCarte(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            SizedBox(width: 44, child: Icon(icon, size: 34, color: p.ink)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: VerticalDivider(width: CrescoShape.border, thickness: CrescoShape.border, color: p.line),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                  if (detail != null) Text(detail!, style: const TextStyle(fontSize: 16)),
+                  if (value != null) Text(value!, style: CrescoTextes.chiffre.copyWith(fontSize: 40)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

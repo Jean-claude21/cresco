@@ -191,6 +191,29 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect(e.corps.cibles.proteines).toBeGreaterThan(0);
   });
 
+  it('tags dishes for the "Mes plats" filters', async () => {
+    const lentilles = await appel('POST', '/v1/aliments', { nom: 'Lentilles corail', kcal100: 116, proteines100: 9, glucides100: 20, lipides100: 0.4 });
+    const plat = await appel('POST', '/v1/plats', {
+      nom: 'Dal',
+      ingredients: [{ alimentId: lentilles.corps.id, masse: 300 }],
+      tags: ['vegetarien', 'daniel', 'daniel'],
+    });
+    expect(plat.status).toBe(201);
+    expect(plat.corps.tags).toEqual(['vegetarien', 'daniel']);
+    const updated = await appel('PUT', `/v1/plats/${plat.corps.id}/tags`, { tags: ['rapide'] });
+    expect(updated.corps.tags).toEqual(['rapide']);
+    expect((await appel('PUT', `/v1/plats/${plat.corps.id}/tags`, { tags: ['inconnu'] })).status).toBe(400);
+    expect((await appel('PUT', `/v1/plats/${plat.corps.id}/tags`, { tags: [] }, autreJeton)).status).toBe(404);
+  });
+
+  it('gives the week count and the latest record in the progression', async () => {
+    const r = await appel('GET', '/v1/progression');
+    expect(r.status).toBe(200);
+    expect(r.corps.seancesSemaine).toBeGreaterThanOrEqual(1);
+    // The bench press session recorded earlier in this suite: 100 kg × 5.
+    expect(r.corps.record).toMatchObject({ exerciceId: 'developpe-couche-barre', chargeKg: 100, reps: 5 });
+  });
+
   it('gère un jeûne : décision, limite du jeûne sec, symptôme', async () => {
     const debut = new Date(Date.now() - 20 * 3_600_000).toISOString();
     const j = await appel('POST', '/v1/jeunes', { type: 'eau', motif: 'spirituel', intention: 'Silence', debut });

@@ -553,6 +553,8 @@ export async function alimentParCode(tx: Tx, code: string) {
   return { ...(inseres[0] ?? (await tx.query(`select * from aliment where code_barres = $1`, [code])).rows[0]), source_attribution: 'Open Food Facts (ODbL)' };
 }
 
+export const DISH_TAGS = ['proteines', 'rapide', 'vegetarien', 'daniel'] as const;
+
 export const PlatEntree = z.object({
   nom: z.string().min(1).max(160),
   ingredients: z
@@ -560,7 +562,10 @@ export const PlatEntree = z.object({
     .min(1)
     .max(60),
   masseCuite: z.number().positive().max(20_000).optional(),
+  /** Filters of "Mes plats": rich in protein, quick, vegetarian, allowed during a Daniel fast. */
+  tags: z.array(z.enum(DISH_TAGS)).max(4).optional(),
 });
+export const DishTagsInput = z.object({ tags: z.array(z.enum(DISH_TAGS)).max(4) });
 /** C-ENERGIE-9 : l'IA ou l'utilisateur donnent ingrédients et masses, le moteur calcule. */
 export async function creerPlat(tx: Tx, userId: string, p: z.infer<typeof PlatEntree>, creePar = 'utilisateur') {
   const ids = p.ingredients.map((i) => i.alimentId);
@@ -576,10 +581,26 @@ export async function creerPlat(tx: Tx, userId: string, p: z.infer<typeof PlatEn
     ...(p.masseCuite ? { masseCuite: p.masseCuite } : {}),
   });
   const { rows: plat } = await tx.query(
-    `insert into plat (user_id, nom, ingredients, masse_cuite, nutriments, cree_par) values ($1, $2, $3, $4, $5, $6) returning *`,
-    [userId, p.nom, JSON.stringify(p.ingredients.map((i) => ({ ...i, nom: parId.get(i.alimentId)!.nom }))), p.masseCuite ?? null, nutriments, creePar],
+    `insert into plat (user_id, nom, ingredients, masse_cuite, nutriments, cree_par, tags) values ($1, $2, $3, $4, $5, $6, $7) returning *`,
+    [
+      userId,
+      p.nom,
+      JSON.stringify(p.ingredients.map((i) => ({ ...i, nom: parId.get(i.alimentId)!.nom }))),
+      p.masseCuite ?? null,
+      nutriments,
+      creePar,
+      [...new Set(p.tags ?? [])],
+    ],
   );
   return plat[0];
+}
+
+/** Replaces the filter tags of a dish. */
+export async function setDishTags(tx: Tx, id: string, tags: (typeof DISH_TAGS)[number][]) {
+  if (!z.string().uuid().safeParse(id).success) throw new Refus(400, 'Identifiant de plat invalide');
+  const { rows } = await tx.query(`update plat set tags = $2 where id = $1 returning *`, [id, [...new Set(tags)]]);
+  if (!rows[0]) throw new Refus(404, 'Plat introuvable');
+  return rows[0];
 }
 export async function plats(tx: Tx) {
   return (await tx.query(`select * from plat order by cree_le desc`)).rows;
@@ -748,8 +769,13 @@ export async function progression(tx: Tx, userId: string) {
       }).verdict
     : 'donnees_insuffisantes';
   const tour = await mesures(tx, 'tour_taille', 35);
+  const { rows: week } = await tx.query<{ n: number }>(
+    `select count(*)::int as n from seance where le >= date_trunc('week', now())`,
+  );
   return {
     verdict,
+    seancesSemaine: week[0]?.n ?? 0,
+    record: await latestRecord(tx),
     explication: explicationVerdict(verdict, contexte.causes, sommeilMoyenMin),
     pctParSemaine: pctGlobal,
     seuil,
@@ -934,4 +960,21 @@ export async function exercisesAvailableAtGym(tx: Tx): Promise<Set<string> | nul
       )
       .map((e) => e.id),
   );
+}
+
+/**
+ * Most recent personal record of the last 8 weeks: for each exercise its best set by e1RM
+ * (C-PERF-2, stored on the set), then the latest of those. Null without any set.
+ */
+async function latestRecord(tx: Tx) {
+  const { rows } = await tx.query<{ exercice_id: string; nom: string; charge_kg: string; reps: number; e1rm: string; le: Date }>(
+    `select * from (
+       select distinct on (x.exercice_id) x.exercice_id, e.nom, x.charge_kg, x.reps, x.e1rm, s.le
+         from serie x join seance s on s.id = x.seance_id join exercice e on e.id = x.exercice_id
+        where x.e1rm is not null and x.charge_kg is not null and s.le > now() - interval '56 days'
+        order by x.exercice_id, x.e1rm desc, s.le desc
+     ) best order by le desc limit 1`,
+  );
+  const r = rows[0];
+  return r ? { exerciceId: r.exercice_id, nom: r.nom, chargeKg: Number(r.charge_kg), reps: r.reps, le: r.le } : null;
 }

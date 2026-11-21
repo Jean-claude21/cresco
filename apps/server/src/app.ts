@@ -223,6 +223,11 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
     const p = svc.PlatEntree.parse(await c.req.json());
     return c.json(await tx(c, (t, u) => svc.creerPlat(t, u, p)), 201);
   });
+  app.put('/v1/plats/:id/tags', async (c) => {
+    exige(c, 'nutrition:ecriture');
+    const { tags } = svc.DishTagsInput.parse(await c.req.json());
+    return c.json(await tx(c, (t) => svc.setDishTags(t, c.req.param('id'), tags)));
+  });
   app.post('/v1/repas', async (c) => {
     exige(c, 'nutrition:ecriture');
     const r = svc.RepasEntree.parse(await c.req.json());

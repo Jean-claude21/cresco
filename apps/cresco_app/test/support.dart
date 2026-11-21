@@ -155,35 +155,73 @@ final reponses = <String, Object?>{
   },
   '/v1/plats': [
     {
-      'id': '00000000-0000-0000-0000-000000000001',
-      'nom': 'Riz sauce arachide',
-      'nutriments': {'kcal100': 168},
-      'cree_par': 'ia',
+      'id': '00000000-0000-0000-0000-000000000101',
+      'nom': 'Jollof de poulet',
+      'nutriments': {'kcal100': 168, 'proteines100': 15.6},
+      'tags': ['proteines'],
+      'cree_par': 'utilisateur',
+    },
+    {
+      'id': '00000000-0000-0000-0000-000000000102',
+      'nom': 'Bowl saumon quinoa',
+      'nutriments': {'kcal100': 152, 'proteines100': 9.5},
+      'tags': ['proteines', 'rapide'],
+      'cree_par': 'utilisateur',
+    },
+    {
+      'id': '00000000-0000-0000-0000-000000000103',
+      'nom': 'Omelette épinards',
+      'nutriments': {'kcal100': 128, 'proteines100': 9.6},
+      'tags': ['rapide', 'vegetarien'],
+      'cree_par': 'utilisateur',
+    },
+    {
+      'id': '00000000-0000-0000-0000-000000000104',
+      'nom': 'Lentilles corail coco',
+      'nutriments': {'kcal100': 112, 'proteines100': 5.3},
+      'tags': ['vegetarien', 'daniel'],
+      'cree_par': 'utilisateur',
+    },
+    {
+      'id': '00000000-0000-0000-0000-000000000105',
+      'nom': 'Poulet yassa',
+      'nutriments': {'kcal100': 149, 'proteines100': 11.4},
+      'tags': ['proteines'],
+      'cree_par': 'utilisateur',
+    },
+    {
+      'id': '00000000-0000-0000-0000-000000000106',
+      'nom': 'Skyr fruits rouges',
+      'nutriments': {'kcal100': 84, 'proteines100': 8},
+      'tags': ['rapide', 'vegetarien'],
+      'cree_par': 'utilisateur',
     },
   ],
   '/v1/progression': {
-    'verdict': 'maintien_reussite',
-    'explication': 'Ta force reste stable malgré des nuits de 6 h 12 en moyenne.',
+    'verdict': 'progression',
+    'explication': 'Ta force estimée monte au rythme attendu pour ton niveau.',
+    'seancesSemaine': 4,
+    'record': {'exerciceId': 'chest-press', 'nom': 'Chest press', 'chargeKg': 60, 'reps': 8},
     'exercices': [
       {
         'nom': 'Développé couché',
         'dernier': 96.7,
-        'pctParSemaine': 0.18,
+        'pctParSemaine': 1.2,
         'points': [
-          {'e1rm': 96.1},
-          {'e1rm': 96.6},
-          {'e1rm': 96.1},
-          {'e1rm': 96.9},
-          {'e1rm': 96.3},
-          {'e1rm': 96.5},
-          {'e1rm': 96.8},
+          {'e1rm': 88},
+          {'e1rm': 89.4},
+          {'e1rm': 90.6},
+          {'e1rm': 91.9},
+          {'e1rm': 93.1},
+          {'e1rm': 94.2},
+          {'e1rm': 95.5},
           {'e1rm': 96.7},
         ],
       },
     ],
     'energie': {'moyen7j': -260, 'verdict': 'deficit', 'confiance': 'moyenne'},
     'poidsLisse': 73.8,
-    'sommeilMoyenMin': 372,
+    'sommeilMoyenMin': 430,
   },
   '/v1/jeunes/en-cours/decision': {
     'jeune': {
@@ -252,6 +290,10 @@ Future<void> _chargerPolices() async {
   await serif.load();
   final sans = FontLoader(CrescoTextes.sans)..addFont(lirePaquet('Inter[opsz,wght].ttf'));
   await sans.load();
+  final condensed = FontLoader(CrescoTextes.condensed)
+    ..addFont(lirePaquet('BarlowCondensed-Bold.ttf'))
+    ..addFont(lirePaquet('BarlowCondensed-ExtraBold.ttf'));
+  await condensed.load();
   for (final famille in ['Roboto']) {
     final loader = FontLoader(famille)
       ..addFont(lire('roboto-regular.ttf'))

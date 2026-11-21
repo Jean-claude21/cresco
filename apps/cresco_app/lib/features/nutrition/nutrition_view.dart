@@ -44,12 +44,12 @@ class NutritionViewModel extends BaseViewModel {
 
   Future<void> ajouterPortion({required double masse, String? alimentId, String? platId}) async {
     await _api.ajouterRepas({
-      'type': 'repas',
+      'type': mealOf(maintenant()).$1,
       'portions': [
         {'alimentId': ?alimentId, 'platId': ?platId, 'masse': masse},
       ],
     });
-    _snack.afficher(message: 'Repas ajouté', duration: const Duration(seconds: 2));
+    _snack.afficher(message: 'Ajouté au ${mealOf(maintenant()).$2}', duration: const Duration(seconds: 2));
     resultats = [];
     await charger();
   }
@@ -76,6 +76,22 @@ class NutritionViewModel extends BaseViewModel {
   }
 }
 
+/// Meal of the moment: API type and the French label used in "Ajouter au …".
+(String, String) mealOf(DateTime now) => switch (now.hour) {
+  < 10 => ('petit_dejeuner', 'petit-déjeuner'),
+  < 15 => ('dejeuner', 'déjeuner'),
+  < 18 => ('collation', 'goûter'),
+  _ => ('diner', 'dîner'),
+};
+
+/// Filters of "Mes plats": tag stored on the dish, and its label.
+const dishFilters = [
+  ('proteines', 'Riche en protéines'),
+  ('rapide', 'Rapide'),
+  ('vegetarien', 'Végétarien'),
+  ('daniel', 'Jeûne Daniel'),
+];
+
 class NutritionView extends StatefulWidget {
   const new({super.key});
   @override
@@ -85,6 +101,7 @@ class NutritionView extends StatefulWidget {
 class _NutritionViewState extends State<NutritionView> {
   final _recherche = TextEditingController();
   final _panier = <(Json, double)>[];
+  final _filters = <String>{};
 
   @override
   void dispose() {
@@ -122,29 +139,31 @@ class _NutritionViewState extends State<NutritionView> {
       onViewModelReady: (vm) => vm.charger(),
       builder: (context, vm, _) {
         final e = vm.energie;
+        final query = _recherche.text.trim().toLowerCase();
+        final dishes = [
+          for (final d in vm.plats)
+            if ((query.isEmpty || (d['nom']! as String).toLowerCase().contains(query)) &&
+                _filters.every(((d['tags'] as List<Object?>?) ?? const []).contains))
+              d,
+        ];
         return PageCresco(
-          titre: 'Nutrition',
+          titre: 'Mes plats',
           onRefresh: vm.charger,
+          surTitre: const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text('Nutrition', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+          ),
           enfants: [
             if (vm.erreur != null) MessageErreur(vm.erreur!, reessayer: vm.charger),
             if (e != null) _TodaySummary(energy: e),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _recherche,
-                    decoration: const InputDecoration(hintText: 'Chercher un aliment', prefixIcon: Icon(Icons.search)),
-                    onChanged: (_) => setState(() {}),
-                    onSubmitted: vm.chercher,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  style: IconButton.styleFrom(
-                    backgroundColor: context.palette.action,
-                    foregroundColor: context.palette.onAction,
-                    fixedSize: const Size(56, 56),
-                  ),
+            TextField(
+              controller: _recherche,
+              decoration: InputDecoration(
+                hintText: 'Qu’est-ce que tu as dans ton frigo ?',
+                hintStyle: TextStyle(fontSize: 15, color: context.palette.ink),
+                fillColor: context.palette.background,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
                   tooltip: 'Scanner un code-barres',
                   onPressed: () async {
                     await vm.nav.navigateTo<void>(Routes.scanView);
@@ -152,8 +171,33 @@ class _NutritionViewState extends State<NutritionView> {
                   },
                   icon: const Icon(Icons.qr_code_scanner),
                 ),
-              ],
+              ),
+              textInputAction: TextInputAction.search,
+              onChanged: (_) => setState(() {}),
+              onSubmitted: vm.chercher,
             ),
+            _Filters(
+              selected: _filters,
+              onToggle: (tag) => setState(() => _filters.contains(tag) ? _filters.remove(tag) : _filters.add(tag)),
+            ),
+            if (vm.plats.isEmpty)
+              Text(
+                'Compose un plat avec tes ingrédients, ou demande à ton assistant IA de l’ajouter via le MCP : '
+                'le moteur calcule les nutriments.',
+                style: context.mutedStyle,
+              )
+            else if (dishes.isEmpty)
+              Text('Aucun plat ne correspond. Retire un filtre ou cherche un aliment.', style: context.mutedStyle)
+            else
+              _DishGrid(
+                dishes: dishes,
+                onAdd: (d) => _portion(
+                  context,
+                  d['nom']! as String,
+                  (m) => vm.ajouterPortion(platId: d['id']! as String, masse: m),
+                ),
+              ),
+            if (vm.resultats.isNotEmpty) const Text('Aliments', style: CrescoTextes.titreCarte),
             for (final a in vm.resultats)
               CrescoCarte(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -185,12 +229,13 @@ class _NutritionViewState extends State<NutritionView> {
                   ),
                 ),
               ),
-            if (_recherche.text.length >= 2)
-              OutlinedButton.icon(
-                onPressed: () => _creerAliment(context, vm),
-                icon: const Icon(Icons.add),
-                label: const Text('Créer cet aliment'),
+            if (query.length >= 2 && vm.resultats.isEmpty)
+              OutlinedButton(
+                onPressed: () => vm.chercher(_recherche.text),
+                child: const Text('Chercher dans les aliments'),
               ),
+            if (query.length >= 2)
+              TextButton(onPressed: () => _creerAliment(context, vm), child: const Text('Créer cet aliment')),
             if (_panier.isNotEmpty)
               CrescoCarte(
                 child: Column(
@@ -206,26 +251,6 @@ class _NutritionViewState extends State<NutritionView> {
                   ],
                 ),
               ),
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text('Mes plats', style: CrescoTextes.titreCarte),
-            ),
-            if (vm.plats.isEmpty)
-              Text(
-                'Compose un plat avec tes ingrédients, ou demande à ton assistant IA de l’ajouter via le MCP : '
-                'le moteur calcule les nutriments.',
-                style: context.mutedStyle,
-              )
-            else
-              _DishGrid(
-                dishes: vm.plats,
-                onAdd: (p) => _portion(
-                  context,
-                  p['nom']! as String,
-                  (m) => vm.ajouterPortion(platId: p['id']! as String, masse: m),
-                ),
-              ),
-            if (e?['bilan'] != null) _WeekSummary(energy: e!),
             Text('Données produits : Open Food Facts (ODbL).', style: context.mutedStyle.copyWith(fontSize: 12)),
           ],
         );
@@ -233,7 +258,7 @@ class _NutritionViewState extends State<NutritionView> {
     );
   }
 
-  /// Bottom sheet "name · grams − +" with the black "Ajouter au repas" button (mockup G).
+  /// Bottom panel "name · grams − +" with the black "Ajouter au …" button (mockup G).
   Future<void> _portion(BuildContext context, String name, Future<void> Function(double grams) add) async {
     final grams = await showModalBottomSheet<double>(
       context: context,
@@ -322,38 +347,71 @@ class _TodaySummary extends StatelessWidget {
     final p = context.palette;
     final targets = energy['cibles'] as Json?;
     final day = energy['jour'] as Json? ?? const {};
-    if (targets == null || energy['ciblesSuspendues'] == true) {
-      return CrescoCarte(
-        padding: const EdgeInsets.all(14),
-        child: Text(
-          'Cibles suspendues pendant le jeûne.',
-          style: TextStyle(color: p.ink, fontWeight: FontWeight.w700),
-        ),
-      );
-    }
-    final left = (nombre(targets['kcal']) - nombre(day['kcal'])).clamp(0, 99999);
+    final text = targets == null || energy['ciblesSuspendues'] == true
+        ? 'Cibles suspendues pendant le jeûne'
+        : '${entier((nombre(targets['kcal']) - nombre(day['kcal'])).clamp(0, 99999))} kcal restantes · '
+              'protéines ${entier(day['proteines'])} / ${entier(targets['proteines'])} g';
     return DecoratedBox(
-      decoration: CrescoShape.outlined(p, fill: p.effortSoft, outline: p.effort.withValues(alpha: 0.35)),
+      decoration: CrescoShape.outlined(p, fill: p.effortSoft, outline: Colors.transparent),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: '${entier(left)} kcal',
-                style: TextStyle(color: p.onEffortSoft, fontWeight: FontWeight.w900),
-              ),
-              TextSpan(text: ' restantes · protéines ${entier(day['proteines'])} / ${entier(targets['proteines'])} g'),
-            ],
-          ),
-          style: TextStyle(color: p.ink, fontSize: 15, fontWeight: FontWeight.w600),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Text(
+          text,
+          style: TextStyle(color: p.ink, fontSize: 17, fontWeight: FontWeight.w800),
         ),
       ),
     );
   }
 }
 
-/// "Mes plats" as a two-column grid of tiles with a braise "+".
+/// The four filter buttons in a 2 × 2 grid, outlined, filled once selected.
+class _Filters extends StatelessWidget {
+  const new({required this.selected, required this.onToggle});
+  final Set<String> selected;
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    Widget button(String tag, String label) {
+      final on = selected.contains(tag);
+      return Expanded(
+        child: Semantics(
+          selected: on,
+          child: OutlinedButton(
+            key: ValueKey('filter-$tag'),
+            onPressed: () => onToggle(tag),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 40),
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              backgroundColor: on ? p.action : null,
+              foregroundColor: on ? p.onAction : p.ink,
+              textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            child: FittedBox(child: Text(label)),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        for (var r = 0; r < 2; r++) ...[
+          if (r > 0) const SizedBox(height: 8),
+          Row(
+            children: [
+              button(dishFilters[r * 2].$1, dishFilters[r * 2].$2),
+              const SizedBox(width: 12),
+              button(dishFilters[r * 2 + 1].$1, dishFilters[r * 2 + 1].$2),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// "Mes plats" as a two-column grid: photo, braise "+", name, kcal and protein per 100 g.
 class _DishGrid extends StatelessWidget {
   const new({required this.dishes, required this.onAdd});
   final List<Json> dishes;
@@ -365,10 +423,10 @@ class _DishGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final columns = box.maxWidth >= 320 && MediaQuery.textScalerOf(context).scale(10) <= 11.5 ? 2 : 1;
-        final width = (box.maxWidth - (columns - 1) * 10) / columns;
+        final width = (box.maxWidth - (columns - 1) * 12) / columns;
         return Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: 12,
+          runSpacing: 12,
           children: [
             for (final d in dishes)
               SizedBox(
@@ -376,44 +434,54 @@ class _DishGrid extends StatelessWidget {
                 child: Material(
                   color: p.surface,
                   shape: CrescoShape.rectangle(p.line),
+                  clipBehavior: Clip.antiAlias,
                   child: InkWell(
-                    customBorder: CrescoShape.rectangle(),
                     onTap: () => onAdd(d),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const ShortcutIconImage(ShortcutIcon.repas, size: 48),
-                              const Spacer(),
-                              Semantics(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
+                          children: [
+                            DishPhoto(d['nom']! as String, height: width * 0.62),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Semantics(
                                 button: true,
-                                label: 'Manger une portion de ${d['nom']}',
+                                label: 'Ajouter ${d['nom']}',
                                 child: Container(
-                                  width: 32,
-                                  height: 32,
+                                  width: 34,
+                                  height: 34,
                                   decoration: BoxDecoration(color: p.effort, borderRadius: CrescoShape.borderRadius),
-                                  child: Icon(Icons.add, color: p.onEffort, size: 20),
+                                  child: Icon(Icons.add, color: p.onEffort, size: 22),
                                 ),
                               ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                d['nom']! as String,
+                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                [
+                                  '${entier((d['nutriments']! as Json)['kcal100'])} kcal',
+                                  if ((d['nutriments']! as Json)['proteines100'] is num)
+                                    '${decimal((d['nutriments']! as Json)['proteines100'])} g prot.',
+                                ].join(' · '),
+                                style: context.mutedStyle.copyWith(fontSize: 15),
+                              ),
+                              Text('pour 100 g', style: context.mutedStyle.copyWith(fontSize: 12)),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(d['nom']! as String, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
-                          Text(
-                            [
-                              '${entier((d['nutriments']! as Json)['kcal100'])} kcal / 100 g',
-                              if ((d['nutriments']! as Json)['proteines100'] is num)
-                                '${decimal((d['nutriments']! as Json)['proteines100'])} g prot.',
-                              if (d['cree_par'] == 'ia') 'ajouté par ton IA',
-                            ].join(' · '),
-                            style: context.mutedStyle.copyWith(fontSize: 13),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -425,49 +493,7 @@ class _DishGrid extends StatelessWidget {
   }
 }
 
-/// Seven-day energy summary, estimated by the engine (C-ENERGIE).
-class _WeekSummary extends StatelessWidget {
-  const new({required this.energy});
-  final Json energy;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    final summary = energy['bilan']! as Json;
-    return CrescoCarte(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Bilan estimé · 7 jours', style: context.mutedStyle.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              ChiffreUnite(signe(nombre(summary['moyen7j']).round()), 'kcal/j', taille: 34),
-              Pastille('Confiance ${summary['confiance'] ?? ''}', fond: p.warningSoft, texteCouleur: p.onWarningSoft),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(switch (summary['verdict']) {
-            'deficit' => 'Déficit',
-            'surplus' => 'Surplus',
-            _ => 'Maintien',
-          }, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-          Text(
-            'Dépense ${energy['source'] == 'adaptatif' ? 'mesurée' : 'estimée'} : ${entier(energy['tdee'])} kcal/j'
-            '${energy['sousSaisie'] == true ? ' · saisie probablement incomplète' : ''}',
-            style: context.mutedStyle,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Grams of one portion, by steps of 25 g.
+/// Grams of one portion, by steps of 25 g, then "Ajouter au …" for the meal of the moment.
 class _PortionSheet extends StatefulWidget {
   const new({required this.name});
   final String name;
@@ -491,7 +517,15 @@ class _PortionSheetState extends State<_PortionSheet> {
           children: [
             Row(
               children: [
-                Expanded(child: Text(widget.name, style: CrescoTextes.titreCarte.copyWith(fontSize: 22))),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.name, style: CrescoTextes.titreCarte.copyWith(fontSize: 22)),
+                      Text('1 portion', style: TextStyle(color: p.ink, fontSize: 16)),
+                    ],
+                  ),
+                ),
                 DecoratedBox(
                   decoration: CrescoShape.outlined(p, fill: p.background, outline: p.ink),
                   child: Row(
@@ -502,7 +536,7 @@ class _PortionSheetState extends State<_PortionSheet> {
                         onPressed: grams > 25 ? () => setState(() => grams -= 25) : null,
                         icon: const Icon(Icons.remove),
                       ),
-                      Text('${entier(grams)} g', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      Text('${entier(grams)} g', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
                       IconButton(
                         tooltip: 'Plus 25 g',
                         onPressed: grams < 1500 ? () => setState(() => grams += 25) : null,
@@ -514,7 +548,10 @@ class _PortionSheetState extends State<_PortionSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            FilledButton(onPressed: () => Navigator.pop(context, grams), child: const Text('Ajouter au repas')),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, grams),
+              child: Text('Ajouter au ${mealOf(maintenant()).$2}'),
+            ),
           ],
         ),
       ),

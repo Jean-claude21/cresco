@@ -16,12 +16,12 @@
 | `/gym` | `GET` salle principale, équipement coché, catalogue et listes proposées par chaîne ; `PUT` enregistre la salle et son équipement |
 | `/modeles-seance` | lire, créer, `PUT /:id`, `DELETE /:id`, `POST /modeles-seance/valider` (contrôles de sécurité) ; la réponse liste `unavailableAtGym` |
 | `/seances` | lire, créer (séance réalisée), `GET /seances/du-jour` (séance ajustée ; `?modele=<id>` pour une séance choisie) |
-| `/aliments`, `/plats` | rechercher (texte, code-barres), créer un plat à partir d'ingrédients |
+| `/aliments`, `/plats` | rechercher (texte, code-barres), créer un plat à partir d'ingrédients (étiquettes facultatives `tags`), `PUT /plats/:id/tags` |
 | `/repas` | CRUD |
 | `/nuits`, `/mesures`, `/ressentis` | lire, créer (import ou saisie) |
 | `/jeunes` | démarrer, terminer, ajouter un événement, `GET /jeunes/en-cours/decision` |
 | `/calculs/{regle}` | exécuter une règle sur des entrées (ex. `C-PERF-2`) : le moteur en libre-service |
-| `/progression` | tendances, verdict hebdo, bilan énergie |
+| `/progression` | tendances, verdict hebdo, séances de la semaine (`seancesSemaine`), dernier record (`record`), bilan énergie |
 | `/muscles?jours=7` | séries efficaces par muscle (C-PERF-5) et repère hebdomadaire de 10 séries |
 | `/regles`, `/sources` | lire le catalogue des règles (version, paramètres, sources) et la bibliothèque de sources |
 
@@ -44,6 +44,7 @@ Exposé par le backend, avec les mêmes permissions OAuth. Chaque outil appelle 
 | `muscle_volume` | Séries efficaces par muscle sur 7 jours (C-PERF-5) |
 | `get_gym`, `set_gym` | Lire et enregistrer « Ma salle » : l’IA ne programme que le matériel disponible |
 | `chercher_aliment`, `creer_plat`, `ajouter_repas` | Nutrition, y compris « Mes plats » : l'IA fournit les ingrédients et les masses, le moteur calcule |
+| `tag_dish` | Étiquettes d’un plat pour les filtres (proteines, rapide, vegetarien, daniel) |
 | `obtenir_bilan_energie` | Déficit, maintien ou surplus avec confiance |
 | `obtenir_sommeil`, `obtenir_forme` | Nuits, score de forme et composantes |
 | `demarrer_jeune`, `terminer_jeune`, `noter_jeune`, `decision_jeune` | Module jeûne |

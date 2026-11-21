@@ -35,7 +35,7 @@ Clair et direct au quotidien, électrique quand on s’entraîne.
 
 - **Coins de 4 pt** et **contour fin de 1,5 pt** sur les boutons, cartes, champs, pastilles, sélecteurs (Face/Dos, RIR, portions), lignes de liste, tuiles, vignettes photo et panneaux qui montent du bas.
 - Les cartes noires pleines n’ont pas de contour en mode clair.
-- **Boutons** : 48 pt de haut ; libellé de 17 pt en demi-gras, avec une majuscule seulement au premier mot ; aucune ombre. Quand deux boutons vont ensemble, ils sont côte à côte et de même largeur.
+- **Boutons** : 48 pt de haut ; libellé de 17 pt en graisse normale (comme Picnic), avec une majuscule seulement au premier mot ; aucune ombre. Quand deux boutons vont ensemble, ils sont côte à côte et de même largeur.
   - **Principal** : plein noir (`FilledButton`).
   - **Effort** : plein braise (`effortButtonStyle`).
   - **Secondaire** : contour noir (`OutlinedButton`), ou contour braise sur l’écran de séance.
@@ -44,7 +44,7 @@ Clair et direct au quotidien, électrique quand on s’entraîne.
 ## Typographie
 
 - **Inter**, embarquée, pour tout. Titres en 900 avec un interlettrage serré (34 pt pour une page, 24 pt pour une carte) ; chiffres d’affiche en 900, chiffres tabulaires.
-- Les maquettes utilisent une police **condensée** pour les chiffres. Aucune n’est embarquée pour l’instant : Inter très grasse et serrée la remplace. Barlow Condensed (OFL) est la candidate si on veut s’en rapprocher.
+- **Barlow Condensed** (OFL, embarquée, graisses 700 et 800) pour les chiffres d’affiche (`CrescoTextes.chiffre`) : durée du jeûne, heures, charges, poids, kcal.
 - **Gelasio** (serif) reste réservée à l’intention et au verset du module foi.
 - Les unités restent sur la ligne du nombre, en plus petit et en gris. Toutes les tailles suivent le réglage du système ; à 130 %, les grilles passent sur une colonne et la page défile.
 
@@ -90,11 +90,11 @@ Tous les médias viennent de ChatGPT (via Codex). Leur fabrication, leur inventa
 | Entraînement (Mes séances) | Ma salle ; carte noire du jour ; liste avec vignettes et bouton lecture ; intervalles |
 | Mon corps | Face/Dos ; corps et liste des muscles visibles ; légende ; fiche du muscle choisi |
 | Jeûne | Cadran glacier, début et fin prévue, phase estimée avec la frise des phases (`J-PHASE`), décision du jour, « + 250 ml d’eau » (glacier) et « Signaler un symptôme » côte à côte, intention et verset, « Terminer le jeûne » |
-| Nutrition | Reste du jour (kcal, protéines), recherche et scan, grille « Mes plats » avec « + » braise, panneau de portion (grammes − +, « Ajouter au repas »), bilan estimé sur 7 jours |
-| Progrès | Verdict de la semaine (flèche braise quand tu progresses), force estimée et sa courbe en braise, bilan énergie, poids lissé, sommeil moyen, « Comment c’est calculé » |
+| Nutrition (« Mes plats ») | Reste du jour (kcal, protéines), recherche « Qu’est-ce que tu as dans ton frigo ? » avec le scan, quatre filtres 2 × 2, grille de plats en photos avec « + » braise, panneau de portion (grammes − +, « Ajouter au déjeuner » selon l’heure) |
+| Progrès | Verdict de la semaine (flèche braise quand tu progresses, séances de la semaine, sommeil moyen), force estimée sur 8 semaines et sa courbe en braise (valeurs de départ et d’arrivée, S1 à S8), record, bilan énergie, poids lissé, « Comment c’est calculé » |
 | Barre d’onglets | Aujourd’hui, Entraînement, « + » rond noir, Nutrition, Progrès ; onglet actif en braise |
 
-Les plats n’ont pas encore de photo : la grille montre l’icône 3D du bol. Une photo par plat se générera avec ChatGPT ([medias](medias/README.md)).
+Les photos de plats viennent de neuf familles générées avec ChatGPT ([medias/plats](medias/plats/NOTES.md)) ; l’app choisit la famille d’après le nom du plat. Les filtres de « Mes plats » lisent les étiquettes enregistrées sur le plat (`tags` : proteines, rapide, vegetarien, daniel), posées par l’utilisateur ou son IA ; rien n’est deviné.
 
 ## Mouvement
 

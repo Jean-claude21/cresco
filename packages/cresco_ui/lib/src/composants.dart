@@ -467,3 +467,104 @@ class LigneMesure extends StatelessWidget {
     );
   }
 }
+
+/// Strength curve of mockup G: line and points in [color], first value under the first point,
+/// last value above the last one, a baseline labelled S1 and S8 (the last 8 weeks).
+class ProgressChart extends StatelessWidget {
+  const new({required this.values, required this.unit, required this.color, super.key, this.height = 210});
+  final List<double> values;
+  final String unit;
+  final Color color;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final label = TextStyle(
+      fontFamily: CrescoTextes.sans,
+      fontSize: 15,
+      fontWeight: FontWeight.w800,
+      color: p.ink,
+    );
+    return Semantics(
+      label: values.length < 2
+          ? 'Pas encore assez de séances pour une courbe'
+          : 'Courbe de ${_fmt(values.first)} à ${_fmt(values.last)} $unit',
+      child: SizedBox(
+        height: height,
+        width: double.infinity,
+        child: CustomPaint(painter: _ProgressPainter(values, unit, color, p, label)),
+      ),
+    );
+  }
+}
+
+String _fmt(double v) {
+  final t = v.toStringAsFixed(1);
+  return (t.endsWith('.0') ? t.substring(0, t.length - 2) : t).replaceAll('.', ',');
+}
+
+class _ProgressPainter extends CustomPainter {
+  new(this.v, this.unit, this.color, this.p, this.label);
+  final List<double> v;
+  final String unit;
+  final Color color;
+  final CrescoPalette p;
+  final TextStyle label;
+
+  TextPainter _text(String s, {Color? c}) =>
+      TextPainter(text: TextSpan(text: s, style: label.copyWith(color: c)), textDirection: TextDirection.ltr)..layout();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const axisSpace = 30.0;
+    const top = 28.0;
+    final bottom = size.height - axisSpace - 26;
+    canvas.drawLine(
+      Offset(0, size.height - axisSpace),
+      Offset(size.width, size.height - axisSpace),
+      Paint()
+        ..color = p.muted.withValues(alpha: 0.5)
+        ..strokeWidth = 1.2,
+    );
+    _text('S1').paint(canvas, Offset(0, size.height - axisSpace + 6));
+    // The curve always spans the last 8 weeks (C-PROG-1 points).
+    final end = _text('S8');
+    end.paint(canvas, Offset(size.width - end.width, size.height - axisSpace + 6));
+    if (v.length < 2) return;
+    final mn = v.reduce(math.min);
+    final mx = v.reduce(math.max);
+    final span = mx - mn == 0 ? 1 : mx - mn;
+    Offset pt(int i) => Offset(10 + i / (v.length - 1) * (size.width - 20), bottom - (v[i] - mn) / span * (bottom - top));
+    final line = Path()..moveTo(pt(0).dx, pt(0).dy);
+    for (var i = 1; i < v.length; i++) {
+      line.lineTo(pt(i).dx, pt(i).dy);
+    }
+    canvas.drawPath(
+      line,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.6
+        ..strokeJoin = StrokeJoin.round,
+    );
+    for (var i = 0; i < v.length; i++) {
+      canvas
+        ..drawCircle(pt(i), 6, Paint()..color = p.surface)
+        ..drawCircle(
+          pt(i),
+          6,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.2,
+        );
+    }
+    _text('${_fmt(v.first)} $unit').paint(canvas, Offset(0, pt(0).dy + 10));
+    final last = _text('${_fmt(v.last)} $unit');
+    last.paint(canvas, Offset(size.width - last.width, pt(v.length - 1).dy - last.height - 10));
+  }
+
+  @override
+  bool shouldRepaint(covariant _ProgressPainter old) => old.v != v || old.color != color || old.p != p;
+}

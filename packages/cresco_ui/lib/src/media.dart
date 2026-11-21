@@ -62,6 +62,47 @@ class ShortcutIconImage extends StatelessWidget {
   );
 }
 
+/// Dish families of "Mes plats", each with a photo generated with ChatGPT (docs/design/medias/plats).
+/// A dish gets the photo of the first family whose keyword appears in its name.
+enum DishFamily {
+  rizPoulet('riz-poulet', ['jollof', 'yassa', 'mafé', 'mafe', 'riz', 'poulet', 'thiép', 'thieb']),
+  poisson('poisson', ['saumon', 'poisson', 'thon', 'cabillaud', 'sardine', 'crevette']),
+  oeufs('oeufs', ['omelette', 'oeuf', 'œuf', 'oeufs', 'œufs']),
+  legumineuses('legumineuses', ['lentille', 'dal', 'haricot', 'pois chiche', 'niébé', 'niebe', 'houmous', 'arachide']),
+  bowl('bowl', ['bowl', 'salade', 'quinoa', 'buddha']),
+  yaourtFruits('yaourt-fruits', ['skyr', 'yaourt', 'fromage blanc', 'fruit', 'porridge', 'avoine', 'granola']),
+  pates('pates', ['pâte', 'pate', 'spaghetti', 'penne', 'lasagne', 'nouille']),
+  soupe('soupe', ['soupe', 'velouté', 'veloute', 'bouillon', 'potage']),
+  assiette('assiette', []);
+
+  new(this.file, this.keywords);
+  final String file;
+  final List<String> keywords;
+
+  String get asset => 'assets/dishes/$file.jpg';
+
+  static DishFamily of(String dishName) {
+    final name = dishName.toLowerCase();
+    return values.firstWhere((f) => f.keywords.any(name.contains), orElse: () => assiette);
+  }
+}
+
+class DishPhoto extends StatelessWidget {
+  const new(this.dishName, {super.key, this.height});
+  final String dishName;
+  final double? height;
+
+  @override
+  Widget build(BuildContext context) => Image.asset(
+    DishFamily.of(dishName).asset,
+    package: _package,
+    height: height,
+    width: double.infinity,
+    fit: BoxFit.cover,
+    excludeFromSemantics: true,
+  );
+}
+
 /// Black-and-white gym photos.
 enum CrescoPhoto {
   seanceDuJour('seance-du-jour'),

@@ -133,128 +133,134 @@ class JeuneView extends StatelessWidget {
     final code = d['decision']! as String;
     final debut = DateTime.parse(j['debut']! as String).toLocal();
     final fin = DateTime.tryParse(j['fin_prevue'] as String? ?? '')?.toLocal();
+    final planned = fin == null ? null : fin.difference(debut).inMinutes / 60;
     final h = vm.heures;
     final heure = DateFormat('HH:mm', 'fr_FR');
     final intention = (j['intention'] as String?) ?? '';
-    final decisionText = switch (code) {
-      'ARRET' => 'Pas d’effort aujourd’hui',
-      'NORMALE' => 'Séance normale',
-      'REPOS' || 'REPOS_ACTIF' => 'Marche, mobilité, prière',
-      _ => 'Séance adaptée : volume ${signe((nombre(d['volume']) * 100).round())} %',
+    // "18:6" for an intermittent fast planned within a day, the type otherwise.
+    final badge = j['type'] == 'intermittent' && planned != null && planned <= 23.5
+        ? '${planned.round()}:${24 - planned.round()}'
+        : libellesTypeJeune[j['type']] ?? '';
+    final decision = switch (code) {
+      'ARRET' => 'pas d’effort aujourd’hui',
+      'NORMALE' => 'séance normale',
+      'REPOS' || 'REPOS_ACTIF' => 'marche, mobilité, prière',
+      _ => 'séance adaptée, volume ${signe((nombre(d['volume']) * 100).round())} %, RIR 2 ou plus',
     };
-    final decisionDetail = switch (d['alerte']) {
+    final alert = switch (d['alerte']) {
       'symptome' => 'Symptôme signalé : pas d’effort. Pense à rompre le jeûne.',
       'avis_medical' => 'Au-delà de 72 h : avis médical recommandé.',
       'limite_jeune_sec' => 'Jeûne sec au-delà de 24 h : à interrompre.',
-      _ =>
-        code == 'ADAPTEE'
-            ? 'RIR de 2 ou plus, pas d’échec, cardio doux ≤ 45 min (règle J-DECISION).'
-            : 'Règle J-DECISION.',
+      _ => null,
     };
     return [
       Row(
         children: [
           const Expanded(child: Text('Jeûne', style: CrescoTextes.titrePage)),
-          Pastille(libellesTypeJeune[j['type']] ?? '', fond: p.surface, texteCouleur: p.ink),
+          Pastille(badge, fond: p.surface, texteCouleur: p.ink),
         ],
       ),
-      const SizedBox(height: 4),
-      Text('Jeûne en cours', style: context.mutedStyle.copyWith(fontSize: 15)),
-      const SizedBox(height: 12),
+      const SizedBox(height: 16),
       Center(
-        child: CadranJeune(
-          heuresEcoulees: h,
-          heuresPrevues: fin == null ? null : fin.difference(debut).inMinutes / 60,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(duree(h * 60), style: CrescoTextes.chiffre.copyWith(fontSize: 44)),
-              Text('écoulées', style: context.mutedStyle.copyWith(fontSize: 15)),
-            ],
+        child: ScoreRing(
+          fraction: planned == null || planned == 0 ? (h % 24) / 24 : h / planned,
+          size: 230,
+          stroke: 18,
+          color: p.rest,
+          track: p.restSoft,
+          child: Semantics(
+            label: '${duree(h * 60)} écoulées',
+            child: ExcludeSemantics(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(duree(h * 60), style: CrescoTextes.chiffre.copyWith(fontSize: 64)),
+                  Text('écoulées', style: TextStyle(color: p.ink, fontSize: 18)),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: 14),
       Row(
         children: [
           Expanded(child: _Borne('Début', heure.format(debut))),
-          Container(width: CrescoShape.border, height: 44, color: p.line),
           Expanded(child: _Borne('Fin prévue', fin == null ? '—' : heure.format(fin))),
         ],
       ),
       const SizedBox(height: 14),
-      CrescoCarte(
-        padding: const EdgeInsets.all(16),
+      _SoftCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Phase estimée', style: context.mutedStyle),
-            const SizedBox(height: 2),
-            Text(libellesPhase[j['phase']] ?? '', style: CrescoTextes.titreCarte.copyWith(fontSize: 22)),
+            Text('Phase estimée', style: TextStyle(color: p.ink, fontSize: 16, fontWeight: FontWeight.w500)),
+            Text(libellesPhase[j['phase']] ?? '', style: CrescoTextes.titreCarte.copyWith(fontSize: 24)),
             const SizedBox(height: 14),
             _Phases(current: j['phase'] as String?),
           ],
         ),
       ),
       const SizedBox(height: 12),
-      CrescoCarte(
-        padding: const EdgeInsets.all(16),
+      _SoftCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Décision du jour', style: context.mutedStyle),
-            const SizedBox(height: 2),
+            const Text('Décision du jour :', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
             Text(
-              decisionText,
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: code == 'ARRET' ? p.danger : p.ink),
+              decision,
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: code == 'ARRET' ? p.danger : p.ink),
             ),
-            const SizedBox(height: 4),
-            Text(decisionDetail, style: context.mutedStyle),
+            if (alert != null) ...[
+              const SizedBox(height: 6),
+              Text(alert, style: TextStyle(color: p.danger, fontWeight: FontWeight.w600)),
+            ],
           ],
         ),
       ),
-      const SizedBox(height: 12),
-      Row(
-        children: [
-          if (j['type'] != 'sec') ...[
+      const SizedBox(height: 14),
+      IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (j['type'] != 'sec') ...[
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => vm.noter('eau', '250'),
+                  style: FilledButton.styleFrom(backgroundColor: p.rest, foregroundColor: p.onRest),
+                  child: const Text('+ 250 ml d’eau', textAlign: TextAlign.center),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
             Expanded(
-              child: FilledButton.icon(
-                onPressed: () => vm.noter('eau', '250'),
-                style: FilledButton.styleFrom(backgroundColor: p.rest, foregroundColor: p.onRest),
-                icon: const Icon(Icons.water_drop_outlined),
-                label: const FittedBox(child: Text('+ 250 ml d’eau')),
+              child: OutlinedButton(
+                onPressed: () => _signaler(context, vm),
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6)),
+                child: const Text('Signaler un symptôme', textAlign: TextAlign.center),
               ),
             ),
-            const SizedBox(width: 12),
           ],
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () => _signaler(context, vm),
-              child: const FittedBox(child: Text('Signaler un symptôme')),
-            ),
-          ),
-        ],
+        ),
       ),
       if (intention.isNotEmpty || vm.moduleFoi) ...[
-        const SizedBox(height: 12),
-        CrescoCarte(
-          padding: const EdgeInsets.all(16),
+        const SizedBox(height: 14),
+        _SoftCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              const Row(
                 children: [
-                  const Icon(Icons.lock_outline, size: 18),
-                  const SizedBox(width: 8),
-                  Text('Intention privée', style: context.mutedStyle.copyWith(fontWeight: FontWeight.w700)),
+                  Icon(Icons.lock_outline, size: 22),
+                  SizedBox(width: 8),
+                  Text('Intention privée', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(intention.isEmpty ? '—' : intention, style: CrescoTextes.intention.copyWith(fontSize: 20)),
+              const SizedBox(height: 6),
+              if (intention.isNotEmpty) Text(intention, style: const TextStyle(fontSize: 16)),
               if (vm.moduleFoi) ...[
-                Divider(height: 24, color: p.line),
-                Text(versets['jeune']!.$1, style: context.verseStyle),
-                Text(versets['jeune']!.$2, style: context.mutedStyle),
+                Text(versets['jeune']!.$1, style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
+                Text(versets['jeune']!.$2, style: const TextStyle(fontSize: 15)),
               ],
             ],
           ),
@@ -280,21 +286,25 @@ class JeuneView extends StatelessWidget {
   }
 }
 
-/// Fasting phases from J-PHASE, the current one highlighted in glacier blue.
+/// Fasting phases from J-PHASE as in the mockup: grey line, outlined circles, the current one in glacier.
 class _Phases extends StatelessWidget {
   const new({required this.current});
   final String? current;
 
-  static const _order = ['post_repas', 'glycogene', 'bascule', 'cetose'];
+  static const _labels = {
+    'post_repas': 'digestion',
+    'glycogene': 'glycogène',
+    'bascule': 'bascule',
+    'cetose': 'cétose',
+    'prolonge': 'prolongé',
+  };
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final phases = [..._order, if (current == 'prolonge') 'prolonge'];
-    final index = phases.indexOf(current ?? '');
-    Color segment({required bool on}) => on ? p.rest : p.line;
+    final phases = ['post_repas', 'glycogene', 'bascule', 'cetose', if (current == 'prolonge') 'prolonge'];
     return Semantics(
-      label: 'Phases du jeûne : ${phases.map((x) => libellesPhase[x]).join(', ')}',
+      label: 'Phases du jeûne : ${phases.map((x) => _labels[x]).join(', ')}',
       excludeSemantics: true,
       child: Row(
         children: [
@@ -304,37 +314,23 @@ class _Phases extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(
-                        child: Container(height: 2, color: i == 0 ? Colors.transparent : segment(on: i <= index)),
-                      ),
+                      Expanded(child: Container(height: 1.5, color: i == 0 ? Colors.transparent : p.muted)),
                       Container(
-                        width: 14,
-                        height: 14,
+                        width: 16,
+                        height: 16,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: i == index ? p.rest : (i < index ? p.ink : p.background),
-                          border: Border.all(color: i == index ? p.rest : (i < index ? p.ink : p.line), width: 2),
+                          color: phase == current ? p.rest : p.background,
+                          border: Border.all(color: phase == current ? p.rest : p.muted, width: 1.5),
                         ),
                       ),
                       Expanded(
-                        child: Container(
-                          height: 2,
-                          color: i == phases.length - 1 ? Colors.transparent : segment(on: i < index),
-                        ),
+                        child: Container(height: 1.5, color: i == phases.length - 1 ? Colors.transparent : p.muted),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  FittedBox(
-                    child: Text(
-                      (libellesPhase[phase] ?? '').split(' ').first,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: i == index ? FontWeight.w800 : FontWeight.w500,
-                        color: i == index ? p.onRestSoft : p.muted,
-                      ),
-                    ),
-                  ),
+                  FittedBox(child: Text(_labels[phase]!, style: TextStyle(fontSize: 14, color: p.ink))),
                 ],
               ),
             ),
@@ -342,6 +338,18 @@ class _Phases extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Light grey card of the fasting screen.
+class _SoftCard extends StatelessWidget {
+  const new({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: CrescoShape.outlined(context.palette),
+    child: Padding(padding: const EdgeInsets.all(16), child: child),
+  );
 }
 
 class _Borne extends StatelessWidget {
@@ -352,8 +360,8 @@ class _Borne extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      Text(libelle, style: context.mutedStyle),
-      Text(valeur, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
+      Text(libelle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+      Text(valeur, style: CrescoTextes.chiffre.copyWith(fontSize: 48)),
     ],
   );
 }

@@ -57,14 +57,15 @@ abstract final class CrescoTextes {
     letterSpacing: -0.6,
   );
 
-  /// Poster numbers (loads, timers, scores): heavy and tight. A condensed face would be closer
-  /// to the mockups; none is embedded yet (docs/design/DESIGN.md).
+  /// Barlow Condensed (OFL, embedded in cresco_ui), for poster numbers.
+  static const condensed = 'packages/cresco_ui/BarlowCondensed';
+
+  /// Poster numbers (loads, timers, scores, times): condensed and extra bold, as in the mockups.
   static const chiffre = TextStyle(
-    fontFamily: sans,
+    fontFamily: condensed,
     fontSize: 46,
-    fontWeight: FontWeight.w900,
+    fontWeight: FontWeight.w800,
     height: 1,
-    letterSpacing: -1.5,
     fontFeatures: [FontFeature.tabularFigures()],
   );
   static const corps = TextStyle(fontSize: 16, height: 1.35);
@@ -109,7 +110,8 @@ ThemeData crescoTheme({String? fontFamily, Brightness brightness = Brightness.li
   OutlineInputBorder field(Color color) => OutlineInputBorder(
     borderSide: BorderSide(color: color, width: CrescoShape.border),
   );
-  final label = TextStyle(fontFamily: family, fontSize: 17, fontWeight: FontWeight.w600);
+  // Picnic-style labels: regular weight, sentence case.
+  final label = TextStyle(fontFamily: family, fontSize: 17, fontWeight: FontWeight.w500);
   const controlSize = Size.fromHeight(CrescoShape.controlHeight);
   return base.copyWith(
     textTheme: base.textTheme.apply(bodyColor: p.ink, displayColor: p.ink),

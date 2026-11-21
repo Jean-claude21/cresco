@@ -163,7 +163,7 @@ void main() {
     await toucher(t, onglet('Aujourd’hui'));
     await toucher(t, find.text('Suivi du jeûne'), defiler: true);
     await toucher(t, find.text('Commencer le jeûne'));
-    await attendre(t, find.text('Jeûne en cours'));
+    await attendre(t, find.text('écoulées'));
     expect(find.text('Phase estimée'), findsOneWidget);
     expect(find.text('Digestion'), findsWidgets);
     await toucher(t, find.text('Terminer le jeûne'), defiler: true);
@@ -175,7 +175,7 @@ void main() {
     await toucher(t, onglet('Nutrition'));
     await attendre(t, find.textContaining('kcal', findRichText: true));
     await attendre(t, find.text('Mes plats'), defiler: true);
-    await attendre(t, find.text('Bilan estimé · 7 jours'), defiler: true);
+    expect(find.text('Végétarien'), findsOneWidget);
 
     // ---------------------------------------------------------------- Progrès : la séance compte
     await toucher(t, onglet('Progrès'));
