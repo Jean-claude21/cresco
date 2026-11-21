@@ -44,16 +44,27 @@ jobs:
       - run: pnpm build
 
   flutter:
-    if: hashFiles('pubspec.yaml') != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: kuhnroyal/flutter-fvm-config-action/setup@v3
-      - run: dart pub global activate melos
+      # Version de Flutter lue dans .fvmrc (comme dym).
+      - id: fvm
+        run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.flutter }}
+          cache: true
       - run: flutter pub get
-      - run: melos run analyze
-      - run: melos run test
+      - name: Analyse
+        run: dart analyze --fatal-infos packages apps
+      - name: Moteur Dart (engine-spec)
+        working-directory: packages/cresco_engine
+        run: dart test
+      # Les captures de contrôle dépendent du rendu des polices de la machine : vérifiées en local.
+      - name: App
+        working-directory: apps/cresco_app
+        run: flutter test --exclude-tags golden
 
   secrets:
     runs-on: ubuntu-latest
