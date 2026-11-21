@@ -1,0 +1,10 @@
+# Version finale G, partie 2
+
+Lis d’abord **../G-STYLE.md** et applique-le à la lettre (surtout les boutons façon Picnic). Ne fais PAS les 4 écrans du brief commun : produis seulement ces 4 écrans.
+
+5. **`05-jeune.png`** : Jeûne 18:6 ; grand anneau bleu glacier « 17 h 30 écoulées » ; début 20:00, fin prévue 14:00 ; phase estimée « Bascule métabolique » avec frise digestion → glycogène → bascule → cétose ; « Décision du jour : séance adaptée, volume −25 %, RIR 2 ou plus » ; deux boutons côte à côte « + 250 ml d’eau » (bleu glacier plein) et « Signaler un symptôme » (contour noir) ; intention privée « Prendre un moment de silence. » et verset discret « Ton Père, qui voit dans le secret, te le rendra. » Matthieu 6,18 ; bouton contour « Terminer le jeûne ».
+6. **`06-mes-seances.png`** : carte « Ma salle · Basic-Fit Bastille · 13 équipements » ; carte noire « Aujourd’hui · PEC & épaules » avec bouton braise rectangulaire « Démarrer la séance » ; liste « Mes séances » : PEC & épaules (6 exercices · 22 séries), Jambes (5 · 18), Dos & biceps (6 · 20, « créée par ton IA »), chacune avec vignette photo et bouton lecture ; carte « Intervalles sur tapis · 6 × 1 min à 12 km/h » ; deux boutons en bas côte à côte « Demander à mon IA » (contour) et « Nouvelle séance » (noir).
+7. **`07-mes-plats.png`** : comme la planche F (640 kcal restantes · protéines 94 / 150 g ; recherche « Qu’est-ce que tu as dans ton frigo ? » ; filtres **rectangulaires** Riche en protéines, Rapide, Végétarien, Jeûne Daniel ; grille de 6 plats en photos avec kcal et protéines et bouton « + » ; panneau du bas « Jollof de poulet · 1 portion » avec sélecteur − 1 + rectangulaire et bouton noir rectangulaire « Ajouter au déjeuner »).
+8. **`08-progres.png`** : verdict « Tu progresses » (4 séances sur 5, sommeil moyen 7 h 10) ; courbe e1RM développé couché de 88 à 96,7 kg sur 8 semaines, « +1,2 % / semaine » ; record « 60 kg × 8 au chest press » ; bilan énergie « déficit estimé −260 kcal/j, confiance moyenne » ; poids lissé 73,8 kg ; bouton contour « Comment c’est calculé ».
+
+DIRECTION.md : liste les écrans et, pour chacun, les boutons utilisés (principal, effort, secondaire).

@@ -1,0 +1,10 @@
+# Version finale G, partie 1
+
+Lis d’abord **../G-STYLE.md** et applique-le à la lettre (surtout les boutons façon Picnic). Ne fais PAS les 4 écrans du brief commun : produis seulement ces 4 écrans.
+
+1. **`01-bienvenue.png`** : comme la planche F (coach qui salue devant banc, haltère, gourde, plante ; « Bienvenue sur Cresco », « Ta séance du jour, adaptée à ta forme. », sélecteur « FR » en haut à droite), avec en bas **deux boutons rectangulaires côte à côte** : « Se connecter » (contour noir 1,5 pt) et « Créer un compte » (noir plein).
+2. **`02-aujourdhui.png`** : Bonjour, samedi 21 novembre, série 12 jours ; bandeau des jours (S cerclé) ; tuiles Séance, Repas, Jeûne, Sommeil ; forme du jour 68/100 (sommeil 6 h 05, VFC 42 ms, ressenti 3/5, « Comment c’est calculé ») ; carte noire « Séance du jour · PEC & épaules · 6 exercices · 52 min · volume −20 % après une nuit courte » avec **un seul** bouton braise rectangulaire « Démarrer la séance » ; 640 kcal restantes, protéines 94 / 150 g (barre noire) ; « Jeûne en cours 14 h 20 » ; barre d’onglets.
+3. **`03-seance.png`** (sombre) : Chest press, machine Basic-Fit, photo noir et blanc ; boutons secondaires « Animation » et « Ma vidéo » côte à côte (contour) ; série 2 sur 4 ; **55 kg × 10**, RIR visé 2 ; RIR réel en 5 rectangles (0 1 2 3 4+), le 2 actif en braise ; repos **1:14** en bleu glacier ; « Série suivante : 57,5 kg » ; bouton contour « Ajouter un exercice » ; bouton braise pleine largeur « Valider la série ».
+4. **`04-mon-corps.png`** : silhouette anatomique complète (face) gris clair mat, muscles allumés : quadriceps 12 (rouge, repère atteint), pectoraux 8,5 (orange, sélectionnés avec contour noir), dos 6, épaules 4, triceps 3,5 (ambre), ischio-jambiers 0 et mollets 0 (gris) ; sélecteur Face/Dos rectangulaire ; liste à droite ; panneau du bas « Pectoraux · 8,5 / 10 séries efficaces · encore 1,5 série pour le repère », exercices Chest press et Développé couché, bouton noir rectangulaire « Ajouter des séries ».
+
+DIRECTION.md : décris le système final (couleurs, typo, **spécification exacte des boutons**, cartes, coach, animations).
