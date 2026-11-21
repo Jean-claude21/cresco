@@ -186,6 +186,9 @@ Future<void> preparer() async {
 Future<void> _chargerPolices() async {
   final dossier =
       '${Platform.environment['FLUTTER_ROOT'] ?? '../../.fvm/flutter_sdk'}/bin/cache/artifacts/material_fonts';
+  // Les polices ne servent qu'aux captures lisibles : sans elles (CI), les tests de logique et de
+  // mise en page restent valables avec la police de test.
+  if (!File('$dossier/roboto-regular.ttf').existsSync()) return;
   Future<ByteData> lire(String f) async => ByteData.sublistView(await File('$dossier/$f').readAsBytes());
   // La police de titre embarquée par cresco_ui, sous le nom qu'utilise le thème.
   Future<ByteData> lirePaquet(String f) async =>

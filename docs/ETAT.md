@@ -18,10 +18,33 @@ Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.s
 |---|---|
 | Moteur TypeScript (`packages/engine-ts`) | 59 cas `engine-spec` |
 | Moteur Dart (`packages/cresco_engine`) | les mêmes 59 cas : les deux moteurs donnent les mêmes résultats |
-| API `/v1` + RLS Postgres + jetons à permissions | 13 tests de bout en bout sur un vrai Postgres (isolation entre utilisateurs, garde-fous, jeûne, MCP, export, suppression) |
+| API `/v1` + RLS Postgres + jetons à permissions | 14 tests de bout en bout sur un vrai Postgres (isolation entre utilisateurs, garde-fous, jeûne, confiance basse, MCP, export, suppression) |
 | Serveur MCP (22 outils) | appel réel `tools/list` et `tools/call` dans les tests |
-| App Flutter : connexion, Aujourd'hui, Entraînement, Séance, Intervalles, Jeûne, Nutrition (scan, Mes plats), Progrès, Profil | analyse `--fatal-infos` sans remarque, 12 tests, 9 captures de contrôle (`apps/cresco_app/test/golden/captures`) |
+| App Flutter : connexion, Aujourd'hui, Entraînement, Séance, Intervalles, Jeûne, Nutrition (scan, Mes plats), Progrès, Profil | analyse `--fatal-infos` sans remarque, 31 tests dont 18 « écrans étroits » (360 pt, texte normal et × 1,3), 9 captures de contrôle |
+| **Parcours complet sur vrais téléphones** (BrowserStack) | vert sur Galaxy S23 (Android 13), Pixel 8 (14), Galaxy S25 (15), Moto G71 (11), contre le staging : inscription → séance complète → intervalles → jeûne → nutrition → progrès → profil → déconnexion |
 | Déploiement staging | santé vérifiée depuis Internet |
+
+### Relancer les tests sur téléphones
+
+```
+cd apps/cresco_app/android
+gradlew app:assembleAndroidTest
+gradlew app:assembleDebug -Ptarget=integration_test/parcours_test.dart
+cd ../../..
+node scripts/browserstack.mjs
+```
+
+Le script lit les clés BrowserStack dans `../.secrets/.admin.env` (jamais affichées) et écrit le résumé dans `.local/browserstack.json`. En cas d'échec, il affiche l'erreur et tout le texte à l'écran au moment de l'arrêt.
+
+### Défauts trouvés et corrigés grâce aux vrais téléphones
+
+| Défaut | Correction |
+|---|---|
+| Fin de séance bloquée sur « Séance terminée » | `back()` de GetX fermait la barre de message au lieu de l'écran : barres de message Flutter (ScaffoldMessenger) |
+| « Volume −50 % » après une toute première séance | le serveur respecte « confiance basse = plan normal » et ignore le ratio aigu/chronique avant 21 jours |
+| Bouton « Créer le compte » absent sous le clavier Samsung | formulaire de connexion entièrement construit |
+| Débordement sur écran étroit (Galaxy S25) | composant `IconeLibelle`, ligne de charge en texte composé |
+| Onglets affichant des données périmées | chaque onglet recharge ses données à chaque visite |
 
 ## Pas encore fait
 
@@ -29,6 +52,7 @@ Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.s
 |---|---|
 | Import automatique du sommeil, de la VFC et des pas (HealthKit, Health Connect) | `cresco_data` + permissions natives ; aujourd'hui saisie manuelle par le bouton « + » |
 | Capteur cardio Bluetooth pendant les intervalles | écran Intervalles (affiche « FC indisponible ») |
+| App iPhone sur appareil réel (le .ipa se construit uniquement sur un Mac ; BrowserStack a les iPhone) | même parcours `integration_test`, à construire depuis un Mac ou une CI macOS |
 | Minuteur et annonces vocales écran éteint (service au premier plan Android, session audio iOS) | `features/intervalles` ; aujourd'hui l'écran reste allumé pendant la séance |
 | Base locale complète hors ligne (Drift) | ADR-0003 ; aujourd'hui cache des lectures et file d'attente des écritures |
 | OAuth2 complet pour les tiers (comme struo avec better-auth) | `apps/server/src/auth.ts` ; aujourd'hui jetons personnels à permissions |

@@ -47,7 +47,9 @@ void main() {
     await attendre(t, f, defiler: defiler);
     await t.ensureVisible(f.first);
     await t.pump(const Duration(milliseconds: 200));
-    await t.tap(f.first);
+    // L'élément doit être au premier plan (pas sous un autre écran ni une animation en cours).
+    await attendre(t, f.hitTestable(), delai: const Duration(seconds: 15));
+    await t.tap(f.hitTestable().first);
     await t.pump(const Duration(milliseconds: 400));
   }
 
@@ -114,8 +116,12 @@ void main() {
     expect(find.text('Séance terminée'), findsOneWidget);
     await toucher(t, find.widgetWithText(ActionChip, '7'));
     // L'enregistrement passe par le réseau : délai plus large.
-    await attendre(t, onglet('Aujourd’hui'), delai: const Duration(seconds: 70));
-    expect(find.text('Séance terminée'), findsNothing);
+    // L'accueil reste dans l'arbre sous l'écran de séance : on attend que la séance se ferme.
+    final finAttente = DateTime.now().add(const Duration(seconds: 70));
+    while (find.text('Séance terminée').evaluate().isNotEmpty && DateTime.now().isBefore(finAttente)) {
+      await t.pump(const Duration(milliseconds: 250));
+    }
+    expect(find.text('Séance terminée'), findsNothing, reason: 'La séance ne s’est pas fermée. À l’écran : ${ecran()}');
     // Nouveau compte : la confiance est basse, le plan reste normal (CALCULS.md §9).
     await attendre(t, find.textContaining('pas encore assez de données'), defiler: true);
 
