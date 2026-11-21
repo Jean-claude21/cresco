@@ -25,6 +25,9 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
     required this.onDangerSoft,
     required this.warningSoft,
     required this.onWarningSoft,
+    required this.limeSoft,
+    required this.onLimeSoft,
+    required this.accent,
   });
 
   final Color background;
@@ -52,6 +55,13 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
   final Color warningSoft;
   final Color onWarningSoft;
 
+  /// Soft green fills (illustrations, avatars) and the text drawn on them.
+  final Color limeSoft;
+  final Color onLimeSoft;
+
+  /// Second data color (protein, history curves).
+  final Color accent;
+
   static const light = CrescoPalette(
     background: Color(0xFFF2F3EE),
     surface: Color(0xFFFFFFFF),
@@ -71,6 +81,9 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
     onDangerSoft: Color(0xFF5E1426),
     warningSoft: Color(0xFFFFE7C2),
     onWarningSoft: Color(0xFF6B4300),
+    limeSoft: Color(0xFFE4F2C0),
+    onLimeSoft: Color(0xFF34470A),
+    accent: Color(0xFF6B5CE7),
   );
 
   static const dark = CrescoPalette(
@@ -92,6 +105,9 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
     onDangerSoft: Color(0xFFFFD9DF),
     warningSoft: Color(0xFF3A2A10),
     onWarningSoft: Color(0xFFFFE7C2),
+    limeSoft: Color(0xFF2C3A12),
+    onLimeSoft: Color(0xFFE4F2C0),
+    accent: Color(0xFF9C92F2),
   );
 
   @override
@@ -114,6 +130,9 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
     onDangerSoft: onDangerSoft,
     warningSoft: warningSoft,
     onWarningSoft: onWarningSoft,
+    limeSoft: limeSoft,
+    onLimeSoft: onLimeSoft,
+    accent: accent,
   );
 
   @override
@@ -139,6 +158,9 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
       onDangerSoft: mix(onDangerSoft, other.onDangerSoft),
       warningSoft: mix(warningSoft, other.warningSoft),
       onWarningSoft: mix(onWarningSoft, other.onWarningSoft),
+      limeSoft: mix(limeSoft, other.limeSoft),
+      onLimeSoft: mix(onLimeSoft, other.onLimeSoft),
+      accent: mix(accent, other.accent),
     );
   }
 }
@@ -146,4 +168,18 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
 /// `context.palette`: the current [CrescoPalette], light when the theme has none.
 extension CrescoPaletteContext on BuildContext {
   CrescoPalette get palette => Theme.of(this).extension<CrescoPalette>() ?? CrescoPalette.light;
+}
+
+/// Secondary text styles in the current theme's muted color (they follow dark mode).
+extension CrescoMutedStyles on BuildContext {
+  TextStyle get mutedStyle => TextStyle(fontSize: 14, height: 1.35, color: palette.muted);
+  TextStyle get overlineStyle => TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: palette.muted);
+  TextStyle get unitStyle => TextStyle(fontSize: 17, color: palette.muted);
+  TextStyle get verseStyle => TextStyle(
+    fontFamily: 'packages/cresco_ui/Gelasio',
+    fontFamilyFallback: const ['Georgia', 'serif'],
+    fontSize: 16,
+    fontStyle: FontStyle.italic,
+    color: palette.muted,
+  );
 }

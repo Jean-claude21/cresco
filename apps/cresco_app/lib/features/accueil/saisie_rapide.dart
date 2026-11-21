@@ -10,7 +10,7 @@ import 'package:stacked_services/stacked_services.dart';
 Future<void> ouvrirSaisieRapide(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: CrescoCouleurs.calcaire,
+    backgroundColor: context.palette.background,
     showDragHandle: true,
     isScrollControlled: true,
     builder: (context) => SafeArea(
@@ -58,8 +58,8 @@ class _Action extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: CrescoCouleurs.sauge,
-        child: Icon(icone, color: CrescoCouleurs.pin),
+        backgroundColor: context.palette.limeSoft,
+        child: Icon(icone, color: context.palette.onLimeSoft),
       ),
       title: Text(libelle, style: const TextStyle(fontWeight: FontWeight.w600)),
       trailing: const Icon(Icons.chevron_right),

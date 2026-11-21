@@ -80,22 +80,22 @@ class _ConnexionViewState extends State<ConnexionView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.eco, color: CrescoCouleurs.pin, size: 30),
-                      SizedBox(width: 8),
+                      Icon(Icons.eco, color: context.palette.ink, size: 30),
+                      const SizedBox(width: 8),
                       Text(
                         'cresco',
-                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: CrescoCouleurs.pin),
+                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: context.palette.ink),
                       ),
                     ],
                   ),
                   const SizedBox(height: 28),
                   Text(vm.inscription ? 'Créer ton compte' : 'Bon retour', style: CrescoTextes.titrePage),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Ta progression réelle, avec ton sommeil, ton alimentation et tes jeûnes.',
-                    style: CrescoTextes.secondaire,
+                    style: context.mutedStyle,
                   ),
                   const SizedBox(height: 28),
                   if (vm.inscription) ...[
@@ -127,15 +127,15 @@ class _ConnexionViewState extends State<ConnexionView> {
                   ),
                   if (vm.erreur != null) ...[
                     const SizedBox(height: 12),
-                    Text(vm.erreur!, style: const TextStyle(color: CrescoCouleurs.alerte)),
+                    Text(vm.erreur!, style: TextStyle(color: context.palette.danger)),
                   ],
                   const SizedBox(height: 24),
                   FilledButton(
                     onPressed: vm.isBusy ? null : () => vm.valider(_email.text, _mdp.text, _nom.text),
                     child: vm.isBusy
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2.4, color: CrescoCouleurs.blanc),
+                            child: CircularProgressIndicator(strokeWidth: 2.4, color: context.palette.onAction),
                           )
                         : Text(vm.inscription ? 'Créer le compte' : 'Se connecter'),
                   ),
@@ -143,13 +143,13 @@ class _ConnexionViewState extends State<ConnexionView> {
                     onPressed: vm.basculer,
                     child: Text(
                       vm.inscription ? 'J’ai déjà un compte' : 'Créer un compte',
-                      style: const TextStyle(color: CrescoCouleurs.pin),
+                      style: TextStyle(color: context.palette.ink),
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'Cresco est une application de bien-être et de performance, pas un dispositif médical.',
-                    style: CrescoTextes.secondaire,
+                    style: context.mutedStyle,
                     textAlign: TextAlign.center,
                   ),
                 ],

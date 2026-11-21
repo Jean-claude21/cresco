@@ -50,17 +50,14 @@ class ProgresView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Surtitre('Verdict de la semaine', couleur: CrescoCouleurs.pousse),
+                    Surtitre('Verdict de la semaine', couleur: context.palette.lime),
                     const SizedBox(height: 10),
                     Text(
                       libellesVerdict[d['verdict']] ?? '',
-                      style: CrescoTextes.titreCarte.copyWith(color: CrescoCouleurs.blanc, fontSize: 34),
+                      style: CrescoTextes.titreCarte.copyWith(color: Colors.white, fontSize: 34),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      d['explication']! as String,
-                      style: const TextStyle(color: CrescoCouleurs.blanc, fontSize: 16),
-                    ),
+                    Text(d['explication']! as String, style: const TextStyle(color: Colors.white, fontSize: 16)),
                   ],
                 ),
               ),
@@ -69,10 +66,10 @@ class ProgresView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Expanded(child: Surtitre('FORCE ESTIMÉE · e1RM', majuscules: false)),
-                          Text('28 jours', style: CrescoTextes.secondaire),
+                          const Expanded(child: Surtitre('FORCE ESTIMÉE · e1RM', majuscules: false)),
+                          Text('28 jours', style: context.mutedStyle),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -81,7 +78,7 @@ class ProgresView extends StatelessWidget {
                         isExpanded: true,
                         underline: const SizedBox.shrink(),
                         style: Theme.of(context).textTheme.titleLarge!
-                            .copyWith(fontSize: 22, fontWeight: FontWeight.w800, color: CrescoCouleurs.encre),
+                            .copyWith(fontSize: 22, fontWeight: FontWeight.w800, color: context.palette.ink),
                         items: [
                           for (var i = 0; i < exercices.length; i++)
                             DropdownMenuItem(value: i, child: Text(exercices[i]['nom']! as String)),
@@ -93,7 +90,7 @@ class ProgresView extends StatelessWidget {
                           Expanded(child: ChiffreUnite(decimal(ex['dernier']), 'kg')),
                           Text(
                             '${nombre(ex['pctParSemaine']) >= 0 ? '+' : ''}${decimal(ex['pctParSemaine'], chiffres: 2)} %/sem.',
-                            style: CrescoTextes.secondaire,
+                            style: context.mutedStyle,
                           ),
                         ],
                       ),
@@ -105,10 +102,10 @@ class ProgresView extends StatelessWidget {
                   ),
                 )
               else
-                const CrescoCarte(
+                CrescoCarte(
                   child: Text(
                     'Enregistre quelques séances de musculation pour voir ta courbe de force.',
-                    style: CrescoTextes.secondaire,
+                    style: context.mutedStyle,
                   ),
                 ),
               if (energie != null)
@@ -126,8 +123,8 @@ class ProgresView extends StatelessWidget {
                           ChiffreUnite(signe(nombre(energie['moyen7j']).round()), 'kcal/j'),
                           Pastille(
                             'Confiance ${energie['confiance']}',
-                            fond: CrescoCouleurs.sable,
-                            texteCouleur: CrescoCouleurs.terre,
+                            fond: context.palette.warningSoft,
+                            texteCouleur: context.palette.onWarningSoft,
                           ),
                         ],
                       ),

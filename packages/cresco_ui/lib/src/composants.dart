@@ -1,9 +1,10 @@
 import 'dart:math' as math;
 
+import 'package:cresco_ui/src/palette.dart';
 import 'package:cresco_ui/src/theme.dart';
 import 'package:flutter/material.dart';
 
-/// Carte blanche arrondie avec filet et ombre courte.
+/// Rounded surface card with a hairline border.
 class CrescoCarte extends StatelessWidget {
   const new({required this.child, super.key, this.padding = const EdgeInsets.all(22), this.onTap});
 
@@ -13,12 +14,12 @@ class CrescoCarte extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final carte = DecoratedBox(
       decoration: BoxDecoration(
-        color: CrescoCouleurs.blanc,
+        color: p.surface,
         borderRadius: BorderRadius.circular(CrescoMesures.rayon),
-        border: Border.all(color: CrescoCouleurs.filet, width: 0.7),
-        boxShadow: const [BoxShadow(color: CrescoCouleurs.ombre, offset: Offset(0, 2))],
+        border: Border.all(color: p.line, width: 0.7),
       ),
       child: Material(
         type: MaterialType.transparency,
@@ -33,7 +34,7 @@ class CrescoCarte extends StatelessWidget {
   }
 }
 
-/// Carte pin sombre réservée aux décisions du moteur, avec les lignes de croissance.
+/// Dark hero card for the engine's decisions, with faint growth lines. Text on it is white.
 class CrescoCarteSombre extends StatelessWidget {
   const new({required this.child, super.key, this.padding = const EdgeInsets.all(24)});
 
@@ -42,17 +43,18 @@ class CrescoCarteSombre extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return ClipRRect(
       borderRadius: BorderRadius.circular(CrescoMesures.rayon),
       child: ColoredBox(
-        color: CrescoCouleurs.pinSombre,
+        color: p.hero,
         child: CustomPaint(
-          painter: _LignesCroissance(),
+          painter: _LignesCroissance(p.lime),
           child: Padding(
             padding: padding,
             child: DefaultTextStyle.merge(
-              style: const TextStyle(color: CrescoCouleurs.blanc),
-              child: child,
+              style: const TextStyle(color: Colors.white),
+              child: IconTheme.merge(data: const IconThemeData(color: Colors.white), child: child),
             ),
           ),
         ),
@@ -62,10 +64,13 @@ class CrescoCarteSombre extends StatelessWidget {
 }
 
 class _LignesCroissance extends CustomPainter {
+  new(this.lime);
+  final Color lime;
+
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = CrescoCouleurs.pousse.withValues(alpha: 0.18)
+      ..color = lime.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
     for (var i = 0; i < 16; i++) {
@@ -78,7 +83,7 @@ class _LignesCroissance extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _LignesCroissance old) => old.lime != lime;
 }
 
 class Surtitre extends StatelessWidget {
@@ -86,15 +91,15 @@ class Surtitre extends StatelessWidget {
   final String texte;
   final Color? couleur;
 
-  /// Faux pour garder une casse imposée (ex. « e1RM »).
+  /// False keeps an imposed case (e.g. "e1RM").
   final bool majuscules;
 
   @override
   Widget build(BuildContext context) =>
-      Text(majuscules ? texte.toUpperCase() : texte, style: CrescoTextes.surtitre.copyWith(color: couleur));
+      Text(majuscules ? texte.toUpperCase() : texte, style: context.overlineStyle.copyWith(color: couleur));
 }
 
-/// Grand nombre suivi de son unité, sur la même ligne de base.
+/// Big number followed by its unit, on the same baseline.
 class ChiffreUnite extends StatelessWidget {
   const new(this.chiffre, this.unite, {super.key, this.taille = 46, this.couleur});
   final String chiffre;
@@ -104,7 +109,7 @@ class ChiffreUnite extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // L'unité ne se coupe jamais : « kcal/j » reste d'un seul tenant à côté du nombre.
+    // The unit never wraps: "kcal/j" stays in one piece next to the number.
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -115,16 +120,18 @@ class ChiffreUnite extends StatelessWidget {
           style: CrescoTextes.chiffre.copyWith(fontSize: taille, color: couleur),
         ),
         const SizedBox(width: 10),
-        Text(unite, softWrap: false, style: CrescoTextes.unite.copyWith(color: couleur?.withValues(alpha: 0.8))),
+        Text(unite, softWrap: false, style: context.unitStyle.copyWith(color: couleur?.withValues(alpha: 0.8))),
       ],
     );
   }
 }
 
 class BarreProgres extends StatelessWidget {
-  const new({required this.valeur, super.key, this.couleur = CrescoCouleurs.pin});
+  const new({required this.valeur, super.key, this.couleur});
   final double valeur;
-  final Color couleur;
+
+  /// Ink of the current theme when null.
+  final Color? couleur;
 
   @override
   Widget build(BuildContext context) {
@@ -133,35 +140,38 @@ class BarreProgres extends StatelessWidget {
       child: LinearProgressIndicator(
         value: valeur.clamp(0, 1),
         minHeight: 9,
-        color: couleur,
-        backgroundColor: CrescoCouleurs.filet,
+        color: couleur ?? context.palette.ink,
+        backgroundColor: context.palette.line,
       ),
     );
   }
 }
 
 class Pastille extends StatelessWidget {
-  const new(this.texte, {super.key, this.fond = CrescoCouleurs.pousse, this.texteCouleur = CrescoCouleurs.pinSombre});
+  const new(this.texte, {super.key, this.fond, this.texteCouleur});
   final String texte;
-  final Color fond;
-  final Color texteCouleur;
+
+  /// Lime and its ink when null.
+  final Color? fond;
+  final Color? texteCouleur;
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return DecoratedBox(
-      decoration: BoxDecoration(color: fond, borderRadius: BorderRadius.circular(40)),
+      decoration: BoxDecoration(color: fond ?? p.lime, borderRadius: BorderRadius.circular(40)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Text(
           texte,
-          style: TextStyle(color: texteCouleur, fontWeight: FontWeight.w700, fontSize: 15),
+          style: TextStyle(color: texteCouleur ?? p.onLime, fontWeight: FontWeight.w700, fontSize: 15),
         ),
       ),
     );
   }
 }
 
-/// Anneau de score (forme du jour), avec graduations.
+/// Score ring (form of the day) with tick marks.
 class Anneau extends StatelessWidget {
   const new({required this.fraction, required this.child, super.key, this.taille = 150, this.epaisseur = 12});
   final double fraction;
@@ -174,7 +184,7 @@ class Anneau extends StatelessWidget {
     return SizedBox.square(
       dimension: taille,
       child: CustomPaint(
-        painter: _AnneauPeintre(fraction.clamp(0, 1), epaisseur),
+        painter: _AnneauPeintre(fraction.clamp(0, 1), epaisseur, context.palette),
         child: Center(child: child),
       ),
     );
@@ -182,9 +192,10 @@ class Anneau extends StatelessWidget {
 }
 
 class _AnneauPeintre extends CustomPainter {
-  new(this.fraction, this.epaisseur);
+  new(this.fraction, this.epaisseur, this.p);
   final double fraction;
   final double epaisseur;
+  final CrescoPalette p;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -192,11 +203,11 @@ class _AnneauPeintre extends CustomPainter {
     final rayon = size.width / 2 - epaisseur / 2;
     final rect = Rect.fromCircle(center: centre, radius: rayon);
     final fond = Paint()
-      ..color = CrescoCouleurs.sauge
+      ..color = p.line
       ..style = PaintingStyle.stroke
       ..strokeWidth = epaisseur;
     final arc = Paint()
-      ..color = CrescoCouleurs.pin
+      ..color = p.ink
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = epaisseur;
@@ -204,7 +215,7 @@ class _AnneauPeintre extends CustomPainter {
       ..drawArc(rect, 0, 2 * math.pi, false, fond)
       ..drawArc(rect, -math.pi / 2, 2 * math.pi * fraction, false, arc);
     final graduation = Paint()
-      ..color = CrescoCouleurs.texteSecondaire.withValues(alpha: 0.45)
+      ..color = p.muted.withValues(alpha: 0.45)
       ..strokeWidth = 1;
     for (var i = 0; i < 48; i++) {
       final a = i / 48 * 2 * math.pi;
@@ -219,10 +230,10 @@ class _AnneauPeintre extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _AnneauPeintre old) => old.fraction != fraction;
+  bool shouldRepaint(covariant _AnneauPeintre old) => old.fraction != fraction || old.p != p;
 }
 
-/// Cadran 24 h du jeûne : arc du début à maintenant, repère de fin prévue.
+/// 24-hour fasting dial: arc from the start to now, tick for the planned end.
 class CadranJeune extends StatelessWidget {
   const new({required this.heuresEcoulees, required this.child, super.key, this.heuresPrevues, this.taille = 250});
   final double heuresEcoulees;
@@ -235,7 +246,7 @@ class CadranJeune extends StatelessWidget {
     return SizedBox.square(
       dimension: taille,
       child: CustomPaint(
-        painter: _CadranPeintre(heuresEcoulees, heuresPrevues),
+        painter: _CadranPeintre(heuresEcoulees, heuresPrevues, context.palette),
         child: Center(child: child),
       ),
     );
@@ -243,9 +254,10 @@ class CadranJeune extends StatelessWidget {
 }
 
 class _CadranPeintre extends CustomPainter {
-  new(this.h, this.prevues);
+  new(this.h, this.prevues, this.p);
   final double h;
   final double? prevues;
+  final CrescoPalette p;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -258,7 +270,7 @@ class _CadranPeintre extends CustomPainter {
       2 * math.pi,
       false,
       Paint()
-        ..color = CrescoCouleurs.sauge
+        ..color = p.fast
         ..style = PaintingStyle.stroke
         ..strokeWidth = 14,
     );
@@ -269,13 +281,13 @@ class _CadranPeintre extends CustomPainter {
       2 * math.pi * (h >= 24 ? 1 : tour),
       false,
       Paint()
-        ..color = CrescoCouleurs.pin
+        ..color = p.accent
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = 14,
     );
     final graduation = Paint()
-      ..color = CrescoCouleurs.texteSecondaire.withValues(alpha: 0.5)
+      ..color = p.muted.withValues(alpha: 0.5)
       ..strokeWidth = 1.2;
     for (var i = 0; i < 96; i++) {
       final a = i / 96 * 2 * math.pi - math.pi / 2;
@@ -287,46 +299,35 @@ class _CadranPeintre extends CustomPainter {
         graduation,
       );
     }
+    final ring = Paint()
+      ..color = p.ink
+      ..style = PaintingStyle.stroke;
     final debut = c + Offset(0, -r);
     canvas
-      ..drawCircle(debut, 9, Paint()..color = CrescoCouleurs.pousse)
-      ..drawCircle(
-        debut,
-        9,
-        Paint()
-          ..color = CrescoCouleurs.pin
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
-      );
+      ..drawCircle(debut, 9, Paint()..color = p.lime)
+      ..drawCircle(debut, 9, ring..strokeWidth = 2);
     final a = 2 * math.pi * (h >= 24 ? 0.999 : tour) - math.pi / 2;
     final bout = c + Offset(math.cos(a) * r, math.sin(a) * r);
     canvas
-      ..drawCircle(bout, 11, Paint()..color = CrescoCouleurs.pousse)
-      ..drawCircle(
-        bout,
-        11,
-        Paint()
-          ..color = CrescoCouleurs.pin
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3,
-      );
+      ..drawCircle(bout, 11, Paint()..color = p.lime)
+      ..drawCircle(bout, 11, ring..strokeWidth = 3);
     if (prevues != null && prevues! < 24) {
       final af = 2 * math.pi * prevues! / 24 - math.pi / 2;
       canvas.drawLine(
         c + Offset(math.cos(af) * (r - 12), math.sin(af) * (r - 12)),
         c + Offset(math.cos(af) * (r + 12), math.sin(af) * (r + 12)),
         Paint()
-          ..color = CrescoCouleurs.encre
+          ..color = p.ink
           ..strokeWidth = 2,
       );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _CadranPeintre old) => old.h != h || old.prevues != prevues;
+  bool shouldRepaint(covariant _CadranPeintre old) => old.h != h || old.prevues != prevues || old.p != p;
 }
 
-/// Courbe des e1RM (points) avec la droite de tendance en pointillés.
+/// e1RM curve (points) with the dashed trend line.
 class CourbeTendance extends StatelessWidget {
   const new({required this.valeurs, super.key, this.hauteur = 170});
   final List<double> valeurs;
@@ -337,14 +338,15 @@ class CourbeTendance extends StatelessWidget {
     return SizedBox(
       height: hauteur,
       width: double.infinity,
-      child: CustomPaint(painter: _CourbePeintre(valeurs)),
+      child: CustomPaint(painter: _CourbePeintre(valeurs, context.palette)),
     );
   }
 }
 
 class _CourbePeintre extends CustomPainter {
-  new(this.v);
+  new(this.v, this.c);
   final List<double> v;
+  final CrescoPalette c;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -354,7 +356,7 @@ class _CourbePeintre extends CustomPainter {
     Offset pt(int i, double y) =>
         Offset(i / (v.length - 1) * (size.width - 16) + 8, size.height - 8 - (y - mn) / (mx - mn) * (size.height - 16));
     final grille = Paint()
-      ..color = CrescoCouleurs.filet
+      ..color = c.line
       ..strokeWidth = 1;
     for (var k = 0; k <= 2; k++) {
       final y = 8 + k * (size.height - 16) / 2;
@@ -369,15 +371,15 @@ class _CourbePeintre extends CustomPainter {
       ..lineTo(pt(0, mn).dx, size.height)
       ..close();
     canvas
-      ..drawPath(aire, Paint()..color = CrescoCouleurs.sauge.withValues(alpha: 0.6))
+      ..drawPath(aire, Paint()..color = c.accent.withValues(alpha: 0.12))
       ..drawPath(
         chemin,
         Paint()
-          ..color = CrescoCouleurs.eucalyptus
+          ..color = c.accent
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.2,
       );
-    // Droite des moindres carrés.
+    // Least-squares line.
     final n = v.length;
     final mxI = (n - 1) / 2;
     final my = v.reduce((a, b) => a + b) / n;
@@ -391,7 +393,7 @@ class _CourbePeintre extends CustomPainter {
     final a = pt(0, my - pente * mxI);
     final b = pt(n - 1, my + pente * mxI);
     final tendance = Paint()
-      ..color = CrescoCouleurs.pinSombre
+      ..color = c.ink
       ..strokeWidth = 2.4;
     const tiret = 9.0;
     final d = b - a;
@@ -402,12 +404,12 @@ class _CourbePeintre extends CustomPainter {
     for (var i = 0; i < n; i++) {
       final p = pt(i, v[i]);
       canvas
-        ..drawCircle(p, 5, Paint()..color = CrescoCouleurs.blanc)
+        ..drawCircle(p, 5, Paint()..color = c.surface)
         ..drawCircle(
           p,
           5,
           Paint()
-            ..color = CrescoCouleurs.pin
+            ..color = c.accent
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2,
         );
@@ -415,11 +417,11 @@ class _CourbePeintre extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _CourbePeintre old) => old.v != v;
+  bool shouldRepaint(covariant _CourbePeintre old) => old.v != v || old.c != c;
 }
 
-/// En-tête « icône + libellé » des petites cartes : le libellé passe à la ligne au lieu de déborder
-/// sur les écrans étroits (débordement relevé sur Galaxy S25).
+/// "Icon + label" header of small cards: the label wraps instead of overflowing
+/// on narrow screens (overflow seen on a Galaxy S25).
 class IconeLibelle extends StatelessWidget {
   const new(
     this.icone,
@@ -443,7 +445,7 @@ class IconeLibelle extends StatelessWidget {
   }
 }
 
-/// Ligne « libellé … valeur » avec icône, utilisée dans les cartes.
+/// "Label … value" row with an icon, used inside cards.
 class LigneMesure extends StatelessWidget {
   const new({required this.icone, required this.libelle, required this.valeur, super.key});
   final IconData icone;
@@ -456,9 +458,9 @@ class LigneMesure extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icone, size: 20, color: CrescoCouleurs.encre),
+          Icon(icone, size: 20, color: context.palette.ink),
           const SizedBox(width: 10),
-          Expanded(child: Text(libelle, style: CrescoTextes.secondaire.copyWith(fontSize: 16))),
+          Expanded(child: Text(libelle, style: context.mutedStyle.copyWith(fontSize: 16))),
           Text(valeur, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
         ],
       ),

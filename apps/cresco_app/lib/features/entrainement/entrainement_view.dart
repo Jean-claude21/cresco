@@ -85,7 +85,7 @@ class EntrainementView extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(modele?['nom'] as String? ?? 'Séance', style: CrescoTextes.titreCarte),
                     const SizedBox(height: 4),
-                    Text(d['raison']! as String, style: CrescoTextes.secondaire),
+                    Text(d['raison']! as String, style: context.mutedStyle),
                     const SizedBox(height: 12),
                     for (final b in blocs)
                       for (final e in (b['etapes']! as List).cast<Json>())
@@ -109,39 +109,42 @@ class EntrainementView extends StatelessWidget {
                 Routes.intervallesView,
                 arguments: const IntervallesViewArguments(modele: intervallesParDefaut),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   CircleAvatar(
                     radius: 26,
-                    backgroundColor: CrescoCouleurs.sauge,
-                    child: Icon(Icons.directions_run, color: CrescoCouleurs.pin),
+                    backgroundColor: context.palette.limeSoft,
+                    child: Icon(Icons.directions_run, color: context.palette.onLimeSoft),
                   ),
-                  SizedBox(width: 14),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Intervalles sur tapis', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
-                        Text('6 × 1 min à 12 km/h · annonces vocales', style: CrescoTextes.secondaire),
+                        const Text(
+                          'Intervalles sur tapis',
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                        ),
+                        Text('6 × 1 min à 12 km/h · annonces vocales', style: context.mutedStyle),
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right),
+                  const Icon(Icons.chevron_right),
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4, 6, 4, 0),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.auto_awesome_outlined, size: 20, color: CrescoCouleurs.texteSecondaire),
-                  SizedBox(width: 10),
+                  Icon(Icons.auto_awesome_outlined, size: 20, color: context.palette.muted),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Ton assistant IA peut te programmer une séance via le MCP de Cresco : elle apparaîtra ici, '
                       'avec les charges calculées par le moteur.',
-                      style: CrescoTextes.secondaire,
+                      style: context.mutedStyle,
                     ),
                   ),
                 ],

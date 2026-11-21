@@ -127,10 +127,15 @@ class BodyMapView extends StatelessWidget {
                         Expanded(
                           flex: 11,
                           child: AnimatedSwitcher(
-                            duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 350),
+                            duration: MediaQuery.disableAnimationsOf(context)
+                                ? Duration.zero
+                                : const Duration(milliseconds: 350),
                             transitionBuilder: (child, a) => FadeTransition(
                               opacity: a,
-                              child: ScaleTransition(scale: Tween<double>(begin: 0.94, end: 1).animate(a), child: child),
+                              child: ScaleTransition(
+                                scale: Tween<double>(begin: 0.94, end: 1).animate(a),
+                                child: child,
+                              ),
                             ),
                             child: BodyMap(
                               key: ValueKey(vm.side),
@@ -138,7 +143,8 @@ class BodyMapView extends StatelessWidget {
                               colors: colors,
                               selected: vm.selected,
                               onSelect: vm.select,
-                              semanticLabel: 'Silhouette ${vm.side == BodySide.front ? 'de face' : 'de dos'}. '
+                              semanticLabel:
+                                  'Silhouette ${vm.side == BodySide.front ? 'de face' : 'de dos'}. '
                                   'Choisis un muscle dans la liste en dessous.',
                             ),
                           ),
@@ -151,11 +157,7 @@ class BodyMapView extends StatelessWidget {
                   const SizedBox(height: 16),
                   FadeSlideIn(
                     index: 1,
-                    child: _Detail(
-                      muscle: vm.selected,
-                      sets: sets[vm.selected] ?? 0,
-                      guideline: vm.guideline,
-                    ),
+                    child: _Detail(muscle: vm.selected, sets: sets[vm.selected] ?? 0, guideline: vm.guideline),
                   ),
                   const SizedBox(height: 14),
                   FadeSlideIn(
@@ -195,7 +197,10 @@ class _Legend extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Séries efficaces sur 7 jours', style: TextStyle(color: palette.muted, fontSize: 12, fontWeight: FontWeight.w700)),
+        Text(
+          'Séries efficaces sur 7 jours',
+          style: TextStyle(color: palette.muted, fontSize: 12, fontWeight: FontWeight.w700),
+        ),
         const SizedBox(height: 8),
         for (final (level, (_, label)) in volumeScale.indexed.toList().reversed)
           Padding(
@@ -208,12 +213,20 @@ class _Legend extends StatelessWidget {
                   decoration: BoxDecoration(color: volumeColor(level, palette), borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(width: 8),
-                Flexible(child: Text(label, style: TextStyle(color: palette.ink, fontSize: 12, fontWeight: FontWeight.w600))),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(color: palette.ink, fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ],
             ),
           ),
         const SizedBox(height: 8),
-        Text('Touche un muscle sur le corps ou dans la liste.', style: TextStyle(color: palette.muted, fontSize: 12, height: 1.4)),
+        Text(
+          'Touche un muscle sur le corps ou dans la liste.',
+          style: TextStyle(color: palette.muted, fontSize: 12, height: 1.4),
+        ),
       ],
     );
   }
@@ -246,7 +259,12 @@ class _Detail extends StatelessWidget {
                     TextSpan(text: decimal(sets)),
                     TextSpan(
                       text: ' / ${decimal(guideline)} séries efficaces',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: p.onHeroMuted, letterSpacing: 0),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: p.onHeroMuted,
+                        letterSpacing: 0,
+                      ),
                     ),
                   ],
                 ),

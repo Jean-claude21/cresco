@@ -241,7 +241,7 @@ class SeanceView extends StatelessWidget {
                     if (s != null) ...[
                       Text(s.nom, style: CrescoTextes.titrePage.copyWith(fontSize: 36)),
                       const SizedBox(height: 4),
-                      Text((vm.exercices[s.exerciceId]?['consignes'] as String?) ?? '', style: CrescoTextes.secondaire),
+                      Text((vm.exercices[s.exerciceId]?['consignes'] as String?) ?? '', style: context.mutedStyle),
                       const SizedBox(height: 14),
                       _Demonstration(onVideo: () => vm.ouvrirVideo(context)),
                       const SizedBox(height: 12),
@@ -259,7 +259,7 @@ class SeanceView extends StatelessWidget {
                             const SizedBox(height: 6),
                             Text(
                               '${vm.faites.length} séries enregistrées. Note l’effort global (RPE) :',
-                              style: CrescoTextes.secondaire,
+                              style: context.mutedStyle,
                             ),
                             const SizedBox(height: 12),
                             Wrap(
@@ -282,11 +282,11 @@ class SeanceView extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Surtitre('Repos restant', couleur: CrescoCouleurs.pousse),
+                                  Surtitre('Repos restant', couleur: context.palette.lime),
                                   const SizedBox(height: 6),
                                   Text(
                                     '${(vm.repos ~/ 60).toString().padLeft(2, '0')}:${(vm.repos % 60).toString().padLeft(2, '0')}',
-                                    style: CrescoTextes.chiffre.copyWith(color: CrescoCouleurs.blanc, fontSize: 52),
+                                    style: CrescoTextes.chiffre.copyWith(color: Colors.white, fontSize: 52),
                                   ),
                                 ],
                               ),
@@ -294,7 +294,7 @@ class SeanceView extends StatelessWidget {
                             IconButton.outlined(
                               tooltip: 'Passer le repos',
                               onPressed: vm.passerRepos,
-                              icon: const Icon(Icons.skip_next, color: CrescoCouleurs.blanc),
+                              icon: const Icon(Icons.skip_next, color: Colors.white),
                             ),
                           ],
                         ),
@@ -315,19 +315,22 @@ class _Demonstration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: CrescoCouleurs.sauge, borderRadius: BorderRadius.circular(CrescoMesures.rayon)),
+      decoration: BoxDecoration(
+        color: context.palette.limeSoft,
+        borderRadius: BorderRadius.circular(CrescoMesures.rayon),
+      ),
       child: SizedBox(
         height: 150,
         child: Stack(
           children: [
-            const Center(child: Icon(Icons.fitness_center, size: 72, color: CrescoCouleurs.pin)),
+            Center(child: Icon(Icons.fitness_center, size: 72, color: context.palette.onLimeSoft)),
             Positioned(
               right: 12,
               bottom: 12,
               child: ActionChip(
                 avatar: const Icon(Icons.open_in_new, size: 18),
                 label: const Text('Ma vidéo', style: TextStyle(fontWeight: FontWeight.w700)),
-                backgroundColor: CrescoCouleurs.blanc,
+                backgroundColor: context.palette.surface,
                 onPressed: onVideo,
               ),
             ),
@@ -361,8 +364,8 @@ class _CarteSerie extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
                     color: i < s.numero
-                        ? CrescoCouleurs.eucalyptus
-                        : (i == s.numero ? CrescoCouleurs.pin : CrescoCouleurs.filet),
+                        ? context.palette.accent
+                        : (i == s.numero ? context.palette.ink : context.palette.line),
                   ),
                 ),
             ],
@@ -379,9 +382,9 @@ class _CarteSerie extends StatelessWidget {
                     text: s.chargeKg == null ? '—' : decimal(s.chargeKg),
                     style: CrescoTextes.chiffre.copyWith(fontSize: 54),
                   ),
-                  const TextSpan(text: ' kg  ×  ', style: CrescoTextes.unite),
+                  TextSpan(text: ' kg  ×  ', style: context.unitStyle),
                   TextSpan(text: '${s.reps}', style: CrescoTextes.chiffre.copyWith(fontSize: 54)),
-                  const TextSpan(text: ' répétitions', style: CrescoTextes.unite),
+                  TextSpan(text: ' répétitions', style: context.unitStyle),
                 ],
               ),
             ),
@@ -398,10 +401,10 @@ class _CarteSerie extends StatelessWidget {
                 onPressed: () => vm.changerCharge(2.5),
                 icon: const Icon(Icons.add_circle_outline),
               ),
-              if (vm.e1rmCourant != null) Text('e1RM ${decimal(vm.e1rmCourant)} kg', style: CrescoTextes.secondaire),
+              if (vm.e1rmCourant != null) Text('e1RM ${decimal(vm.e1rmCourant)} kg', style: context.mutedStyle),
             ],
           ),
-          const Divider(color: CrescoCouleurs.filet),
+          Divider(color: context.palette.line),
           Row(
             children: [
               const Expanded(
@@ -409,11 +412,11 @@ class _CarteSerie extends StatelessWidget {
               ),
               Text(
                 'Cible ${decimal(s.rirCible)}',
-                style: const TextStyle(color: CrescoCouleurs.pin, fontWeight: FontWeight.w800, fontSize: 16),
+                style: TextStyle(color: context.palette.ink, fontWeight: FontWeight.w800, fontSize: 16),
               ),
             ],
           ),
-          const Text('Combien de répétitions restaient possibles ?', style: CrescoTextes.secondaire),
+          Text('Combien de répétitions restaient possibles ?', style: context.mutedStyle),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -430,10 +433,10 @@ class _CarteSerie extends StatelessWidget {
                       labelStyle: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: vm.rirChoisi == r ? CrescoCouleurs.blanc : CrescoCouleurs.encre,
+                        color: vm.rirChoisi == r ? context.palette.onAction : context.palette.ink,
                       ),
-                      selectedColor: CrescoCouleurs.pin,
-                      backgroundColor: CrescoCouleurs.calcaire,
+                      selectedColor: context.palette.action,
+                      backgroundColor: context.palette.background,
                       selected: vm.rirChoisi == r,
                       onSelected: (_) => vm.choisirRir(r),
                     ),
@@ -450,7 +453,7 @@ class _CarteSerie extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               'Ensuite : ${suivante.nom} · ${suivante.chargeKg == null ? '' : '${decimal(suivante.chargeKg)} kg × '}${suivante.reps}',
-              style: CrescoTextes.secondaire,
+              style: context.mutedStyle,
             ),
           ],
         ],

@@ -42,7 +42,6 @@ abstract final class CrescoTextes {
     fontSize: 34,
     fontWeight: FontWeight.w900,
     height: 1.02,
-    color: CrescoCouleurs.encre,
     letterSpacing: -1.2,
   );
   static const titreCarte = TextStyle(
@@ -50,7 +49,6 @@ abstract final class CrescoTextes {
     fontSize: 24,
     fontWeight: FontWeight.w900,
     height: 1.08,
-    color: CrescoCouleurs.encre,
     letterSpacing: -0.6,
   );
   static const surtitre = TextStyle(
@@ -64,18 +62,16 @@ abstract final class CrescoTextes {
     fontSize: 46,
     fontWeight: FontWeight.w900,
     height: 1,
-    color: CrescoCouleurs.encre,
     letterSpacing: -1.5,
     fontFeatures: [FontFeature.tabularFigures()],
   );
   static const unite = TextStyle(fontSize: 17, color: CrescoCouleurs.texteSecondaire);
-  static const corps = TextStyle(fontSize: 16, height: 1.35, color: CrescoCouleurs.encre);
+  static const corps = TextStyle(fontSize: 16, height: 1.35);
   static const secondaire = TextStyle(fontSize: 14, height: 1.35, color: CrescoCouleurs.texteSecondaire);
   static const intention = TextStyle(
     fontFamily: serif,
     fontFamilyFallback: _serifFallback,
     fontSize: 24,
-    color: CrescoCouleurs.encre,
   );
   static const verset = TextStyle(
     fontFamily: serif,

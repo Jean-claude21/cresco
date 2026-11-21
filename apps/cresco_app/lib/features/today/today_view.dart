@@ -82,7 +82,11 @@ class _Header extends StatelessWidget {
           IconButton.filled(
             tooltip: 'Profil et réglages',
             onPressed: onProfile,
-            style: IconButton.styleFrom(backgroundColor: p.surface, foregroundColor: p.ink, fixedSize: const Size(44, 44)),
+            style: IconButton.styleFrom(
+              backgroundColor: p.surface,
+              foregroundColor: p.ink,
+              fixedSize: const Size(44, 44),
+            ),
             icon: const Icon(Icons.person_outline),
           ),
         ],
@@ -133,7 +137,7 @@ class _FormCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('FORME DU JOUR', style: CrescoTextes.surtitre.copyWith(color: p.lime)),
+                Text('FORME DU JOUR', style: context.overlineStyle.copyWith(color: p.lime)),
                 const SizedBox(height: 6),
                 Text(inputs, style: TextStyle(color: p.onHeroMuted, fontSize: 14, height: 1.4)),
                 const SizedBox(height: 8),
@@ -143,7 +147,8 @@ class _FormCard extends StatelessWidget {
                     foregroundColor: p.lime,
                     padding: EdgeInsets.zero,
                     minimumSize: const Size(0, 44),
-                    textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 14),
+                    textStyle: Theme.of(context).textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w800, fontSize: 14),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -181,7 +186,7 @@ class _FormCard extends StatelessWidget {
                 style: CrescoTextes.corps,
               ),
               const SizedBox(height: 10),
-              Text('Confiance : $confidence.', style: CrescoTextes.secondaire),
+              Text('Confiance : $confidence.', style: context.mutedStyle),
             ],
           ),
         ),
@@ -213,7 +218,7 @@ class _SessionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('SÉANCE DU JOUR', style: CrescoTextes.surtitre.copyWith(color: noSession ? p.muted : p.onLime)),
+          Text('SÉANCE DU JOUR', style: context.overlineStyle.copyWith(color: noSession ? p.muted : p.onLime)),
           const SizedBox(height: 6),
           Text(
             noSession ? libellesDecision[code]! : session['nom']! as String,
@@ -308,10 +313,13 @@ class _EnergyTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('ÉNERGIE DU JOUR', style: CrescoTextes.surtitre.copyWith(color: p.muted)),
+          Text('ÉNERGIE DU JOUR', style: context.overlineStyle.copyWith(color: p.muted)),
           const SizedBox(height: 8),
           if (suspended)
-            Text('Cibles suspendues pendant le jeûne', style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 16))
+            Text(
+              'Cibles suspendues pendant le jeûne',
+              style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 16),
+            )
           else ...[
             Text.rich(
               TextSpan(
@@ -319,14 +327,23 @@ class _EnergyTile extends StatelessWidget {
                   TextSpan(text: entier((kcalTarget - kcal).clamp(0, 99999))),
                   TextSpan(
                     text: ' kcal restantes',
-                    style: TextStyle(fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily, fontSize: 13, fontWeight: FontWeight.w600, color: p.muted, letterSpacing: 0),
+                    style: TextStyle(
+                      fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: p.muted,
+                      letterSpacing: 0,
+                    ),
                   ),
                 ],
               ),
               style: CrescoTextes.chiffre.copyWith(color: p.ink, fontSize: 26),
             ),
             const SizedBox(height: 12),
-            Text('Protéines ${entier(protein)} / ${entier(proteinTarget)} g', style: TextStyle(color: p.ink, fontSize: 13, fontWeight: FontWeight.w700)),
+            Text(
+              'Protéines ${entier(protein)} / ${entier(proteinTarget)} g',
+              style: TextStyle(color: p.ink, fontSize: 13, fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 6),
             _Bar(value: proteinTarget > 0 ? protein / proteinTarget : 0, color: p.ink, track: p.line),
           ],
@@ -393,7 +410,10 @@ class _BodyCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Mon corps', style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 16)),
+                Text(
+                  'Mon corps',
+                  style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 16),
+                ),
                 Text('Le travail de chaque muscle cette semaine', style: TextStyle(color: p.muted, fontSize: 13)),
               ],
             ),
@@ -437,12 +457,7 @@ class _Bar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
-      child: LinearProgressIndicator(
-        value: value.clamp(0, 1),
-        minHeight: 8,
-        color: color,
-        backgroundColor: track,
-      ),
+      child: LinearProgressIndicator(value: value.clamp(0, 1), minHeight: 8, color: color, backgroundColor: track),
     );
   }
 }

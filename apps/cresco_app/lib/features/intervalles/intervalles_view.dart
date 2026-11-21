@@ -176,7 +176,7 @@ class IntervallesView extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Expanded(child: Surtitre('Temps restant', couleur: CrescoCouleurs.pousse)),
+                        Expanded(child: Surtitre('Temps restant', couleur: context.palette.lime)),
                         Pastille(e.repetitions > 1 ? '${e.libelle} ${e.repetition}/${e.repetitions}' : e.libelle),
                       ],
                     ),
@@ -185,30 +185,30 @@ class IntervallesView extends StatelessWidget {
                       vm.termine
                           ? 'Fini'
                           : '${(vm.restant ~/ 60).toString().padLeft(2, '0')}:${(vm.restant % 60).toString().padLeft(2, '0')}',
-                      style: CrescoTextes.chiffre.copyWith(color: CrescoCouleurs.blanc, fontSize: 96),
+                      style: CrescoTextes.chiffre.copyWith(color: Colors.white, fontSize: 96),
                     ),
                     const Divider(color: Color(0x55D8EEA1), height: 28),
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.speed, color: CrescoCouleurs.pousse),
-                        SizedBox(width: 10),
-                        Text('Vitesse cible', style: TextStyle(color: CrescoCouleurs.blanc, fontSize: 18)),
+                        Icon(Icons.speed, color: context.palette.lime),
+                        const SizedBox(width: 10),
+                        const Text('Vitesse cible', style: TextStyle(color: Colors.white, fontSize: 18)),
                       ],
                     ),
-                    ChiffreUnite(e.vitesseKmh, 'km/h', taille: 52, couleur: CrescoCouleurs.blanc),
+                    ChiffreUnite(e.vitesseKmh, 'km/h', taille: 52, couleur: Colors.white),
                   ],
                 ),
               ),
               if (s != null) ...[
                 const SizedBox(height: 12),
                 Material(
-                  color: CrescoCouleurs.sauge,
+                  color: context.palette.limeSoft,
                   borderRadius: BorderRadius.circular(CrescoMesures.rayon),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    leading: const CircleAvatar(
-                      backgroundColor: CrescoCouleurs.pin,
-                      child: Icon(Icons.volume_up, color: CrescoCouleurs.blanc),
+                    leading: CircleAvatar(
+                      backgroundColor: context.palette.action,
+                      child: Icon(Icons.volume_up, color: context.palette.onAction),
                     ),
                     title: Text(
                       vm.restant <= vm.preavis
@@ -241,10 +241,10 @@ class IntervallesView extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(6),
                                     color: identical(x, e)
-                                        ? CrescoCouleurs.pin
+                                        ? context.palette.ink
                                         : vm.etapes.indexOf(x) < vm.index
-                                        ? CrescoCouleurs.eucalyptus.withValues(alpha: 0.7)
-                                        : CrescoCouleurs.filet,
+                                        ? context.palette.accent.withValues(alpha: 0.7)
+                                        : context.palette.line,
                                   ),
                                 ),
                               ),
@@ -256,12 +256,12 @@ class IntervallesView extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 12),
-              const CrescoCarte(
+              CrescoCarte(
                 child: Row(
                   children: [
-                    Icon(Icons.favorite_border),
-                    SizedBox(width: 12),
-                    Expanded(child: Text('FC indisponible : aucun capteur connecté', style: CrescoTextes.secondaire)),
+                    const Icon(Icons.favorite_border),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text('FC indisponible : aucun capteur connecté', style: context.mutedStyle)),
                   ],
                 ),
               ),

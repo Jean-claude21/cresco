@@ -95,7 +95,7 @@ class _ScanViewState extends State<ScanView> {
               child: vm.isBusy
                   ? const Chargement()
                   : vm.produit == null
-                  ? Text(vm.erreur ?? 'Vise le code-barres du produit.', style: CrescoTextes.secondaire)
+                  ? Text(vm.erreur ?? 'Vise le code-barres du produit.', style: context.mutedStyle)
                   : CrescoCarte(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +104,7 @@ class _ScanViewState extends State<ScanView> {
                           Text(
                             '${entier(vm.produit!['kcal100'])} kcal · ${decimal(vm.produit!['proteines100'])} g prot. · '
                             '${decimal(vm.produit!['glucides100'])} g gluc. · ${decimal(vm.produit!['lipides100'])} g lip. / 100 g',
-                            style: CrescoTextes.secondaire,
+                            style: context.mutedStyle,
                           ),
                           const SizedBox(height: 12),
                           TextField(
@@ -121,7 +121,7 @@ class _ScanViewState extends State<ScanView> {
                             child: const Text('Ajouter à mon journal'),
                           ),
                           const SizedBox(height: 6),
-                          const Text('Source : Open Food Facts (ODbL).', style: CrescoTextes.secondaire),
+                          Text('Source : Open Food Facts (ODbL).', style: context.mutedStyle),
                         ],
                       ),
                     ),

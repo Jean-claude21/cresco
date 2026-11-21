@@ -96,7 +96,7 @@ class PageCresco extends StatelessWidget {
       bottom: false,
       child: onRefresh == null
           ? liste
-          : RefreshIndicator(color: CrescoCouleurs.pin, onRefresh: onRefresh!, child: liste),
+          : RefreshIndicator(color: context.palette.ink, onRefresh: onRefresh!, child: liste),
     );
   }
 }

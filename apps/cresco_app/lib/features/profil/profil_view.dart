@@ -90,7 +90,7 @@ class ProfilView extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(18, 4, 18, 40),
                   children: [
                     Text(p['nom'] as String? ?? '', style: CrescoTextes.titrePage),
-                    Text(p['email']! as String, style: CrescoTextes.secondaire),
+                    Text(p['email']! as String, style: context.mutedStyle),
                     const SizedBox(height: 16),
                     CrescoCarte(
                       child: Column(
@@ -155,7 +155,7 @@ class ProfilView extends StatelessWidget {
                         children: [
                           const Surtitre('Jours de repos verrouillés'),
                           const SizedBox(height: 4),
-                          const Text('Jamais remplis par le plan ni par l’IA.', style: CrescoTextes.secondaire),
+                          Text('Jamais remplis par le plan ni par l’IA.', style: context.mutedStyle),
                           const SizedBox(height: 8),
                           Wrap(
                             spacing: 6,
@@ -208,7 +208,7 @@ class ProfilView extends StatelessWidget {
                         children: [
                           const Surtitre('Ton IA (MCP)'),
                           const SizedBox(height: 6),
-                          Text('Serveur MCP : ${vm.session.api}/mcp', style: CrescoTextes.secondaire),
+                          Text('Serveur MCP : ${vm.session.api}/mcp', style: context.mutedStyle),
                           const SizedBox(height: 10),
                           if (vm.jetonMcp == null)
                             OutlinedButton(onPressed: vm.creerJetonMcp, child: const Text('Créer un jeton pour mon IA'))
@@ -246,7 +246,7 @@ class ProfilView extends StatelessWidget {
                         );
                         if (ok ?? false) await vm.supprimer();
                       },
-                      child: const Text('Supprimer mon compte', style: TextStyle(color: CrescoCouleurs.alerte)),
+                      child: Text('Supprimer mon compte', style: TextStyle(color: context.palette.danger)),
                     ),
                   ],
                 ),

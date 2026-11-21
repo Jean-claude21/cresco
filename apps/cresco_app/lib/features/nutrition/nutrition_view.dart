@@ -144,8 +144,8 @@ class _NutritionViewState extends State<NutritionView> {
                         ChiffreUnite(signe(nombre(bilan?['moyen7j']).round()), 'kcal/j'),
                         Pastille(
                           'Confiance ${bilan?['confiance'] ?? ''}',
-                          fond: CrescoCouleurs.sable,
-                          texteCouleur: CrescoCouleurs.terre,
+                          fond: context.palette.warningSoft,
+                          texteCouleur: context.palette.onWarningSoft,
                         ),
                       ],
                     ),
@@ -154,14 +154,14 @@ class _NutritionViewState extends State<NutritionView> {
                       'deficit' => 'Déficit',
                       'surplus' => 'Surplus',
                       _ => 'Maintien',
-                    }, style: const TextStyle(fontWeight: FontWeight.w800, color: CrescoCouleurs.pin, fontSize: 17)),
+                    }, style: TextStyle(fontWeight: FontWeight.w800, color: context.palette.ink, fontSize: 17)),
                     Text(
                       'Dépense ${e['source'] == 'adaptatif' ? 'mesurée' : 'estimée'} : ${entier(e['tdee'])} kcal/j'
                       '${e['sousSaisie'] == true ? ' · saisie probablement incomplète' : ''}',
-                      style: CrescoTextes.secondaire,
+                      style: context.mutedStyle,
                     ),
                     if (cibles != null) ...[
-                      const Divider(height: 26, color: CrescoCouleurs.filet),
+                      Divider(height: 26, color: context.palette.line),
                       LigneMesure(
                         icone: Icons.local_fire_department_outlined,
                         libelle: 'Cible',
@@ -179,9 +179,9 @@ class _NutritionViewState extends State<NutritionView> {
                       ),
                       LigneMesure(icone: Icons.grain, libelle: 'Glucides', valeur: '${entier(cibles['glucides'])} g'),
                     ] else
-                      const Padding(
-                        padding: EdgeInsets.only(top: 10),
-                        child: Text('Cibles suspendues pendant le jeûne.', style: CrescoTextes.secondaire),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text('Cibles suspendues pendant le jeûne.', style: context.mutedStyle),
                       ),
                   ],
                 ),
@@ -197,7 +197,7 @@ class _NutritionViewState extends State<NutritionView> {
                 ),
                 const SizedBox(width: 10),
                 IconButton.filled(
-                  style: IconButton.styleFrom(backgroundColor: CrescoCouleurs.pin, minimumSize: const Size(56, 56)),
+                  style: IconButton.styleFrom(backgroundColor: context.palette.action, minimumSize: const Size(56, 56)),
                   tooltip: 'Scanner un code-barres',
                   onPressed: () async {
                     await vm.nav.navigateTo<void>(Routes.scanView);
@@ -227,7 +227,7 @@ class _NutritionViewState extends State<NutritionView> {
                       ),
                       IconButton(
                         tooltip: 'Manger maintenant',
-                        icon: const Icon(Icons.add_circle, color: CrescoCouleurs.pin),
+                        icon: Icon(Icons.add_circle, color: context.palette.ink),
                         onPressed: () async {
                           final m = await _demanderMasse(context, a['nom']! as String);
                           if (m != null) await vm.ajouterPortion(alimentId: a['id']! as String, masse: m);
@@ -263,9 +263,9 @@ class _NutritionViewState extends State<NutritionView> {
               child: Text('Mes plats', style: CrescoTextes.titreCarte),
             ),
             if (vm.plats.isEmpty)
-              const Text(
+              Text(
                 'Compose un plat avec tes ingrédients, ou demande à ton assistant IA de l’ajouter via le MCP : le moteur calcule les nutriments.',
-                style: CrescoTextes.secondaire,
+                style: context.mutedStyle,
               ),
             for (final p in vm.plats)
               CrescoCarte(
@@ -278,7 +278,7 @@ class _NutritionViewState extends State<NutritionView> {
                     '${p['cree_par'] == 'ia' ? ' · ajouté par ton IA' : ''}',
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.add_circle, color: CrescoCouleurs.pin),
+                    icon: Icon(Icons.add_circle, color: context.palette.ink),
                     tooltip: 'Manger une portion',
                     onPressed: () async {
                       final m = await _demanderMasse(context, p['nom']! as String);
@@ -287,7 +287,7 @@ class _NutritionViewState extends State<NutritionView> {
                   ),
                 ),
               ),
-            const Text('Données produits : Open Food Facts (ODbL).', style: CrescoTextes.secondaire),
+            Text('Données produits : Open Food Facts (ODbL).', style: context.mutedStyle),
           ],
         );
       },

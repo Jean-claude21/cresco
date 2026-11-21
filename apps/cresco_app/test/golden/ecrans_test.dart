@@ -51,6 +51,15 @@ void main() {
   testWidgets('07 Entraînement', (t) => capturer(t, const Scaffold(body: EntrainementView()), '07-entrainement'));
   testWidgets('08 Profil', (t) => capturer(t, const ProfilView(), '08-profil'));
   testWidgets('09 Connexion', (t) => capturer(t, const ConnexionView(), '09-connexion'));
+  for (final (nom, fichier, ecran) in [
+    ('Aujourd’hui', '01-aujourdhui', const AccueilView()),
+    ('Séance', '02-seance', const SeanceView()),
+    ('Jeûne', '04-jeune', const JeuneView()),
+    ('Progrès', '05-progres', const Scaffold(body: ProgresView())),
+    ('Nutrition', '06-nutrition', const Scaffold(body: NutritionView())),
+  ]) {
+    testWidgets('$nom (sombre)', (t) => capturer(t, ecran, '$fichier-sombre', brightness: Brightness.dark));
+  }
   testWidgets('10 Mon corps', (t) => capturer(t, const BodyMapView(), '10-mon-corps'));
   testWidgets(
     '11 Mon corps (sombre)',

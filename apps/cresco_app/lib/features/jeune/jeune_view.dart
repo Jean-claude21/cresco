@@ -141,7 +141,11 @@ class JeuneView extends StatelessWidget {
       Row(
         children: [
           const Expanded(child: Text('Jeûne', style: CrescoTextes.titrePage)),
-          Pastille(libellesTypeJeune[j['type']] ?? '', fond: CrescoCouleurs.blanc),
+          Pastille(
+            libellesTypeJeune[j['type']] ?? '',
+            fond: context.palette.surface,
+            texteCouleur: context.palette.ink,
+          ),
         ],
       ),
       const SizedBox(height: 14),
@@ -158,7 +162,7 @@ class JeuneView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(duree(h * 60), style: CrescoTextes.chiffre.copyWith(fontSize: 38)),
-                  const Text('écoulées', style: CrescoTextes.secondaire),
+                  Text('écoulées', style: context.mutedStyle),
                 ],
               ),
             ),
@@ -173,7 +177,7 @@ class JeuneView extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Phase estimée · ${libellesPhase[j['phase']] ?? ''}',
-              style: const TextStyle(color: CrescoCouleurs.pin, fontWeight: FontWeight.w800, fontSize: 17),
+              style: TextStyle(color: context.palette.ink, fontWeight: FontWeight.w800, fontSize: 17),
             ),
           ],
         ),
@@ -183,21 +187,21 @@ class JeuneView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Surtitre(libellesDecision[code]!, couleur: CrescoCouleurs.pousse),
+            Surtitre(libellesDecision[code]!, couleur: context.palette.lime),
             const SizedBox(height: 8),
             Text(switch (code) {
               'ARRET' => 'Stop',
               'NORMALE' => 'Séance normale',
               'REPOS' || 'REPOS_ACTIF' => 'Marche, mobilité, prière',
               _ => 'Volume ${signe((nombre(d['volume']) * 100).round())} %',
-            }, style: CrescoTextes.chiffre.copyWith(color: CrescoCouleurs.blanc, fontSize: 40)),
+            }, style: CrescoTextes.chiffre.copyWith(color: Colors.white, fontSize: 40)),
             const SizedBox(height: 8),
             Text(switch (d['alerte']) {
               'symptome' => 'Symptôme signalé : pas d’effort. Pense à rompre le jeûne.',
               'avis_medical' => 'Au-delà de 72 h : avis médical recommandé.',
               'limite_jeune_sec' => 'Jeûne sec au-delà de 24 h : à interrompre.',
               _ => code == 'ADAPTEE' ? 'RIR de 2 ou plus, pas d’échec, cardio doux ≤ 45 min' : 'Règle J-DECISION',
-            }, style: const TextStyle(color: CrescoCouleurs.blanc, fontSize: 16)),
+            }, style: const TextStyle(color: Colors.white, fontSize: 16)),
           ],
         ),
       ),
@@ -208,14 +212,14 @@ class JeuneView extends StatelessWidget {
             Expanded(
               child: CrescoCarte(
                 onTap: () => vm.noter('eau', '250'),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconeLibelle(Icons.local_drink_outlined, 'Eau'),
-                    SizedBox(height: 8),
+                    const IconeLibelle(Icons.local_drink_outlined, 'Eau'),
+                    const SizedBox(height: 8),
                     Text(
                       '+ 250 ml',
-                      style: TextStyle(color: CrescoCouleurs.pin, fontWeight: FontWeight.w800, fontSize: 22),
+                      style: TextStyle(color: context.palette.ink, fontWeight: FontWeight.w800, fontSize: 22),
                     ),
                   ],
                 ),
@@ -225,20 +229,20 @@ class JeuneView extends StatelessWidget {
           Expanded(
             child: CrescoCarte(
               onTap: () => _signaler(context, vm),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconeLibelle(Icons.monitor_heart_outlined, 'Symptômes'),
-                  SizedBox(height: 8),
+                  const IconeLibelle(Icons.monitor_heart_outlined, 'Symptômes'),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Flexible(
                         child: Text(
                           'Signaler',
-                          style: TextStyle(color: CrescoCouleurs.pin, fontWeight: FontWeight.w800, fontSize: 22),
+                          style: TextStyle(color: context.palette.ink, fontWeight: FontWeight.w800, fontSize: 22),
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: CrescoCouleurs.pin),
+                      Icon(Icons.chevron_right, color: context.palette.ink),
                     ],
                   ),
                 ],
@@ -259,9 +263,9 @@ class JeuneView extends StatelessWidget {
               const SizedBox(height: 10),
               Text(intention.isEmpty ? '—' : intention, style: CrescoTextes.intention),
               if (vm.moduleFoi) ...[
-                const Divider(height: 26, color: CrescoCouleurs.filet),
-                Text(versets['jeune']!.$1, style: CrescoTextes.verset),
-                Text(versets['jeune']!.$2, style: CrescoTextes.secondaire),
+                Divider(height: 26, color: context.palette.line),
+                Text(versets['jeune']!.$1, style: context.verseStyle),
+                Text(versets['jeune']!.$2, style: context.mutedStyle),
               ],
             ],
           ),
@@ -295,7 +299,7 @@ class _Borne extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      Text(libelle, style: CrescoTextes.secondaire),
+      Text(libelle, style: context.mutedStyle),
       Text(valeur, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
     ],
   );
@@ -377,11 +381,10 @@ class _DemarrerState extends State<_Demarrer> {
                 min: 12,
                 max: max.toDouble(),
                 divisions: (max - 12) ~/ (max > 48 ? 12 : 2),
-                activeColor: CrescoCouleurs.pin,
+                activeColor: context.palette.ink,
                 onChanged: (v) => setState(() => heures = v.round()),
               ),
-              if (type == 'sec')
-                const Text('Jeûne sec limité à 24 h, sans effort intense.', style: CrescoTextes.secondaire),
+              if (type == 'sec') Text('Jeûne sec limité à 24 h, sans effort intense.', style: context.mutedStyle),
               const SizedBox(height: 10),
               const Surtitre('Motif'),
               const SizedBox(height: 6),

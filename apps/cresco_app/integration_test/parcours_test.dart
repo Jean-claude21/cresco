@@ -158,8 +158,20 @@ void main() {
     await attendre(t, find.text('VERDICT DE LA SEMAINE'));
     await attendre(t, find.text('Développé couché'));
 
+    // ---------------------------------------------------------------- Mon corps : la séance colore les pectoraux
+    await toucher(t, onglet('Aujourd’hui'));
+    await toucher(t, find.text('Mon corps'), defiler: true);
+    await attendre(t, find.text('Séries efficaces sur 7 jours'));
+    expect(find.textContaining('/ 10 séries efficaces', findRichText: true), findsOneWidget);
+    expect(find.text('Aucune série efficace cette semaine pour ce muscle.'), findsNothing, reason: 'Pectoraux vides. À l’écran : ${ecran()}');
+    await retour(t);
+    await t.pump(const Duration(seconds: 1));
+
     // ---------------------------------------------------------------- Profil et déconnexion
     await toucher(t, onglet('Aujourd’hui'));
+    // The previous step scrolled Today down: the profile button sits at the top of the page.
+    await t.drag(find.byType(Scrollable).first, const Offset(0, 3000), warnIfMissed: false);
+    await t.pump(const Duration(milliseconds: 500));
     await toucher(t, find.byTooltip('Profil et réglages'));
     await attendre(t, find.text(email));
     await toucher(t, find.text('Module foi'), defiler: true);

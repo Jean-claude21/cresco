@@ -30,6 +30,7 @@ class CrescoApp extends StatelessWidget {
       title: 'Cresco',
       debugShowCheckedModeBanner: false,
       theme: crescoTheme(),
+      darkTheme: crescoTheme(brightness: Brightness.dark),
       locale: const Locale('fr', 'FR'),
       supportedLocales: const [Locale('fr', 'FR')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
