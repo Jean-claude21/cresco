@@ -89,9 +89,12 @@ Tous les médias viennent de ChatGPT (via Codex). Leur fabrication, leur inventa
 | Séance en cours | Toujours sombre ; photo de l’exercice et « Ma vidéo » ; charge en braise ; RIR en rectangles (choix en braise) ; « Valider la série » braise ; repos en glacier ; « Ajouter un exercice » |
 | Entraînement (Mes séances) | Ma salle ; carte noire du jour ; liste avec vignettes et bouton lecture ; intervalles |
 | Mon corps | Face/Dos ; corps et liste des muscles visibles ; légende ; fiche du muscle choisi |
+| Jeûne | Cadran glacier, début et fin prévue, phase estimée avec la frise des phases (`J-PHASE`), décision du jour, « + 250 ml d’eau » (glacier) et « Signaler un symptôme » côte à côte, intention et verset, « Terminer le jeûne » |
+| Nutrition | Reste du jour (kcal, protéines), recherche et scan, grille « Mes plats » avec « + » braise, panneau de portion (grammes − +, « Ajouter au repas »), bilan estimé sur 7 jours |
+| Progrès | Verdict de la semaine (flèche braise quand tu progresses), force estimée et sa courbe en braise, bilan énergie, poids lissé, sommeil moyen, « Comment c’est calculé » |
 | Barre d’onglets | Aujourd’hui, Entraînement, « + » rond noir, Nutrition, Progrès ; onglet actif en braise |
 
-Jeûne, Nutrition et Progrès ont la palette et les formes du design G, mais gardent leur mise en page précédente (voir [ETAT.md](../ETAT.md)).
+Les plats n’ont pas encore de photo : la grille montre l’icône 3D du bol. Une photo par plat se générera avec ChatGPT ([medias](medias/README.md)).
 
 ## Mouvement
 

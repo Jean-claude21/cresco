@@ -46,51 +46,40 @@ class ProgresView extends StatelessWidget {
             if (vm.isBusy && d == null) const Chargement(),
             if (vm.hasError) MessageErreur(vm.modelError.toString(), reessayer: vm.initialise),
             if (d != null) ...[
-              CrescoCarteSombre(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Surtitre('Verdict de la semaine', couleur: context.palette.effort),
-                    const SizedBox(height: 10),
-                    Text(
-                      libellesVerdict[d['verdict']] ?? '',
-                      style: CrescoTextes.titreCarte.copyWith(color: Colors.white, fontSize: 34),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(d['explication']! as String, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                  ],
-                ),
-              ),
+              _VerdictCard(verdict: d['verdict'] as String?, explanation: d['explication']! as String),
               if (ex != null)
                 CrescoCarte(
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          const Expanded(child: Surtitre('FORCE ESTIMÉE · e1RM', majuscules: false)),
-                          Text('28 jours', style: context.mutedStyle),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
                       DropdownButton<int>(
                         value: vm.exercice.clamp(0, exercices.length - 1),
                         isExpanded: true,
                         underline: const SizedBox.shrink(),
-                        style: Theme.of(context).textTheme.titleLarge!
-                            .copyWith(fontSize: 22, fontWeight: FontWeight.w800, color: context.palette.ink),
+                        style: CrescoTextes.titreCarte.copyWith(fontSize: 22, color: context.palette.ink),
                         items: [
                           for (var i = 0; i < exercices.length; i++)
                             DropdownMenuItem(value: i, child: Text(exercices[i]['nom']! as String)),
                         ],
                         onChanged: (i) => vm.choisir(i ?? 0),
                       ),
-                      Row(
+                      Text('e1RM · 28 jours', style: context.mutedStyle),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.end,
                         children: [
-                          Expanded(child: ChiffreUnite(decimal(ex['dernier']), 'kg')),
+                          ChiffreUnite(decimal(ex['dernier']), 'kg', taille: 40),
                           Text(
-                            '${nombre(ex['pctParSemaine']) >= 0 ? '+' : ''}${decimal(ex['pctParSemaine'], chiffres: 2)} %/sem.',
-                            style: context.mutedStyle,
+                            '${nombre(ex['pctParSemaine']) >= 0 ? '+' : ''}'
+                            '${decimal(ex['pctParSemaine'], chiffres: 2)} % / semaine',
+                            style: TextStyle(
+                              color: nombre(ex['pctParSemaine']) >= 0 ? context.palette.effort : context.palette.muted,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
                           ),
                         ],
                       ),
@@ -109,69 +98,116 @@ class ProgresView extends StatelessWidget {
                   ),
                 ),
               if (energie != null)
-                CrescoCarte(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Surtitre('Bilan énergie estimé · 7 jours'),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          ChiffreUnite(signe(nombre(energie['moyen7j']).round()), 'kcal/j'),
-                          Pastille(
-                            'Confiance ${energie['confiance']}',
-                            fond: context.palette.warningSoft,
-                            texteCouleur: context.palette.onWarningSoft,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                _InfoRow(
+                  icon: Icons.bolt_outlined,
+                  title: 'Bilan énergie · 7 jours',
+                  value: '${signe(nombre(energie['moyen7j']).round())} kcal/j',
+                  detail: 'estimé, confiance ${energie['confiance']}',
                 ),
-              Row(
-                children: [
-                  Expanded(
-                    child: CrescoCarte(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const IconeLibelle(
-                            Icons.straighten,
-                            'Poids lissé',
-                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                          ),
-                          const SizedBox(height: 8),
-                          ChiffreUnite(decimal(d['poidsLisse']), 'kg', taille: 34),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: CrescoCarte(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const IconeLibelle(
-                            Icons.bedtime_outlined,
-                            'Sommeil moyen',
-                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(duree(d['sommeilMoyenMin']), style: CrescoTextes.chiffre.copyWith(fontSize: 34)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              _InfoRow(
+                icon: Icons.monitor_weight_outlined,
+                title: 'Poids lissé',
+                value: '${decimal(d['poidsLisse'])} kg',
               ),
+              _InfoRow(icon: Icons.bedtime_outlined, title: 'Sommeil moyen', value: duree(d['sommeilMoyenMin'])),
+              OutlinedButton(onPressed: () => _explain(context), child: const Text('Comment c’est calculé')),
             ],
           ],
         );
       },
+    );
+  }
+}
+
+Future<void> _explain(BuildContext context) => showModalBottomSheet<void>(
+  context: context,
+  showDragHandle: true,
+  builder: (context) => SafeArea(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Comment c’est calculé', style: CrescoTextes.titreCarte),
+          const SizedBox(height: 12),
+          const Text(
+            'Force estimée : e1RM de tes meilleures séries (règle C-PERF-2), tendance sur 28 jours (C-PROG-1). '
+            'Verdict de la semaine : progression comparée au rythme attendu pour ton niveau, en tenant compte '
+            'du sommeil, de l’énergie et des jeûnes (C-VERDICT).',
+            style: CrescoTextes.corps,
+          ),
+          const SizedBox(height: 10),
+          Text('Toutes les formules sont dans le moteur ; ton IA peut les lire par le MCP.', style: context.mutedStyle),
+        ],
+      ),
+    ),
+  ),
+);
+
+/// Week verdict: big title, a braise arrow when you progress, and its cause.
+class _VerdictCard extends StatelessWidget {
+  const new({required this.verdict, required this.explanation});
+  final String? verdict;
+  final String explanation;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return CrescoCarte(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Verdict de la semaine', style: context.mutedStyle.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Flexible(
+                child: Text(libellesVerdict[verdict] ?? '', style: CrescoTextes.titrePage.copyWith(fontSize: 30)),
+              ),
+              if (verdict == 'progression') ...[
+                const SizedBox(width: 8),
+                Icon(Icons.north_east, color: p.effort, size: 30),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(explanation, style: const TextStyle(fontSize: 15, height: 1.4)),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Icon · title · value" row of the week summary.
+class _InfoRow extends StatelessWidget {
+  const new({required this.icon, required this.title, required this.value, this.detail});
+  final IconData icon;
+  final String title;
+  final String value;
+  final String? detail;
+
+  @override
+  Widget build(BuildContext context) {
+    return CrescoCarte(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Icon(icon, color: context.palette.ink),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                if (detail != null) Text(detail!, style: context.mutedStyle),
+              ],
+            ),
+          ),
+          Text(value, style: CrescoTextes.chiffre.copyWith(fontSize: 22)),
+        ],
+      ),
     );
   }
 }

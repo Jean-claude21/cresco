@@ -60,7 +60,7 @@ Le script lit les clés BrowserStack dans `../.secrets/.admin.env` (jamais affic
 | OAuth2 complet pour les tiers (comme struo avec better-auth) | `apps/server/src/auth.ts` ; aujourd'hui jetons personnels à permissions |
 | IA intégrée (programmation, photo d'assiette, bilans) | à brancher sur les outils MCP existants |
 | Animations d'exercices (Rive ou Lottie) | `features/seance` ; aujourd'hui photo noir et blanc par famille d’exercice et lien vidéo personnel |
-| Mise en page des maquettes G pour Jeûne, Nutrition (grille de plats en photos) et Progrès (palette, formes et mode sombre déjà faits) | maquettes : `docs/design/propositions-v2/G2-final` |
+| Photos des plats dans « Mes plats » (aujourd’hui l’icône 3D du bol) | génération ChatGPT par plat, selon `docs/design/medias/README.md` |
 | Police condensée pour les chiffres d’affiche (Barlow Condensed, OFL) | `packages/cresco_ui/fonts` ; aujourd’hui Inter 900 serrée |
 | Noms des coachs (Maya, Karim : proposés) | `packages/cresco_ui/lib/src/media.dart` |
 | Mon corps : progression et récupération par muscle | règles à écrire dans CALCULS.md, avec cas `engine-spec`, avant affichage |

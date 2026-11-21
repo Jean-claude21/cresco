@@ -61,4 +61,4 @@ Les poses sont : `salue`, `explique`, `carnet`, `pouce`, `reflechit`, `celebre`.
 - **Les coachs n’apparaissent jamais pendant l’effort.** Une nouvelle pose se génère avec les deux planches de référence jointes, pour garder les mêmes traits.
 - **Un nouveau muscle** demande une nouvelle couleur clé. Il faut alors l’ajouter dans `extraire.py`, dans `BodyMuscles` et dans `muscleNames`, puis relancer le découpage.
 - **Aucune marque réelle** ni personne reconnaissable dans les médias.
-- **Médias manquants** : une animation par exercice, des photos de plats, et l’icône de l’app.
+- **Médias manquants** : une animation par exercice, une photo par plat (la grille « Mes plats » montre l’icône du bol en attendant), et l’icône de l’app.
