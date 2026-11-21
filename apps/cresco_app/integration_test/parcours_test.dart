@@ -105,7 +105,6 @@ void main() {
     // ---------------------------------------------------------------- Aujourd'hui
     await attendre(t, find.text('Forme du jour'));
     expect(find.text('Séance du jour'), findsOneWidget);
-    expect(find.textContaining('kcal restantes', findRichText: true), findsOneWidget);
 
     // ---------------------------------------------------------------- Séance complète
     await toucher(t, find.text('Démarrer la séance'));
@@ -136,6 +135,8 @@ void main() {
     expect(find.text('Séance terminée'), findsNothing, reason: 'La séance ne s’est pas fermée. À l’écran : ${ecran()}');
     // Nouveau compte : la confiance est basse, le plan reste normal (CALCULS.md §9).
     await attendre(t, find.textContaining('pas encore assez de données'), defiler: true);
+    // The energy card sits below the fold on a real phone: scroll to it like a user.
+    await attendre(t, find.textContaining('kcal restantes', findRichText: true), defiler: true);
 
     // ---------------------------------------------------------------- Intervalles
     await toucher(t, onglet('Entraînement'));
@@ -182,7 +183,7 @@ void main() {
     // ---------------------------------------------------------------- Mon corps : la séance colore les pectoraux
     await toucher(t, onglet('Aujourd’hui'));
     await toucher(t, find.text('Mon corps'), defiler: true);
-    await attendre(t, find.text('Séries efficaces sur 7 jours'));
+    await attendre(t, find.text('Séries efficaces de la semaine'));
     expect(find.textContaining('/ 10 séries efficaces', findRichText: true), findsOneWidget);
     expect(
       find.text('Aucune série efficace cette semaine pour ce muscle.'),
