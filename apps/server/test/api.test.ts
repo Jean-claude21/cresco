@@ -91,6 +91,50 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect(sets).toEqual({ pectoraux: 1, triceps: 0.5, epaules: 0.5 });
   });
 
+  it('remembers the gym and filters exercises by its equipment', async () => {
+    const empty = await appel('GET', '/v1/gym');
+    expect(empty.corps.gym).toBeNull();
+    expect(empty.corps.presets['Basic-Fit']).toContain('exercise:leg-curl');
+    expect((await appel('PUT', '/v1/gym', { name: 'Ma salle', equipment: ['exercise:inconnu'] })).status).toBe(422);
+    const saved = await appel('PUT', '/v1/gym', { name: 'Basic-Fit Bastille', chain: 'Basic-Fit', equipment: ['exercise:leg-curl', 'material:halteres'] });
+    expect(saved.status).toBe(200);
+    expect(saved.corps.gym.name).toBe('Basic-Fit Bastille');
+    expect(saved.corps.equipment).toEqual(['exercise:leg-curl', 'material:halteres']);
+    const ids = (await appel('GET', '/v1/exercices?gym=1')).corps.map((e: { id: string }) => e.id);
+    expect(ids).toEqual(expect.arrayContaining(['leg-curl', 'curl-halteres', 'pompes']));
+    expect(ids).not.toContain('squat-barre');
+    expect(ids).not.toContain('presse-cuisses');
+    // Saving again replaces the list and keeps a single main gym.
+    const again = await appel('PUT', '/v1/gym', { name: 'Basic-Fit Bastille', equipment: ['material:barre'] });
+    expect(again.corps.equipment).toEqual(['material:barre']);
+    expect((await appel('GET', '/v1/gym', undefined, autreJeton)).corps.gym).toBeNull();
+  });
+
+  it('runs, edits and deletes a template from "Mes séances"', async () => {
+    const template = {
+      nom: 'Jambes maison',
+      type: 'muscu',
+      blocs: [
+        { repeter: 3, etapes: [{ exercice_id: 'squat-barre', duree: { reps: 8 }, cible: { rir: 2, charge_kg: 60 }, repos_s: 120 }] },
+        { repeter: 3, etapes: [{ exercice_id: 'leg-curl', duree: { reps: 12 }, cible: { rir: 2, charge_kg: 30 }, repos_s: 90 }] },
+      ],
+    };
+    const created = await appel('POST', '/v1/modeles-seance', template);
+    expect(created.status).toBe(201);
+    // The previous test left only barbells in the gym: the leg curl machine is flagged.
+    expect(created.corps.unavailableAtGym).toEqual(['leg-curl']);
+    const id = created.corps.id;
+    const today = await appel('GET', `/v1/seances/du-jour?modele=${id}`);
+    expect(today.corps.modele.nom).toBe('Jambes maison');
+    const updated = await appel('PUT', `/v1/modeles-seance/${id}`, { ...template, nom: 'Jambes du mardi' });
+    expect(updated.corps.nom).toBe('Jambes du mardi');
+    expect((await appel('PUT', `/v1/modeles-seance/${id}`, undefined, autreJeton)).status).toBe(400);
+    expect((await appel('DELETE', `/v1/modeles-seance/${id}`, undefined, autreJeton)).status).toBe(404);
+    expect((await appel('DELETE', `/v1/modeles-seance/${id}`)).status).toBe(204);
+    expect((await appel('GET', `/v1/seances/du-jour?modele=${id}`)).status).toBe(404);
+    expect((await appel('GET', '/v1/seances/du-jour?modele=pas-un-id')).status).toBe(400);
+  });
+
   it('isole les données entre utilisateurs (RLS)', async () => {
     const liste = await appel('GET', '/v1/seances', undefined, autreJeton);
     expect(liste.corps).toHaveLength(0);

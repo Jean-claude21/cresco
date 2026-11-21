@@ -46,7 +46,7 @@ function construire(ctx: Ctx) {
     'programmer_seance',
     {
       description:
-        'Crée un modèle de séance (blocs → étapes). Muscu : duree.reps + cible.rir + cible.charge_kg ("auto" = calculée par le moteur). Cardio : duree.temps_s + cible.vitesse_ms (m/s). Refusé si hors bornes de sécurité.',
+        'Crée un modèle de séance (blocs → étapes). Muscu : duree.reps + cible.rir + cible.charge_kg ("auto" = calculée par le moteur). Cardio : duree.temps_s + cible.vitesse_ms (m/s). Refusé si hors bornes de sécurité. Lis d’abord get_gym : la réponse liste dans unavailableAtGym les exercices absents de la salle.',
       inputSchema: svc.ModeleEntree.shape,
     },
     async (args) => run('entrainement:ecriture', (t, u) => svc.creerModele(t, u, svc.ModeleEntree.parse(args), 'ia'))(),
@@ -93,6 +93,22 @@ function construire(ctx: Ctx) {
     'obtenir_bilan_energie',
     { description: 'BMR, TDEE (adaptatif si assez de données), cibles de macros, bilan du jour et verdict déficit / maintien / surplus avec confiance.' },
     run('nutrition:lecture', (t, u) => svc.energie(t, u)),
+  );
+  server.registerTool(
+    'get_gym',
+    {
+      description:
+        'The user’s main gym ("Ma salle"): checked equipment, full equipment catalog and chain presets. Only program exercises this equipment allows.',
+    },
+    run('entrainement:lecture', (t) => svc.getGym(t)),
+  );
+  server.registerTool(
+    'set_gym',
+    {
+      description: 'Saves the user’s main gym and the equipment really available (keys from the get_gym catalog). Ask the user to confirm the list first.',
+      inputSchema: svc.GymInput.shape,
+    },
+    async (args) => run('entrainement:ecriture', (t, u) => svc.setGym(t, u, svc.GymInput.parse(args)))(),
   );
   server.registerTool(
     'muscle_volume',

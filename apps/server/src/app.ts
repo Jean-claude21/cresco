@@ -18,6 +18,8 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
   app.onError((err, c) => {
     if (err instanceof svc.Refus) return c.json({ erreur: err.message }, err.status);
     if (err instanceof ZodError) return c.json({ erreur: 'Entrée invalide', details: err.issues }, 400);
+    // A missing or malformed JSON body is the client's mistake, not a server failure.
+    if (err instanceof SyntaxError) return c.json({ erreur: 'Corps JSON invalide' }, 400);
     console.error(err);
     return c.json({ erreur: 'Erreur interne' }, 500);
   });
@@ -99,9 +101,26 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
   // ------------------------------------------------------------ Entraînement
   app.get('/v1/exercices', async (c) => {
     exige(c, 'entrainement:lecture');
+    // ?gym=1: only what the user's gym allows (everything when no gym is described).
+    const onlyGym = c.req.query('gym') === '1';
     return c.json(
-      await tx(c, async (t) => (await t.query(`select e.*, coalesce((select json_agg(l) from exercice_lien l where l.exercice_id = e.id), '[]') as liens from exercice e order by nom`)).rows),
+      await tx(c, async (t) => {
+        const rows = (await t.query(`select e.*, coalesce((select json_agg(l) from exercice_lien l where l.exercice_id = e.id), '[]') as liens from exercice e order by nom`)).rows;
+        const available = await svc.exercisesAvailableAtGym(t);
+        return rows
+          .map((e) => ({ ...e, availableAtGym: available === null ? null : available.has(e.id) }))
+          .filter((e) => !onlyGym || e.availableAtGym !== false);
+      }),
     );
+  });
+  app.get('/v1/gym', async (c) => {
+    exige(c, 'entrainement:lecture');
+    return c.json(await tx(c, (t) => svc.getGym(t)));
+  });
+  app.put('/v1/gym', async (c) => {
+    exige(c, 'entrainement:ecriture');
+    const g = svc.GymInput.parse(await c.req.json());
+    return c.json(await tx(c, (t, u) => svc.setGym(t, u, g)));
   });
   app.post('/v1/exercices/:id/liens', async (c) => {
     exige(c, 'entrainement:ecriture');
@@ -124,6 +143,16 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
     const m = svc.ModeleEntree.parse(await c.req.json());
     return c.json(await tx(c, (t, u) => svc.creerModele(t, u, m)), 201);
   });
+  app.put('/v1/modeles-seance/:id', async (c) => {
+    exige(c, 'entrainement:ecriture');
+    const m = svc.ModeleEntree.parse(await c.req.json());
+    return c.json(await tx(c, (t) => svc.updateTemplate(t, c.req.param('id'), m)));
+  });
+  app.delete('/v1/modeles-seance/:id', async (c) => {
+    exige(c, 'entrainement:ecriture');
+    await tx(c, (t) => svc.deleteTemplate(t, c.req.param('id')));
+    return c.body(null, 204);
+  });
   app.get('/v1/seances', async (c) => {
     exige(c, 'entrainement:lecture');
     return c.json(await tx(c, (t) => svc.seances(t, jours(c, 30))));
@@ -139,7 +168,9 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
   });
   app.get('/v1/seances/du-jour', async (c) => {
     exige(c, 'entrainement:lecture');
-    return c.json(await tx(c, (t, u) => svc.seanceDuJour(t, u)));
+    // ?modele=<id>: today's adjustment applied to a template the user picked in "Mes séances".
+    const templateId = c.req.query('modele');
+    return c.json(await tx(c, (t, u) => svc.seanceDuJour(t, u, templateId)));
   });
 
   // ------------------------------------------------------------ Corps, sommeil, ressenti

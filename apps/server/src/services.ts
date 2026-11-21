@@ -197,7 +197,36 @@ export async function creerModele(tx: Tx, userId: string, m: Modele, creePar = '
     `insert into modele_seance (user_id, nom, type, contenu, cree_par) values ($1, $2, $3, $4, $5) returning *`,
     [userId, m.nom, m.type, { blocs: m.blocs, annonces: m.annonces }, creePar],
   );
-  return rows[0];
+  return { ...rows[0], unavailableAtGym: await unavailableAtGym(tx, m) };
+}
+
+/** Exercises of [m] the user's gym does not have (empty when no gym is described). */
+async function unavailableAtGym(tx: Tx, m: Modele) {
+  const available = await exercisesAvailableAtGym(tx);
+  if (!available) return [];
+  const ids = m.blocs.flatMap((b) => b.etapes.map((e) => e.exercice_id)).filter((id): id is string => !!id);
+  return [...new Set(ids.filter((id) => !available.has(id)))];
+}
+
+/** Replaces a template's content, with the same safety checks as a new one. */
+export async function updateTemplate(tx: Tx, id: string, m: Modele) {
+  if (!z.string().uuid().safeParse(id).success) throw new Refus(400, 'Identifiant de séance invalide');
+  const v = validerModele(m);
+  if (!v.valide) throw new Refus(422, `Séance refusée : ${v.problemes.join(', ')}`);
+  const { rows } = await tx.query(`update modele_seance set nom = $2, type = $3, contenu = $4 where id = $1 returning *`, [
+    id,
+    m.nom,
+    m.type,
+    { blocs: m.blocs, annonces: m.annonces },
+  ]);
+  if (!rows[0]) throw new Refus(404, 'Séance introuvable');
+  return { ...rows[0], unavailableAtGym: await unavailableAtGym(tx, m) };
+}
+
+export async function deleteTemplate(tx: Tx, id: string) {
+  if (!z.string().uuid().safeParse(id).success) throw new Refus(400, 'Identifiant de séance invalide');
+  const { rowCount } = await tx.query(`delete from modele_seance where id = $1`, [id]);
+  if (!rowCount) throw new Refus(404, 'Séance introuvable');
 }
 
 export const SeanceEntree = z.object({
@@ -416,7 +445,8 @@ export async function forme(tx: Tx, userId: string) {
   };
 }
 
-export async function seanceDuJour(tx: Tx, userId: string) {
+export async function seanceDuJour(tx: Tx, userId: string, templateId?: string) {
+  if (templateId !== undefined && !z.string().uuid().safeParse(templateId).success) throw new Refus(400, 'Identifiant de séance invalide');
   const p = await profil(tx, userId);
   const f = await forme(tx, userId);
   const reposVerrouille = p.preferences.joursReposVerrouilles.includes(new Date().getDay());
@@ -443,8 +473,12 @@ export async function seanceDuJour(tx: Tx, userId: string) {
     decision = combinee;
   }
   const { rows: modeles } = await tx.query<{ id: string; nom: string; type: string; contenu: { blocs: Modele['blocs']; annonces?: Modele['annonces'] } }>(
-    `select id, nom, type, contenu from modele_seance order by cree_le desc limit 1`,
+    templateId
+      ? `select id, nom, type, contenu from modele_seance where id = $1`
+      : `select id, nom, type, contenu from modele_seance order by cree_le desc limit 1`,
+    templateId ? [templateId] : [],
   );
+  if (templateId && !modeles[0]) throw new Refus(404, 'Séance introuvable');
   const modele = modeles[0]
     ? { id: modeles[0].id, nom: modeles[0].nom, type: modeles[0].type, blocs: modeles[0].contenu.blocs, annonces: modeles[0].contenu.annonces }
     : { id: null, ...SEANCE_PAR_DEFAUT };
@@ -767,7 +801,7 @@ export async function aujourdhui(tx: Tx, userId: string) {
 }
 
 export async function exporter(tx: Tx, userId: string) {
-  const tables = ['seance', 'serie', 'modele_seance', 'plat', 'repas', 'nuit', 'mesure', 'ressenti', 'jeune', 'evenement_jeune', 'exercice_lien'];
+  const tables = ['seance', 'serie', 'modele_seance', 'plat', 'repas', 'nuit', 'mesure', 'ressenti', 'jeune', 'evenement_jeune', 'exercice_lien', 'gym', 'gym_equipment'];
   const out: Record<string, unknown> = { profil: await profil(tx, userId), exporte_le: new Date().toISOString() };
   for (const t of tables) out[t] = (await tx.query(`select * from ${t}`)).rows;
   out.aliments_perso = (await tx.query(`select * from aliment where user_id is not null`)).rows;
@@ -801,4 +835,100 @@ export async function muscleVolume(tx: Tx, days: number) {
       .map(([muscle, effectiveSets]) => ({ muscle, effectiveSets }))
       .sort((a, b) => b.effectiveSets - a.effectiveSets),
   };
+}
+
+// ---------------------------------------------------------------- Gym ("Ma salle")
+
+/** Free weights and cardio machines, identified by the catalog's `materiel`. Bodyweight is always available. */
+const MATERIALS: Record<string, string> = {
+  barre: 'Barres et disques',
+  halteres: 'Haltères',
+  tapis: 'Tapis de course',
+  velo: 'Vélo',
+  rameur: 'Rameur',
+};
+
+/**
+ * Equipment usually found in a chain's clubs, offered as a starting point that the user confirms.
+ * Data, not a rule: nothing is assumed available until the user saves it.
+ */
+export const GYM_PRESETS: Record<string, string[]> = {
+  'Basic-Fit': [
+    'exercise:presse-cuisses', 'exercise:leg-curl', 'exercise:leg-extension', 'exercise:tirage-vertical',
+    'exercise:rowing-assis-poulie', 'exercise:extension-triceps-poulie', 'exercise:crunch-poulie',
+    'exercise:mollets-debout', 'material:barre', 'material:halteres', 'material:tapis', 'material:velo', 'material:rameur',
+  ],
+};
+
+export const GymInput = z.object({
+  name: z.string().trim().min(1).max(120),
+  chain: z.string().trim().max(60).nullish(),
+  equipment: z.array(z.string().regex(/^(exercise|material):[a-z0-9_-]+$/u)).max(200),
+});
+export type GymInput = z.infer<typeof GymInput>;
+
+/** Every piece of equipment the user can check: one entry per machine exercise, plus free weights and cardio. */
+async function equipmentCatalog(tx: Tx) {
+  const { rows } = await tx.query<{ id: string; nom: string }>(`select id, nom from exercice where materiel = 'machine' order by nom`);
+  return [
+    ...rows.map((r) => ({ key: `exercise:${r.id}`, label: r.nom, kind: 'machine' as const })),
+    ...Object.entries(MATERIALS).map(([m, label]) => ({
+      key: `material:${m}`,
+      label,
+      kind: ['tapis', 'velo', 'rameur'].includes(m) ? ('cardio' as const) : ('free' as const),
+    })),
+  ];
+}
+
+/** The main gym, its checked equipment, the full catalog to choose from, and the chain presets. */
+export async function getGym(tx: Tx) {
+  const { rows } = await tx.query<{ id: string; name: string; chain: string | null; updated_at: Date }>(
+    `select id, name, chain, updated_at from gym where is_main`,
+  );
+  const gym = rows[0] ?? null;
+  const equipment = gym
+    ? (await tx.query<{ equipment: string }>(`select equipment from gym_equipment where gym_id = $1 order by equipment`, [gym.id])).rows.map(
+        (r) => r.equipment,
+      )
+    : [];
+  return { gym, equipment, catalog: await equipmentCatalog(tx), presets: GYM_PRESETS };
+}
+
+/** Creates or replaces the main gym and its equipment list. */
+export async function setGym(tx: Tx, userId: string, input: GymInput) {
+  const known = new Set((await equipmentCatalog(tx)).map((e) => e.key));
+  const unknown = input.equipment.filter((e) => !known.has(e));
+  if (unknown.length) throw new Refus(422, `Équipement inconnu : ${unknown.join(', ')}`);
+  const { rows } = await tx.query<{ id: string }>(
+    `insert into gym (user_id, name, chain) values ($1, $2, $3)
+       on conflict (user_id) where is_main do update set name = excluded.name, chain = excluded.chain, updated_at = now()
+     returning id`,
+    [userId, input.name, input.chain ?? null],
+  );
+  const gymId = rows[0]!.id;
+  await tx.query(`delete from gym_equipment where gym_id = $1`, [gymId]);
+  for (const e of new Set(input.equipment)) {
+    await tx.query(`insert into gym_equipment (gym_id, user_id, equipment) values ($1, $2, $3)`, [gymId, userId, e]);
+  }
+  return getGym(tx);
+}
+
+/**
+ * Exercise ids doable at the main gym: machines checked one by one, free weights and cardio by
+ * material, bodyweight always. Null when the user has not described a gym (everything is allowed).
+ */
+export async function exercisesAvailableAtGym(tx: Tx): Promise<Set<string> | null> {
+  const { gym, equipment } = await getGym(tx);
+  if (!gym) return null;
+  const owned = new Set(equipment);
+  const { rows } = await tx.query<{ id: string; materiel: string }>(`select id, materiel from exercice`);
+  return new Set(
+    rows
+      .filter(
+        (e) =>
+          e.materiel === 'poids_du_corps' ||
+          (e.materiel === 'machine' ? owned.has(`exercise:${e.id}`) : owned.has(`material:${e.materiel}`)),
+      )
+      .map((e) => e.id),
+  );
 }
