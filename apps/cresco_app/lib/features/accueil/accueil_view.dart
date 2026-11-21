@@ -34,100 +34,115 @@ class AccueilView extends StatelessWidget {
       viewModelBuilder: AccueilViewModel.new,
       onViewModelReady: (vm) => vm.synchroniser(),
       builder: (context, vm, _) => Scaffold(
-        extendBody: true,
-        // Un onglet est reconstruit à chaque visite : ses données sont toujours à jour
-        // (une séance terminée apparaît aussitôt dans Progrès).
+        // A tab is rebuilt on each visit: its data is always fresh
+        // (a finished session shows up at once in Progrès).
         body: KeyedSubtree(
           key: ValueKey(vm.currentIndex),
           child: const [TodayView(), TrainingView(), NutritionView(), ProgresView()][vm.currentIndex],
         ),
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _Onglets(index: vm.currentIndex, onTap: vm.setIndex),
-                ),
-                const SizedBox(width: 10),
-                SizedBox.square(
-                  dimension: 66,
-                  child: FloatingActionButton(
-                    heroTag: 'plus',
-                    elevation: 0,
-                    shape: const CircleBorder(),
-                    backgroundColor: context.palette.action,
-                    foregroundColor: context.palette.onAction,
-                    tooltip: 'Ajouter une donnée',
-                    onPressed: () => ouvrirSaisieRapide(context),
-                    child: const Icon(Icons.add, size: 34),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        bottomNavigationBar: _TabBar(
+          index: vm.currentIndex,
+          onTap: vm.setIndex,
+          onAdd: () => ouvrirSaisieRapide(context),
         ),
       ),
     );
   }
 }
 
-class _Onglets extends StatelessWidget {
-  const new({required this.index, required this.onTap});
+/// Bottom bar of mockup G: four labeled tabs around a round "+" (quick entry).
+class _TabBar extends StatelessWidget {
+  const new({required this.index, required this.onTap, required this.onAdd});
   final int index;
   final ValueChanged<int> onTap;
+  final VoidCallback onAdd;
 
-  static const List<(IconData, String)> _items = [
-    (Icons.home_outlined, 'Aujourd’hui'),
-    (Icons.fitness_center, 'Entraînement'),
-    (Icons.restaurant_outlined, 'Nutrition'),
-    (Icons.bar_chart_rounded, 'Progrès'),
+  static const List<(IconData, IconData, String)> _items = [
+    (Icons.home_outlined, Icons.home, 'Aujourd’hui'),
+    (Icons.fitness_center_outlined, Icons.fitness_center, 'Entraînement'),
+    (Icons.restaurant_outlined, Icons.restaurant, 'Nutrition'),
+    (Icons.bar_chart_outlined, Icons.bar_chart, 'Progrès'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return Container(
-      height: 66,
-      decoration: BoxDecoration(
-        color: p.surface,
-        borderRadius: BorderRadius.circular(33),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 24, offset: const Offset(0, 8))],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          for (var i = 0; i < _items.length; i++)
-            Expanded(
-              child: Semantics(
-                selected: i == index,
-                button: true,
-                label: _items[i].$2,
-                excludeSemantics: true,
-                child: Tooltip(
-                  message: _items[i].$2,
-                  child: InkWell(
-                    key: ValueKey('onglet-${_items[i].$2}'),
-                    borderRadius: BorderRadius.circular(26),
-                    onTap: () => onTap(i),
-                    child: Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOutCubic,
-                        width: i == index ? 64 : 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: i == index ? p.action : Colors.transparent,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Icon(_items[i].$1, size: 24, color: i == index ? p.onAction : p.ink),
+    Widget tab(int i) {
+      final (icon, activeIcon, label) = _items[i];
+      final on = i == index;
+      return Expanded(
+        child: Semantics(
+          selected: on,
+          button: true,
+          label: label,
+          excludeSemantics: true,
+          child: InkWell(
+            key: ValueKey('onglet-$label'),
+            onTap: () => onTap(i),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(on ? activeIcon : icon, size: 24, color: on ? p.effort : p.ink),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: on ? FontWeight.w800 : FontWeight.w500,
+                        color: on ? p.ink : p.muted,
                       ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: p.background,
+        border: Border(
+          top: BorderSide(color: p.line, width: CrescoShape.border),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: [
+              tab(0),
+              tab(1),
+              SizedBox(
+                width: 72,
+                child: Center(
+                  child: SizedBox.square(
+                    dimension: 48,
+                    child: FloatingActionButton(
+                      heroTag: 'plus',
+                      elevation: 0,
+                      highlightElevation: 0,
+                      shape: const CircleBorder(),
+                      backgroundColor: p.action,
+                      foregroundColor: p.onAction,
+                      tooltip: 'Ajouter une donnée',
+                      onPressed: onAdd,
+                      child: const Icon(Icons.add, size: 28),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+              tab(2),
+              tab(3),
+            ],
+          ),
+        ),
       ),
     );
   }

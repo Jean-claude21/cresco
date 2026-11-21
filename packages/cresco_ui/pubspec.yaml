@@ -18,6 +18,12 @@ dev_dependencies:
   very_good_analysis: ^11.0.0
 
 flutter:
+  # Media generated with ChatGPT for the validated design (docs/design/medias/README.md).
+  assets:
+    - assets/body/
+    - assets/coach/
+    - assets/icons/
+    - assets/photos/
   fonts:
     # Inter — SIL Open Font License (fonts/OFL-Inter.txt). Police variable : graisses 100 à 900.
     - family: Inter

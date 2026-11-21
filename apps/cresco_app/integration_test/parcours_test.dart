@@ -91,6 +91,9 @@ void main() {
     await toucher(t, find.text('Créer le compte'));
 
     // ---------------------------------------------------------------- Démarrage : objectif, rythme, salle (plus tard), foi
+    await attendre(t, find.text('Qui t’accompagne ?'));
+    await toucher(t, find.byKey(const ValueKey('coach-homme')));
+    await toucher(t, find.text('Continuer'));
     await attendre(t, find.text('Qu’est-ce que tu veux changer ?'));
     await toucher(t, find.text('Prendre du muscle'));
     for (var i = 0; i < 3; i++) {
@@ -100,12 +103,12 @@ void main() {
     await toucher(t, find.text('C’est parti'));
 
     // ---------------------------------------------------------------- Aujourd'hui
-    await attendre(t, find.text('FORME DU JOUR'));
-    expect(find.text('SÉANCE DU JOUR'), findsOneWidget);
-    expect(find.text('ÉNERGIE DU JOUR'), findsOneWidget);
+    await attendre(t, find.text('Forme du jour'));
+    expect(find.text('Séance du jour'), findsOneWidget);
+    expect(find.textContaining('kcal restantes', findRichText: true), findsOneWidget);
 
     // ---------------------------------------------------------------- Séance complète
-    await toucher(t, find.text('Ouvrir la séance'));
+    await toucher(t, find.text('Démarrer la séance'));
     await attendre(t, find.text('Développé couché'));
     // Nouveau compte : pas d'historique, on fixe la charge à 40 kg pour la première série.
     for (var i = 0; i < 16; i++) {
@@ -181,7 +184,11 @@ void main() {
     await toucher(t, find.text('Mon corps'), defiler: true);
     await attendre(t, find.text('Séries efficaces sur 7 jours'));
     expect(find.textContaining('/ 10 séries efficaces', findRichText: true), findsOneWidget);
-    expect(find.text('Aucune série efficace cette semaine pour ce muscle.'), findsNothing, reason: 'Pectoraux vides. À l’écran : ${ecran()}');
+    expect(
+      find.text('Aucune série efficace cette semaine pour ce muscle.'),
+      findsNothing,
+      reason: 'Pectoraux vides. À l’écran : ${ecran()}',
+    );
     await retour(t);
     await t.pump(const Duration(seconds: 1));
 
@@ -194,6 +201,6 @@ void main() {
     await attendre(t, find.text(email));
     await toucher(t, find.text('Module foi'), defiler: true);
     await toucher(t, find.text('Se déconnecter'), defiler: true);
-    await attendre(t, find.text('Bon retour'));
+    await attendre(t, find.text('Ta séance du jour, adaptée à ta forme.'));
   });
 }

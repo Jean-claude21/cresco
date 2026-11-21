@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -9,10 +10,12 @@ import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 class ConnexionViewModel extends BaseViewModel {
+  new({bool signUp = false}) : inscription = signUp;
+
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService _nav = locator<NavigationService>();
 
-  bool inscription = false;
+  bool inscription;
   String? erreur;
 
   void basculer() {
@@ -36,6 +39,11 @@ class ConnexionViewModel extends BaseViewModel {
             await _api.inscription(email.trim(), motDePasse, nom.trim());
           } else {
             await _api.connexion(email.trim(), motDePasse);
+            try {
+              await syncCoachFrom(await _api.profil());
+            } on ErreurApi {
+              // The coach stays the local one until the profile loads.
+            }
           }
           // A new account first goes through the startup questions (goal, rhythm, gym, faith).
           await _nav.clearStackAndShow<void>(inscription ? Routes.onboardingView : Routes.accueilView);
@@ -47,8 +55,12 @@ class ConnexionViewModel extends BaseViewModel {
   }
 }
 
+/// Sign in or sign up, opened from the welcome screen.
 class ConnexionView extends StatefulWidget {
-  const new({super.key});
+  const new({super.key, this.signUp = false});
+
+  /// Opens directly on account creation ("Créer un compte" on the welcome screen).
+  final bool signUp;
   @override
   State<ConnexionView> createState() => _ConnexionViewState();
 }
@@ -69,29 +81,19 @@ class _ConnexionViewState extends State<ConnexionView> {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ConnexionViewModel>.reactive(
-      viewModelBuilder: ConnexionViewModel.new,
+      viewModelBuilder: () => ConnexionViewModel(signUp: widget.signUp),
       builder: (context, vm, _) => Scaffold(
+        appBar: AppBar(),
         body: SafeArea(
-          // Formulaire court : tout est construit (une liste paresseuse retirerait le bouton de l'arbre
-          // quand le clavier le pousse hors de l'écran).
+          top: false,
+          // Short form: everything is built (a lazy list would drop the button from the tree
+          // when the keyboard pushes it off screen).
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             child: AutofillGroup(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 40),
-                  Row(
-                    children: [
-                      Icon(Icons.eco, color: context.palette.ink, size: 30),
-                      const SizedBox(width: 8),
-                      Text(
-                        'cresco',
-                        style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: context.palette.ink),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 28),
                   Text(vm.inscription ? 'Créer ton compte' : 'Bon retour', style: CrescoTextes.titrePage),
                   const SizedBox(height: 8),
                   Text(

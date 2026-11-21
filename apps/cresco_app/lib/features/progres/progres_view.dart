@@ -50,7 +50,7 @@ class ProgresView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Surtitre('Verdict de la semaine', couleur: context.palette.lime),
+                    Surtitre('Verdict de la semaine', couleur: context.palette.effort),
                     const SizedBox(height: 10),
                     Text(
                       libellesVerdict[d['verdict']] ?? '',

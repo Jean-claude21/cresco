@@ -40,6 +40,8 @@ export interface Profil {
     prioriteSpirituelle: boolean;
     joursReposVerrouilles: number[];
     besoinSommeilMin: number;
+    /** Illustrated coach picked at onboarding (absent until chosen). */
+    coach?: 'femme' | 'homme';
   };
 }
 
@@ -67,6 +69,7 @@ export const ProfilPatch = z.object({
       prioriteSpirituelle: z.boolean().optional(),
       joursReposVerrouilles: z.array(z.number().int().min(0).max(6)).optional(),
       besoinSommeilMin: z.number().min(360).max(600).optional(),
+      coach: z.enum(['femme', 'homme']).optional(),
     })
     .optional(),
 });

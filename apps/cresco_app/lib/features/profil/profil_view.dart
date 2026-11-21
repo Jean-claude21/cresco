@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
@@ -23,6 +24,14 @@ class ProfilViewModel extends BaseViewModel {
 
   Future<void> charger() async {
     await runBusyFuture(Future(() async => profil = await _api.profil()));
+    if (profil != null) await syncCoachFrom(profil!);
+  }
+
+  Coach get coach => currentCoach();
+
+  Future<void> changeCoach(Coach c) async {
+    await saveCoach(c);
+    notifyListeners();
   }
 
   Json get preferences => (profil?['preferences'] as Json?) ?? const {};
@@ -57,12 +66,12 @@ class ProfilViewModel extends BaseViewModel {
 
   Future<void> deconnecter() async {
     await session.deconnecter();
-    await _nav.clearStackAndShow<void>(Routes.connexionView);
+    await _nav.clearStackAndShow<void>(Routes.welcomeView);
   }
 
   Future<void> supprimer() async {
     await _api.supprimerCompte();
-    await _nav.clearStackAndShow<void>(Routes.connexionView);
+    await _nav.clearStackAndShow<void>(Routes.welcomeView);
   }
 }
 
@@ -146,6 +155,34 @@ class ProfilView extends StatelessWidget {
                             ],
                             selected: {p['objectif']! as String},
                             onSelectionChanged: (s) => vm.modifier({'objectif': s.first}),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    CrescoCarte(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Mon coach', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                          Text('Il t’accueille et t’encourage dans l’app.', style: context.mutedStyle),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              for (final (i, c) in Coach.values.indexed) ...[
+                                if (i > 0) const SizedBox(width: 10),
+                                Expanded(
+                                  child: ChoiceChip(
+                                    key: ValueKey('profil-coach-${c.name}'),
+                                    showCheckmark: false,
+                                    avatar: CoachIllustration(coach: c, pose: CoachPose.salue, height: 28),
+                                    label: Text(c.label),
+                                    selected: vm.coach == c,
+                                    onSelected: (_) => vm.changeCoach(c),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ],
                       ),
@@ -312,7 +349,7 @@ class _ChampDate extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: InkWell(
-        borderRadius: BorderRadius.circular(CrescoMesures.rayonPetit),
+        borderRadius: CrescoShape.borderRadius,
         onTap: () async {
           final maintenant = DateTime.now();
           final choix = await showDatePicker(

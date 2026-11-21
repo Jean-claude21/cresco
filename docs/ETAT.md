@@ -20,8 +20,8 @@ Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.s
 | Moteur Dart (`packages/cresco_engine`) | les mêmes 59 cas : les deux moteurs donnent les mêmes résultats |
 | API `/v1` + RLS Postgres + jetons à permissions | 17 tests de bout en bout sur un vrai Postgres (isolation entre utilisateurs, garde-fous, jeûne, confiance basse, séries par muscle, Ma salle, Mes séances, MCP, export, suppression) |
 | Serveur MCP (25 outils) | appel réel `tools/list` et `tools/call` dans les tests |
-| App Flutter : connexion, Aujourd'hui, Entraînement, Séance, Intervalles, Jeûne, Nutrition (scan, Mes plats), Progrès, Profil, Mon corps, Ma salle, Mes séances (éditeur, ajout d’exercice en cours de séance), Démarrage (objectif, rythme, salle, foi) | analyse `--fatal-infos` sans remarque, 59 tests dont 26 « écrans étroits » (360 pt, texte normal et × 1,3), 18 captures de contrôle dont 6 en sombre |
-| Design noir et citron vert ([DESIGN.md](design/DESIGN.md)) | palette claire et sombre, police Inter embarquée, états chargement et erreur partagés ; Aujourd'hui et Mon corps refaits, les autres écrans ont pris les nouvelles couleurs |
+| App Flutter : Bienvenue, connexion, Démarrage (coach, objectif, rythme, salle, foi), Aujourd'hui, Entraînement (Mes séances, éditeur, ajout d’exercice en cours de séance), Séance, Intervalles, Jeûne, Nutrition (scan, Mes plats), Progrès, Profil (dont Mon coach), Mon corps, Ma salle | analyse `--fatal-infos` sans remarque, 61 tests dont 28 « écrans étroits » (360 pt, texte normal et × 1,3), 19 captures de contrôle dont 6 en sombre ; toucher de « Mon corps » vérifié sur les vrais masques |
+| Design G « Net et braise » ([DESIGN.md](design/DESIGN.md), [ADR-0004](architecture/decisions/0004-design-net-et-braise.md)) | palette claire et sombre (braise pour l’effort, glacier pour le repos), formes de Picnic partout (`CrescoShape`), deux coachs illustrés (accueil, démarrage, états vides, choix dans Profil), corps complet généré et découpé en masques, icônes et photos ; médias générés avec ChatGPT ([medias](design/medias/README.md)) |
 | **Parcours complet sur vrais téléphones** (BrowserStack) | vert sur Galaxy S23 (Android 13), Pixel 8 (14), Galaxy S25 (15), Moto G71 (11), contre le staging : inscription → séance complète → intervalles → jeûne → nutrition → progrès → profil → déconnexion |
 | Déploiement staging | santé vérifiée depuis Internet |
 
@@ -58,8 +58,10 @@ Le script lit les clés BrowserStack dans `../.secrets/.admin.env` (jamais affic
 | Base locale complète hors ligne (Drift) | ADR-0003 ; aujourd'hui cache des lectures et file d'attente des écritures |
 | OAuth2 complet pour les tiers (comme struo avec better-auth) | `apps/server/src/auth.ts` ; aujourd'hui jetons personnels à permissions |
 | IA intégrée (programmation, photo d'assiette, bilans) | à brancher sur les outils MCP existants |
-| Animations d'exercices (Rive ou Lottie) | `features/seance` ; aujourd'hui pictogramme et lien vidéo personnel |
-| Mise en page des maquettes pour Séance, Jeûne, Nutrition, Progrès (couleurs et mode sombre déjà faits) | maquettes : https://claude.ai/artifact/9pddHy1muXQf24ezMDtdUw |
+| Animations d'exercices (Rive ou Lottie) | `features/seance` ; aujourd'hui photo noir et blanc par famille d’exercice et lien vidéo personnel |
+| Mise en page des maquettes G pour Jeûne, Nutrition (grille de plats en photos) et Progrès (palette, formes et mode sombre déjà faits) | maquettes : `docs/design/propositions-v2/G2-final` |
+| Police condensée pour les chiffres d’affiche (Barlow Condensed, OFL) | `packages/cresco_ui/fonts` ; aujourd’hui Inter 900 serrée |
+| Noms des coachs (Maya, Karim : proposés) | `packages/cresco_ui/lib/src/media.dart` |
 | Mon corps : progression et récupération par muscle | règles à écrire dans CALCULS.md, avec cas `engine-spec`, avant affichage |
 | Abonnements (RevenueCat) | après la phase 5 de la roadmap |
 | Base Ciqual | aujourd'hui Open Food Facts et aliments personnels |

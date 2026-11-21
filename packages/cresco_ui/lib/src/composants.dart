@@ -18,8 +18,8 @@ class CrescoCarte extends StatelessWidget {
     final carte = DecoratedBox(
       decoration: BoxDecoration(
         color: p.surface,
-        borderRadius: BorderRadius.circular(CrescoMesures.rayon),
-        border: Border.all(color: p.line, width: 0.7),
+        borderRadius: CrescoShape.borderRadius,
+        border: Border.all(color: p.line, width: CrescoShape.border),
       ),
       child: Material(
         type: MaterialType.transparency,
@@ -29,7 +29,7 @@ class CrescoCarte extends StatelessWidget {
     if (onTap == null) return carte;
     return Material(
       color: Colors.transparent,
-      child: InkWell(borderRadius: BorderRadius.circular(CrescoMesures.rayon), onTap: onTap, child: carte),
+      child: InkWell(borderRadius: CrescoShape.borderRadius, onTap: onTap, child: carte),
     );
   }
 }
@@ -45,11 +45,11 @@ class CrescoCarteSombre extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(CrescoMesures.rayon),
+      borderRadius: CrescoShape.borderRadius,
       child: ColoredBox(
         color: p.hero,
         child: CustomPaint(
-          painter: _LignesCroissance(p.lime),
+          painter: _LignesCroissance(p.effort),
           child: Padding(
             padding: padding,
             child: DefaultTextStyle.merge(
@@ -159,12 +159,12 @@ class Pastille extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return DecoratedBox(
-      decoration: BoxDecoration(color: fond ?? p.lime, borderRadius: BorderRadius.circular(40)),
+      decoration: BoxDecoration(color: fond ?? p.effort, borderRadius: CrescoShape.borderRadius),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Text(
           texte,
-          style: TextStyle(color: texteCouleur ?? p.onLime, fontWeight: FontWeight.w700, fontSize: 15),
+          style: TextStyle(color: texteCouleur ?? p.onEffort, fontWeight: FontWeight.w700, fontSize: 15),
         ),
       ),
     );
@@ -270,7 +270,7 @@ class _CadranPeintre extends CustomPainter {
       2 * math.pi,
       false,
       Paint()
-        ..color = p.fast
+        ..color = p.restSoft
         ..style = PaintingStyle.stroke
         ..strokeWidth = 14,
     );
@@ -281,7 +281,7 @@ class _CadranPeintre extends CustomPainter {
       2 * math.pi * (h >= 24 ? 1 : tour),
       false,
       Paint()
-        ..color = p.accent
+        ..color = p.rest
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = 14,
@@ -304,12 +304,12 @@ class _CadranPeintre extends CustomPainter {
       ..style = PaintingStyle.stroke;
     final debut = c + Offset(0, -r);
     canvas
-      ..drawCircle(debut, 9, Paint()..color = p.lime)
+      ..drawCircle(debut, 9, Paint()..color = p.background)
       ..drawCircle(debut, 9, ring..strokeWidth = 2);
     final a = 2 * math.pi * (h >= 24 ? 0.999 : tour) - math.pi / 2;
     final bout = c + Offset(math.cos(a) * r, math.sin(a) * r);
     canvas
-      ..drawCircle(bout, 11, Paint()..color = p.lime)
+      ..drawCircle(bout, 11, Paint()..color = p.rest)
       ..drawCircle(bout, 11, ring..strokeWidth = 3);
     if (prevues != null && prevues! < 24) {
       final af = 2 * math.pi * prevues! / 24 - math.pi / 2;
@@ -371,11 +371,11 @@ class _CourbePeintre extends CustomPainter {
       ..lineTo(pt(0, mn).dx, size.height)
       ..close();
     canvas
-      ..drawPath(aire, Paint()..color = c.accent.withValues(alpha: 0.12))
+      ..drawPath(aire, Paint()..color = c.effort.withValues(alpha: 0.12))
       ..drawPath(
         chemin,
         Paint()
-          ..color = c.accent
+          ..color = c.effort
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.2,
       );
@@ -409,7 +409,7 @@ class _CourbePeintre extends CustomPainter {
           p,
           5,
           Paint()
-            ..color = c.accent
+            ..color = c.effort
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2,
         );

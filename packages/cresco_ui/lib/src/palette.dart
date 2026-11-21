@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Color roles of docs/design/DESIGN.md, in a light and a dark variant.
+/// Color roles of the validated design (docs/design/DESIGN.md, direction G "Net et braise"),
+/// in a light and a dark variant. Read it with `context.palette`.
 ///
-/// Read it with `context.palette`. Lime is never text on a light background
-/// (1.3:1): it is a fill under ink, or text on [hero].
+/// - Daily screens are black on white; [action] is black (white in dark mode).
+/// - [effort] (braise orange) marks effort only: start, validate, load, muscle heat.
+///   Its text is [onEffort], dark: white on braise would be 3:1, below WCAG AA.
+/// - [rest] (glacier blue) marks rest, sleep and fasting.
 @immutable
 class CrescoPalette extends ThemeExtension<CrescoPalette> {
   const new({
@@ -16,21 +19,24 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
     required this.onAction,
     required this.hero,
     required this.onHeroMuted,
-    required this.lime,
-    required this.onLime,
-    required this.fast,
-    required this.onFast,
+    required this.effort,
+    required this.onEffort,
+    required this.effortSoft,
+    required this.onEffortSoft,
+    required this.rest,
+    required this.onRest,
+    required this.restSoft,
+    required this.onRestSoft,
     required this.danger,
     required this.dangerSoft,
     required this.onDangerSoft,
     required this.warningSoft,
     required this.onWarningSoft,
-    required this.limeSoft,
-    required this.onLimeSoft,
-    required this.accent,
   });
 
   final Color background;
+
+  /// Cards, fields and tiles; always drawn with a [line] outline (Picnic shape).
   final Color surface;
   final Color ink;
   final Color muted;
@@ -40,74 +46,74 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
   final Color action;
   final Color onAction;
 
-  /// Dark highlight cards (form score, verdict): white text, lime accents.
+  /// Solid black highlight cards (today's session). Text on it is white.
   final Color hero;
   final Color onHeroMuted;
-  final Color lime;
-  final Color onLime;
 
-  /// Fasting and sleep cards.
-  final Color fast;
-  final Color onFast;
+  final Color effort;
+  final Color onEffort;
+  final Color effortSoft;
+  final Color onEffortSoft;
+
+  final Color rest;
+  final Color onRest;
+  final Color restSoft;
+  final Color onRestSoft;
+
   final Color danger;
   final Color dangerSoft;
   final Color onDangerSoft;
   final Color warningSoft;
   final Color onWarningSoft;
 
-  /// Soft green fills (illustrations, avatars) and the text drawn on them.
-  final Color limeSoft;
-  final Color onLimeSoft;
-
-  /// Second data color (protein, history curves).
-  final Color accent;
-
   static const light = CrescoPalette(
-    background: Color(0xFFF2F3EE),
-    surface: Color(0xFFFFFFFF),
-    ink: Color(0xFF111311),
-    muted: Color(0xFF5B6158),
-    line: Color(0xFFECEDE6),
-    action: Color(0xFF111311),
-    onAction: Color(0xFFCDEB5A),
-    hero: Color(0xFF111311),
-    onHeroMuted: Color(0xFFC9CEC3),
-    lime: Color(0xFFCDEB5A),
-    onLime: Color(0xFF111311),
-    fast: Color(0xFFDAD5FF),
-    onFast: Color(0xFF2B2269),
+    background: Color(0xFFFFFFFF),
+    surface: Color(0xFFF6F6F6),
+    ink: Color(0xFF0A0A0A),
+    muted: Color(0xFF616161),
+    line: Color(0xFFE2E2E2),
+    action: Color(0xFF0A0A0A),
+    onAction: Color(0xFFFFFFFF),
+    hero: Color(0xFF0A0A0A),
+    onHeroMuted: Color(0xFFBDBDBD),
+    effort: Color(0xFFFF5A1F),
+    onEffort: Color(0xFF0A0A0A),
+    effortSoft: Color(0xFFFFE6DB),
+    onEffortSoft: Color(0xFF8A2A05),
+    rest: Color(0xFF38BDF8),
+    onRest: Color(0xFF0A0A0A),
+    restSoft: Color(0xFFE3F5FD),
+    onRestSoft: Color(0xFF075985),
     danger: Color(0xFFC2264A),
-    dangerSoft: Color(0xFFFFD9DF),
+    dangerSoft: Color(0xFFFFE4E8),
     onDangerSoft: Color(0xFF5E1426),
-    warningSoft: Color(0xFFFFE7C2),
+    warningSoft: Color(0xFFFFF1D6),
     onWarningSoft: Color(0xFF6B4300),
-    limeSoft: Color(0xFFE4F2C0),
-    onLimeSoft: Color(0xFF34470A),
-    accent: Color(0xFF6B5CE7),
   );
 
   static const dark = CrescoPalette(
-    background: Color(0xFF0B0D0B),
-    surface: Color(0xFF1A1D19),
-    ink: Color(0xFFF2F3EE),
-    muted: Color(0xFFA8AEA2),
-    line: Color(0xFF2A2D27),
-    action: Color(0xFFCDEB5A),
-    onAction: Color(0xFF111311),
-    hero: Color(0xFF1A1D19),
-    onHeroMuted: Color(0xFFC9CEC3),
-    lime: Color(0xFFCDEB5A),
-    onLime: Color(0xFF111311),
-    fast: Color(0xFF26214F),
-    onFast: Color(0xFFDAD5FF),
+    background: Color(0xFF0A0A0A),
+    surface: Color(0xFF161616),
+    ink: Color(0xFFF5F5F5),
+    muted: Color(0xFFA3A3A3),
+    line: Color(0xFF2A2A2A),
+    action: Color(0xFFF5F5F5),
+    onAction: Color(0xFF0A0A0A),
+    hero: Color(0xFF161616),
+    onHeroMuted: Color(0xFFBDBDBD),
+    effort: Color(0xFFFF5A1F),
+    onEffort: Color(0xFF0A0A0A),
+    effortSoft: Color(0xFF3A1A0E),
+    onEffortSoft: Color(0xFFFFD2BF),
+    rest: Color(0xFF38BDF8),
+    onRest: Color(0xFF0A0A0A),
+    restSoft: Color(0xFF0C2A3A),
+    onRestSoft: Color(0xFFBAE6FD),
     danger: Color(0xFFFF8FA3),
     dangerSoft: Color(0xFF3A1820),
     onDangerSoft: Color(0xFFFFD9DF),
     warningSoft: Color(0xFF3A2A10),
     onWarningSoft: Color(0xFFFFE7C2),
-    limeSoft: Color(0xFF2C3A12),
-    onLimeSoft: Color(0xFFE4F2C0),
-    accent: Color(0xFF9C92F2),
   );
 
   @override
@@ -121,18 +127,19 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
     onAction: onAction,
     hero: hero,
     onHeroMuted: onHeroMuted,
-    lime: lime,
-    onLime: onLime,
-    fast: fast,
-    onFast: onFast,
+    effort: effort,
+    onEffort: onEffort,
+    effortSoft: effortSoft,
+    onEffortSoft: onEffortSoft,
+    rest: rest,
+    onRest: onRest,
+    restSoft: restSoft,
+    onRestSoft: onRestSoft,
     danger: danger,
     dangerSoft: dangerSoft,
     onDangerSoft: onDangerSoft,
     warningSoft: warningSoft,
     onWarningSoft: onWarningSoft,
-    limeSoft: limeSoft,
-    onLimeSoft: onLimeSoft,
-    accent: accent,
   );
 
   @override
@@ -149,18 +156,19 @@ class CrescoPalette extends ThemeExtension<CrescoPalette> {
       onAction: mix(onAction, other.onAction),
       hero: mix(hero, other.hero),
       onHeroMuted: mix(onHeroMuted, other.onHeroMuted),
-      lime: mix(lime, other.lime),
-      onLime: mix(onLime, other.onLime),
-      fast: mix(fast, other.fast),
-      onFast: mix(onFast, other.onFast),
+      effort: mix(effort, other.effort),
+      onEffort: mix(onEffort, other.onEffort),
+      effortSoft: mix(effortSoft, other.effortSoft),
+      onEffortSoft: mix(onEffortSoft, other.onEffortSoft),
+      rest: mix(rest, other.rest),
+      onRest: mix(onRest, other.onRest),
+      restSoft: mix(restSoft, other.restSoft),
+      onRestSoft: mix(onRestSoft, other.onRestSoft),
       danger: mix(danger, other.danger),
       dangerSoft: mix(dangerSoft, other.dangerSoft),
       onDangerSoft: mix(onDangerSoft, other.onDangerSoft),
       warningSoft: mix(warningSoft, other.warningSoft),
       onWarningSoft: mix(onWarningSoft, other.onWarningSoft),
-      limeSoft: mix(limeSoft, other.limeSoft),
-      onLimeSoft: mix(onLimeSoft, other.onLimeSoft),
-      accent: mix(accent, other.accent),
     );
   }
 }

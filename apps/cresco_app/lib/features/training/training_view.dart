@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
@@ -115,10 +116,13 @@ class TrainingView extends StatelessWidget {
           if (loaded && vm.templates.isEmpty)
             EmptyState(
               icon: Icons.fitness_center,
-              title: 'Compose ta première séance',
-              message: 'Avec les machines de ta salle, ou demande à ton IA de la préparer.',
+              illustration: const MyCoach(CoachPose.carnet, height: 220),
+              title: 'Ta première séance t’attend',
+              message: 'Compose-la avec les machines de ta salle, ou demande à ton IA de la préparer.',
               actionLabel: 'Créer ma séance',
               onAction: () => vm.open(Routes.templateEditorView),
+              secondaryLabel: vm.gym?['gym'] == null ? 'Décrire ma salle' : null,
+              onSecondary: () => vm.open(Routes.gymView),
             ),
           for (final t in vm.templates) _TemplateCard(t, vm: vm),
           CrescoCarte(
@@ -130,8 +134,8 @@ class TrainingView extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 26,
-                  backgroundColor: context.palette.limeSoft,
-                  child: Icon(Icons.directions_run, color: context.palette.onLimeSoft),
+                  backgroundColor: context.palette.effortSoft,
+                  child: Icon(Icons.directions_run, color: context.palette.onEffortSoft),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -191,10 +195,10 @@ class _GymCard extends StatelessWidget {
     final count = (data['equipment'] as List<Object?>? ?? const []).length;
     return Material(
       color: gym == null ? p.warningSoft : p.surface,
-      borderRadius: BorderRadius.circular(22),
+      shape: CrescoShape.rectangle(gym == null ? p.onWarningSoft.withValues(alpha: 0.4) : p.line),
       child: InkWell(
         key: const ValueKey('gym-card'),
-        borderRadius: BorderRadius.circular(22),
+        customBorder: CrescoShape.rectangle(),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -244,43 +248,65 @@ class _TodayCard extends StatelessWidget {
     final blocks = (model?['blocs'] as List<Object?>? ?? const []).cast<Json>();
     final code = (today['decision']! as Json)['decision']! as String;
     final exercises = blocks.expand((b) => (b['etapes']! as List<Object?>).cast<Json>()).length;
+    final firstExercise = blocks.isEmpty
+        ? null
+        : ((blocks.first['etapes']! as List).first as Json)['exercice_id'] as String?;
     return Material(
-      color: blocks.isEmpty ? p.surface : p.lime,
-      borderRadius: BorderRadius.circular(26),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'AUJOURD’HUI · ${(libellesDecision[code] ?? '').toUpperCase()}',
-              style: context.overlineStyle.copyWith(color: blocks.isEmpty ? p.muted : p.onLime),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              model?['nom'] as String? ?? 'Séance',
-              style: CrescoTextes.titrePage.copyWith(fontSize: 26, color: blocks.isEmpty ? p.ink : p.onLime),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              blocks.isEmpty ? today['raison']! as String : '$exercises exercices · ${today['raison']}',
-              style: TextStyle(color: blocks.isEmpty ? p.muted : const Color(0xFF33372F), fontSize: 14, height: 1.4),
-            ),
-            if (blocks.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              FilledButton.icon(
-                onPressed: onStart,
-                style: FilledButton.styleFrom(
-                  backgroundColor: p.onLime,
-                  foregroundColor: p.lime,
-                  minimumSize: const Size(0, 52),
+      color: blocks.isEmpty ? p.surface : p.hero,
+      shape: CrescoShape.rectangle(blocks.isEmpty ? p.line : null),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          if (blocks.isNotEmpty)
+            Positioned.fill(
+              left: null,
+              child: ShaderMask(
+                shaderCallback: (r) => const LinearGradient(colors: [Colors.transparent, Colors.black]).createShader(r),
+                blendMode: BlendMode.dstIn,
+                child: Opacity(
+                  opacity: 0.55,
+                  child: CrescoPhotoImage(CrescoPhoto.forExercise(firstExercise), width: 170),
                 ),
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Démarrer la séance'),
               ),
-            ],
-          ],
-        ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Aujourd’hui · ${libellesDecision[code] ?? ''}',
+                  style: TextStyle(
+                    color: blocks.isEmpty ? p.muted : p.onHeroMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  model?['nom'] as String? ?? 'Séance',
+                  style: CrescoTextes.titrePage.copyWith(fontSize: 26, color: blocks.isEmpty ? p.ink : Colors.white),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  blocks.isEmpty ? today['raison']! as String : '$exercises exercices · ${today['raison']}',
+                  style: TextStyle(color: blocks.isEmpty ? p.muted : p.onHeroMuted, fontSize: 14, height: 1.4),
+                ),
+                if (blocks.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: onStart,
+                      style: effortButtonStyle(context),
+                      child: const Text('Démarrer la séance'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -316,11 +342,19 @@ class _TemplateCard extends StatelessWidget {
     final blocks = ((template['contenu'] as Json?)?['blocs'] as List<Object?>? ?? const []).cast<Json>();
     final sets = blocks.fold<int>(0, (n, b) => n + (b['repeter']! as num).toInt());
     final byAi = template['cree_par'] == 'ia';
+    final firstExercise = blocks.isEmpty
+        ? null
+        : ((blocks.first['etapes']! as List).first as Json)['exercice_id'] as String?;
     return CrescoCarte(
-      padding: const EdgeInsets.fromLTRB(18, 14, 8, 14),
+      padding: const EdgeInsets.fromLTRB(10, 10, 6, 10),
       onTap: () => _actions(context),
       child: Row(
         children: [
+          ClipRRect(
+            borderRadius: CrescoShape.borderRadius,
+            child: CrescoPhotoImage(CrescoPhoto.forExercise(firstExercise), width: 64, height: 56),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,8 +370,14 @@ class _TemplateCard extends StatelessWidget {
           ),
           IconButton(
             tooltip: 'Faire ${template['nom']}',
-            onPressed: () => vm.open(Routes.seanceView, arguments: SeanceViewArguments(templateId: template['id']! as String)),
-            icon: Icon(Icons.play_circle_fill, size: 36, color: p.ink),
+            onPressed: () =>
+                vm.open(Routes.seanceView, arguments: SeanceViewArguments(templateId: template['id']! as String)),
+            style: IconButton.styleFrom(
+              backgroundColor: p.action,
+              foregroundColor: p.onAction,
+              fixedSize: const Size(44, 44),
+            ),
+            icon: const Icon(Icons.play_arrow_rounded),
           ),
         ],
       ),
@@ -384,7 +424,9 @@ class _TemplateCard extends StatelessWidget {
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Supprimer « $name » ?'),
-            content: const Text('La séance disparaît de ta liste. Les séances déjà faites restent dans ton historique.'),
+            content: const Text(
+              'La séance disparaît de ta liste. Les séances déjà faites restent dans ton historique.',
+            ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
               TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Supprimer')),

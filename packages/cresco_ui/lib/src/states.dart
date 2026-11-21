@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// Placeholder shaped like the card that will load. Shimmers unless animations are reduced.
 class Skeleton extends StatefulWidget {
-  const new({super.key, this.height = 86, this.radius = 22});
+  const new({super.key, this.height = 86, this.radius = CrescoShape.radius});
   final double height;
   final double radius;
 
@@ -72,7 +72,7 @@ class LoadingState extends StatelessWidget {
         children: [
           for (final (i, h) in heights.indexed) ...[
             if (i > 0) const SizedBox(height: 10),
-            Skeleton(height: h, radius: i == 0 ? 26 : 22),
+            Skeleton(height: h),
           ],
         ],
       ),
@@ -80,50 +80,60 @@ class LoadingState extends StatelessWidget {
   }
 }
 
-/// Empty state: an illustration, one sentence saying what to do, one main action.
+/// Empty state: an illustration (the user's coach when the app passes one), one sentence
+/// saying what to do, a main action and an optional secondary one.
 class EmptyState extends StatelessWidget {
   const new({
     required this.icon,
     required this.title,
     required this.message,
     super.key,
+    this.illustration,
     this.actionLabel,
     this.onAction,
+    this.secondaryLabel,
+    this.onSecondary,
   });
+
+  /// Shown in an outlined tile when there is no [illustration].
   final IconData icon;
+  final Widget? illustration;
   final String title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 104,
-            height: 104,
-            decoration: BoxDecoration(color: p.lime, shape: BoxShape.circle),
-            child: Icon(icon, size: 48, color: p.onLime),
+          Center(
+            child:
+                illustration ??
+                Container(
+                  width: 88,
+                  height: 88,
+                  decoration: CrescoShape.outlined(p),
+                  child: Icon(icon, size: 40, color: p.ink),
+                ),
           ),
           const SizedBox(height: 16),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: CrescoTextes.titreCarte.copyWith(color: p.ink, fontSize: 22),
-          ),
+          Text(title, textAlign: TextAlign.center, style: CrescoTextes.titreCarte.copyWith(color: p.ink, fontSize: 24)),
           const SizedBox(height: 8),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: CrescoTextes.secondaire.copyWith(color: p.muted),
-          ),
+          Text(message, textAlign: TextAlign.center, style: context.mutedStyle.copyWith(fontSize: 15)),
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: 18),
             FilledButton(onPressed: onAction, child: Text(actionLabel!)),
+          ],
+          if (secondaryLabel != null && onSecondary != null) ...[
+            const SizedBox(height: 10),
+            OutlinedButton(onPressed: onSecondary, child: Text(secondaryLabel!)),
           ],
         ],
       ),
@@ -144,7 +154,7 @@ class ErrorState extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         DecoratedBox(
-          decoration: BoxDecoration(color: p.dangerSoft, borderRadius: BorderRadius.circular(26)),
+          decoration: CrescoShape.outlined(p, fill: p.dangerSoft, outline: p.danger.withValues(alpha: 0.4)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -188,7 +198,7 @@ class OfflineBanner extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: DecoratedBox(
-        decoration: BoxDecoration(color: p.hero, borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(color: p.hero, borderRadius: CrescoShape.borderRadius),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(

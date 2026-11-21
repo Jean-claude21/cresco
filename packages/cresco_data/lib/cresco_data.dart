@@ -200,6 +200,10 @@ class CrescoApi {
   // ----------------------------------------------------------------- Entraînement
   Future<List<Json>> exercices() async => ((await requete('GET', '/v1/exercices'))! as List).cast<Json>();
   Future<void> enregistrerSeance(Json seance) => _ecrireOuMettreEnAttente('/v1/seances', seance);
+
+  /// Sessions done over the last [days] days, newest first (for the week strip).
+  Future<List<Json>> recentSessions({int days = 7}) async =>
+      ((await requete('GET', '/v1/seances?jours=$days'))! as List).cast<Json>();
   Future<void> ajouterLienVideo(String exerciceId, String url) async =>
       await requete('POST', '/v1/exercices/$exerciceId/liens', corps: {'url': url});
 

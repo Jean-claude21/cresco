@@ -58,8 +58,8 @@ class _Action extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: context.palette.limeSoft,
-        child: Icon(icone, color: context.palette.onLimeSoft),
+        backgroundColor: context.palette.effortSoft,
+        child: Icon(icone, color: context.palette.onEffortSoft),
       ),
       title: Text(libelle, style: const TextStyle(fontWeight: FontWeight.w600)),
       trailing: const Icon(Icons.chevron_right),
@@ -97,6 +97,9 @@ Future<void> _saisirNombre(BuildContext context, String libelle, String type) as
   await locator<CrescoApi>().ajouterMesure(type, valeur);
   _confirmer('Enregistré');
 }
+
+/// Opens the night entry directly (the "Sommeil" shortcut of Today).
+Future<void> logNight(BuildContext context) => _saisirNuit(context);
 
 Future<void> _saisirNuit(BuildContext context) async {
   final maintenant = DateTime.now();

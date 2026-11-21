@@ -176,7 +176,7 @@ class IntervallesView extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Surtitre('Temps restant', couleur: context.palette.lime)),
+                        Expanded(child: Surtitre('Temps restant', couleur: context.palette.effort)),
                         Pastille(e.repetitions > 1 ? '${e.libelle} ${e.repetition}/${e.repetitions}' : e.libelle),
                       ],
                     ),
@@ -190,7 +190,7 @@ class IntervallesView extends StatelessWidget {
                     const Divider(color: Color(0x55D8EEA1), height: 28),
                     Row(
                       children: [
-                        Icon(Icons.speed, color: context.palette.lime),
+                        Icon(Icons.speed, color: context.palette.effort),
                         const SizedBox(width: 10),
                         const Text('Vitesse cible', style: TextStyle(color: Colors.white, fontSize: 18)),
                       ],
@@ -202,8 +202,8 @@ class IntervallesView extends StatelessWidget {
               if (s != null) ...[
                 const SizedBox(height: 12),
                 Material(
-                  color: context.palette.limeSoft,
-                  borderRadius: BorderRadius.circular(CrescoMesures.rayon),
+                  color: context.palette.effortSoft,
+                  shape: CrescoShape.rectangle(context.palette.line),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: CircleAvatar(
@@ -243,7 +243,7 @@ class IntervallesView extends StatelessWidget {
                                     color: identical(x, e)
                                         ? context.palette.ink
                                         : vm.etapes.indexOf(x) < vm.index
-                                        ? context.palette.accent.withValues(alpha: 0.7)
+                                        ? context.palette.effort.withValues(alpha: 0.7)
                                         : context.palette.line,
                                   ),
                                 ),

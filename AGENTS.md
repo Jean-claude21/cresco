@@ -10,4 +10,5 @@ Cresco : app Flutter de musculation, cardio, nutrition, sommeil et jeûne, avec 
 - Les règles de sécurité ([CONFORMITE.md](docs/product/CONFORMITE.md)) ne sont jamais contournables : ni par l'IA, ni par le MCP, ni par un paramètre utilisateur.
 - Unités internes SI ; conversions uniquement à l'affichage.
 - Stack : conventions de **dym** pour Flutter (FVM, Melos, Stacked, very_good_analysis), de **struo** pour le backend (Node 22, TypeScript, pnpm, Postgres, Docker, Coolify). Voir [ADR-0001](docs/architecture/decisions/0001-stack.md).
-- Langue : documentation et textes de l'app en français.
+- Langue : documentation et textes de l'app en français ; code (identifiants, commentaires) en anglais.
+- Design : [docs/design/DESIGN.md](docs/design/DESIGN.md) fait référence. Couleurs et formes uniquement via `CrescoPalette` (`context.palette`) et `CrescoShape` ; aucune couleur fixe dans un écran. Les médias se génèrent avec ChatGPT selon [docs/design/medias/README.md](docs/design/medias/README.md).

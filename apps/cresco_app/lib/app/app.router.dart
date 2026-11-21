@@ -7,24 +7,27 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:cresco_app/features/accueil/accueil_view.dart' as _i3;
-import 'package:cresco_app/features/body/body_map_view.dart' as _i9;
-import 'package:cresco_app/features/connexion/connexion_view.dart' as _i2;
-import 'package:cresco_app/features/gym/gym_view.dart' as _i10;
-import 'package:cresco_app/features/intervalles/intervalles_view.dart' as _i5;
-import 'package:cresco_app/features/jeune/jeune_view.dart' as _i6;
-import 'package:cresco_app/features/onboarding/onboarding_view.dart' as _i11;
-import 'package:cresco_app/features/profil/profil_view.dart' as _i8;
-import 'package:cresco_app/features/scan/scan_view.dart' as _i7;
-import 'package:cresco_app/features/seance/seance_view.dart' as _i4;
-import 'package:cresco_app/features/training/template_editor_view.dart' as _i12;
-import 'package:flutter/material.dart' as _i13;
+import 'package:cresco_app/features/accueil/accueil_view.dart' as _i4;
+import 'package:cresco_app/features/body/body_map_view.dart' as _i10;
+import 'package:cresco_app/features/connexion/connexion_view.dart' as _i3;
+import 'package:cresco_app/features/gym/gym_view.dart' as _i11;
+import 'package:cresco_app/features/intervalles/intervalles_view.dart' as _i6;
+import 'package:cresco_app/features/jeune/jeune_view.dart' as _i7;
+import 'package:cresco_app/features/onboarding/onboarding_view.dart' as _i12;
+import 'package:cresco_app/features/profil/profil_view.dart' as _i9;
+import 'package:cresco_app/features/scan/scan_view.dart' as _i8;
+import 'package:cresco_app/features/seance/seance_view.dart' as _i5;
+import 'package:cresco_app/features/training/template_editor_view.dart' as _i13;
+import 'package:cresco_app/features/welcome/welcome_view.dart' as _i2;
+import 'package:flutter/material.dart' as _i14;
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart' as _i1;
-import 'package:stacked_services/stacked_services.dart' as _i14;
+import 'package:stacked_services/stacked_services.dart' as _i15;
 
 class Routes {
-  static const connexionView = '/';
+  static const welcomeView = '/';
+
+  static const connexionView = '/connexion-view';
 
   static const accueilView = '/accueil-view';
 
@@ -47,6 +50,7 @@ class Routes {
   static const templateEditorView = '/template-editor-view';
 
   static const all = <String>{
+    welcomeView,
     connexionView,
     accueilView,
     seanceView,
@@ -63,117 +67,128 @@ class Routes {
 
 class StackedRouter extends _i1.RouterBase {
   final _routes = <_i1.RouteDef>[
-    _i1.RouteDef(Routes.connexionView, page: _i2.ConnexionView),
-    _i1.RouteDef(Routes.accueilView, page: _i3.AccueilView),
-    _i1.RouteDef(Routes.seanceView, page: _i4.SeanceView),
-    _i1.RouteDef(Routes.intervallesView, page: _i5.IntervallesView),
-    _i1.RouteDef(Routes.jeuneView, page: _i6.JeuneView),
-    _i1.RouteDef(Routes.scanView, page: _i7.ScanView),
-    _i1.RouteDef(Routes.profilView, page: _i8.ProfilView),
-    _i1.RouteDef(Routes.bodyMapView, page: _i9.BodyMapView),
-    _i1.RouteDef(Routes.gymView, page: _i10.GymView),
-    _i1.RouteDef(Routes.onboardingView, page: _i11.OnboardingView),
-    _i1.RouteDef(Routes.templateEditorView, page: _i12.TemplateEditorView),
+    _i1.RouteDef(Routes.welcomeView, page: _i2.WelcomeView),
+    _i1.RouteDef(Routes.connexionView, page: _i3.ConnexionView),
+    _i1.RouteDef(Routes.accueilView, page: _i4.AccueilView),
+    _i1.RouteDef(Routes.seanceView, page: _i5.SeanceView),
+    _i1.RouteDef(Routes.intervallesView, page: _i6.IntervallesView),
+    _i1.RouteDef(Routes.jeuneView, page: _i7.JeuneView),
+    _i1.RouteDef(Routes.scanView, page: _i8.ScanView),
+    _i1.RouteDef(Routes.profilView, page: _i9.ProfilView),
+    _i1.RouteDef(Routes.bodyMapView, page: _i10.BodyMapView),
+    _i1.RouteDef(Routes.gymView, page: _i11.GymView),
+    _i1.RouteDef(Routes.onboardingView, page: _i12.OnboardingView),
+    _i1.RouteDef(Routes.templateEditorView, page: _i13.TemplateEditorView),
   ];
 
   final _pagesMap = <Type, _i1.StackedRouteFactory>{
-    _i2.ConnexionView: (data) {
+    _i2.WelcomeView: (data) {
+      final args = data.getArgs<WelcomeViewArguments>(
+        orElse: () => const WelcomeViewArguments(),
+      );
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i2.WelcomeView(key: args.key),
+        settings: data,
+      );
+    },
+    _i3.ConnexionView: (data) {
       final args = data.getArgs<ConnexionViewArguments>(
         orElse: () => const ConnexionViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i2.ConnexionView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) =>
+            _i3.ConnexionView(key: args.key, signUp: args.signUp),
         settings: data,
       );
     },
-    _i3.AccueilView: (data) {
+    _i4.AccueilView: (data) {
       final args = data.getArgs<AccueilViewArguments>(
         orElse: () => const AccueilViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i3.AccueilView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i4.AccueilView(key: args.key),
         settings: data,
       );
     },
-    _i4.SeanceView: (data) {
+    _i5.SeanceView: (data) {
       final args = data.getArgs<SeanceViewArguments>(
         orElse: () => const SeanceViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
+      return _i14.MaterialPageRoute<dynamic>(
         builder: (context) =>
-            _i4.SeanceView(key: args.key, templateId: args.templateId),
+            _i5.SeanceView(key: args.key, templateId: args.templateId),
         settings: data,
       );
     },
-    _i5.IntervallesView: (data) {
+    _i6.IntervallesView: (data) {
       final args = data.getArgs<IntervallesViewArguments>(nullOk: false);
-      return _i13.MaterialPageRoute<dynamic>(
+      return _i14.MaterialPageRoute<dynamic>(
         builder: (context) =>
-            _i5.IntervallesView(modele: args.modele, key: args.key),
+            _i6.IntervallesView(modele: args.modele, key: args.key),
         settings: data,
       );
     },
-    _i6.JeuneView: (data) {
+    _i7.JeuneView: (data) {
       final args = data.getArgs<JeuneViewArguments>(
         orElse: () => const JeuneViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i6.JeuneView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i7.JeuneView(key: args.key),
         settings: data,
       );
     },
-    _i7.ScanView: (data) {
+    _i8.ScanView: (data) {
       final args = data.getArgs<ScanViewArguments>(
         orElse: () => const ScanViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i7.ScanView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i8.ScanView(key: args.key),
         settings: data,
       );
     },
-    _i8.ProfilView: (data) {
+    _i9.ProfilView: (data) {
       final args = data.getArgs<ProfilViewArguments>(
         orElse: () => const ProfilViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i8.ProfilView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i9.ProfilView(key: args.key),
         settings: data,
       );
     },
-    _i9.BodyMapView: (data) {
+    _i10.BodyMapView: (data) {
       final args = data.getArgs<BodyMapViewArguments>(
         orElse: () => const BodyMapViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i9.BodyMapView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i10.BodyMapView(key: args.key),
         settings: data,
       );
     },
-    _i10.GymView: (data) {
+    _i11.GymView: (data) {
       final args = data.getArgs<GymViewArguments>(
         orElse: () => const GymViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i10.GymView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i11.GymView(key: args.key),
         settings: data,
       );
     },
-    _i11.OnboardingView: (data) {
+    _i12.OnboardingView: (data) {
       final args = data.getArgs<OnboardingViewArguments>(
         orElse: () => const OnboardingViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => _i11.OnboardingView(key: args.key),
+      return _i14.MaterialPageRoute<dynamic>(
+        builder: (context) => _i12.OnboardingView(key: args.key),
         settings: data,
       );
     },
-    _i12.TemplateEditorView: (data) {
+    _i13.TemplateEditorView: (data) {
       final args = data.getArgs<TemplateEditorViewArguments>(
         orElse: () => const TemplateEditorViewArguments(),
       );
-      return _i13.MaterialPageRoute<dynamic>(
+      return _i14.MaterialPageRoute<dynamic>(
         builder: (context) =>
-            _i12.TemplateEditorView(key: args.key, template: args.template),
+            _i13.TemplateEditorView(key: args.key, template: args.template),
         settings: data,
       );
     },
@@ -186,10 +201,10 @@ class StackedRouter extends _i1.RouterBase {
   Map<Type, _i1.StackedRouteFactory> get pagesMap => _pagesMap;
 }
 
-class ConnexionViewArguments {
-  const ConnexionViewArguments({this.key});
+class WelcomeViewArguments {
+  const WelcomeViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -197,7 +212,7 @@ class ConnexionViewArguments {
   }
 
   @override
-  bool operator ==(covariant ConnexionViewArguments other) {
+  bool operator ==(covariant WelcomeViewArguments other) {
     if (identical(this, other)) return true;
     return other.key == key;
   }
@@ -208,10 +223,34 @@ class ConnexionViewArguments {
   }
 }
 
+class ConnexionViewArguments {
+  const ConnexionViewArguments({this.key, this.signUp = false});
+
+  final _i14.Key? key;
+
+  final bool signUp;
+
+  @override
+  String toString() {
+    return '{"key": "$key", "signUp": "$signUp"}';
+  }
+
+  @override
+  bool operator ==(covariant ConnexionViewArguments other) {
+    if (identical(this, other)) return true;
+    return other.key == key && other.signUp == signUp;
+  }
+
+  @override
+  int get hashCode {
+    return key.hashCode ^ signUp.hashCode;
+  }
+}
+
 class AccueilViewArguments {
   const AccueilViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -233,7 +272,7 @@ class AccueilViewArguments {
 class SeanceViewArguments {
   const SeanceViewArguments({this.key, this.templateId});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   final String? templateId;
 
@@ -259,7 +298,7 @@ class IntervallesViewArguments {
 
   final Map<String, Object?> modele;
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -281,7 +320,7 @@ class IntervallesViewArguments {
 class JeuneViewArguments {
   const JeuneViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -303,7 +342,7 @@ class JeuneViewArguments {
 class ScanViewArguments {
   const ScanViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -325,7 +364,7 @@ class ScanViewArguments {
 class ProfilViewArguments {
   const ProfilViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -347,7 +386,7 @@ class ProfilViewArguments {
 class BodyMapViewArguments {
   const BodyMapViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -369,7 +408,7 @@ class BodyMapViewArguments {
 class GymViewArguments {
   const GymViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -391,7 +430,7 @@ class GymViewArguments {
 class OnboardingViewArguments {
   const OnboardingViewArguments({this.key});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   @override
   String toString() {
@@ -413,7 +452,7 @@ class OnboardingViewArguments {
 class TemplateEditorViewArguments {
   const TemplateEditorViewArguments({this.key, this.template});
 
-  final _i13.Key? key;
+  final _i14.Key? key;
 
   final Map<String, Object?>? template;
 
@@ -434,9 +473,28 @@ class TemplateEditorViewArguments {
   }
 }
 
-extension NavigatorStateExtension on _i14.NavigationService {
+extension NavigatorStateExtension on _i15.NavigationService {
+  Future<dynamic> navigateToWelcomeView({
+    _i14.Key? key,
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+    transition,
+  }) async {
+    return navigateTo<dynamic>(
+      Routes.welcomeView,
+      arguments: WelcomeViewArguments(key: key),
+      id: routerId,
+      preventDuplicates: preventDuplicates,
+      parameters: parameters,
+      transition: transition,
+    );
+  }
+
   Future<dynamic> navigateToConnexionView({
-    _i13.Key? key,
+    _i14.Key? key,
+    bool signUp = false,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -445,7 +503,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }) async {
     return navigateTo<dynamic>(
       Routes.connexionView,
-      arguments: ConnexionViewArguments(key: key),
+      arguments: ConnexionViewArguments(key: key, signUp: signUp),
       id: routerId,
       preventDuplicates: preventDuplicates,
       parameters: parameters,
@@ -454,7 +512,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToAccueilView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -472,7 +530,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToSeanceView({
-    _i13.Key? key,
+    _i14.Key? key,
     String? templateId,
     int? routerId,
     bool preventDuplicates = true,
@@ -492,7 +550,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
 
   Future<dynamic> navigateToIntervallesView({
     required Map<String, Object?> modele,
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -510,7 +568,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToJeuneView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -528,7 +586,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToScanView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -546,7 +604,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToProfilView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -564,7 +622,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToBodyMapView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -582,7 +640,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToGymView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -600,7 +658,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToOnboardingView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -618,7 +676,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> navigateToTemplateEditorView({
-    _i13.Key? key,
+    _i14.Key? key,
     Map<String, Object?>? template,
     int? routerId,
     bool preventDuplicates = true,
@@ -636,8 +694,27 @@ extension NavigatorStateExtension on _i14.NavigationService {
     );
   }
 
+  Future<dynamic> replaceWithWelcomeView({
+    _i14.Key? key,
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+    transition,
+  }) async {
+    return replaceWith<dynamic>(
+      Routes.welcomeView,
+      arguments: WelcomeViewArguments(key: key),
+      id: routerId,
+      preventDuplicates: preventDuplicates,
+      parameters: parameters,
+      transition: transition,
+    );
+  }
+
   Future<dynamic> replaceWithConnexionView({
-    _i13.Key? key,
+    _i14.Key? key,
+    bool signUp = false,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -646,7 +723,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }) async {
     return replaceWith<dynamic>(
       Routes.connexionView,
-      arguments: ConnexionViewArguments(key: key),
+      arguments: ConnexionViewArguments(key: key, signUp: signUp),
       id: routerId,
       preventDuplicates: preventDuplicates,
       parameters: parameters,
@@ -655,7 +732,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithAccueilView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -673,7 +750,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithSeanceView({
-    _i13.Key? key,
+    _i14.Key? key,
     String? templateId,
     int? routerId,
     bool preventDuplicates = true,
@@ -693,7 +770,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
 
   Future<dynamic> replaceWithIntervallesView({
     required Map<String, Object?> modele,
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -711,7 +788,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithJeuneView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -729,7 +806,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithScanView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -747,7 +824,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithProfilView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -765,7 +842,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithBodyMapView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -783,7 +860,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithGymView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -801,7 +878,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithOnboardingView({
-    _i13.Key? key,
+    _i14.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -819,7 +896,7 @@ extension NavigatorStateExtension on _i14.NavigationService {
   }
 
   Future<dynamic> replaceWithTemplateEditorView({
-    _i13.Key? key,
+    _i14.Key? key,
     Map<String, Object?>? template,
     int? routerId,
     bool preventDuplicates = true,

@@ -33,7 +33,8 @@ class GymViewModel extends BaseViewModel {
           (key: e['key']! as String, label: e['label']! as String, kind: e['kind']! as String),
       ];
       presets = {
-        for (final MapEntry(:key, :value) in (g['presets']! as Json).entries) key: (value! as List<Object?>).cast<String>(),
+        for (final MapEntry(:key, :value) in (g['presets']! as Json).entries)
+          key: (value! as List<Object?>).cast<String>(),
       };
       final gym = g['gym'] as Json?;
       name.text = gym?['name'] as String? ?? '';
@@ -108,7 +109,9 @@ class GymView extends StatelessWidget {
         final p = context.palette;
         final loaded = vm.catalog.isNotEmpty;
         return Scaffold(
-          appBar: AppBar(title: const Text('Ma salle', style: TextStyle(fontWeight: FontWeight.w900))),
+          appBar: AppBar(
+            title: const Text('Ma salle', style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
           bottomNavigationBar: loaded
               ? SafeArea(
                   child: Padding(
@@ -163,7 +166,11 @@ class GymView extends StatelessWidget {
                 if (vm.fromPreset) ...[
                   const SizedBox(height: 12),
                   DecoratedBox(
-                    decoration: BoxDecoration(color: p.warningSoft, borderRadius: BorderRadius.circular(18)),
+                    decoration: CrescoShape.outlined(
+                      p,
+                      fill: p.warningSoft,
+                      outline: p.onWarningSoft.withValues(alpha: 0.4),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(14),
                       child: Text(
@@ -189,7 +196,10 @@ class GymView extends StatelessWidget {
                       ),
                     ),
                 const SizedBox(height: 12),
-                Text('Le poids du corps (pompes, tractions, gainage) est toujours disponible.', style: context.mutedStyle),
+                Text(
+                  'Le poids du corps (pompes, tractions, gainage) est toujours disponible.',
+                  style: context.mutedStyle,
+                ),
               ],
             ],
           ),
@@ -200,7 +210,13 @@ class GymView extends StatelessWidget {
 }
 
 class _Group extends StatelessWidget {
-  const new({required this.title, required this.icon, required this.items, required this.selected, required this.onToggle});
+  const new({
+    required this.title,
+    required this.icon,
+    required this.items,
+    required this.selected,
+    required this.onToggle,
+  });
   final String title;
   final IconData icon;
   final List<Equipment> items;
@@ -218,14 +234,16 @@ class _Group extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: p.ink),
             const SizedBox(width: 8),
-            Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17))),
+            Expanded(
+              child: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+            ),
             Text('$count / ${items.length}', style: context.mutedStyle),
           ],
         ),
         const SizedBox(height: 8),
         Material(
           color: p.surface,
-          borderRadius: BorderRadius.circular(22),
+          shape: CrescoShape.rectangle(context.palette.line),
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
@@ -238,7 +256,7 @@ class _Group extends StatelessWidget {
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: p.action,
                   checkColor: p.onAction,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                  shape: const RoundedRectangleBorder(borderRadius: CrescoShape.borderRadius),
                 ),
             ],
           ),

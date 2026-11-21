@@ -46,6 +46,11 @@ final reponses = <String, Object?>{
     },
     'jeune': null,
   },
+  // Sessions of the screenshot week (Thursday 15 January 2026): Monday and Tuesday.
+  '/v1/seances': [
+    {'id': 's2', 'le': '2026-01-13T18:30:00Z', 'type': 'muscu', 'series': <Object>[]},
+    {'id': 's1', 'le': '2026-01-12T18:30:00Z', 'type': 'muscu', 'series': <Object>[]},
+  ],
   '/v1/gym': {
     'gym': {'id': 'g1', 'name': 'Basic-Fit Bastille', 'chain': 'Basic-Fit'},
     'equipment': ['exercise:leg-curl', 'exercise:presse-cuisses', 'material:halteres'],
@@ -72,7 +77,12 @@ final reponses = <String, Object?>{
           {
             'repeter': 3,
             'etapes': [
-              {'exercice_id': 'developpe-couche-barre', 'duree': {'reps': 8}, 'cible': {'rir': 2, 'charge_kg': 'auto'}, 'repos_s': 120},
+              {
+                'exercice_id': 'developpe-couche-barre',
+                'duree': {'reps': 8},
+                'cible': {'rir': 2, 'charge_kg': 'auto'},
+                'repos_s': 120,
+              },
             ],
           },
         ],
@@ -266,4 +276,17 @@ Future<void> taillerTelephone(WidgetTester tester) async {
     ..physicalSize = const Size(402 * 2, 874 * 2)
     ..devicePixelRatio = 2;
   addTearDown(tester.view.reset);
+}
+
+/// Decodes every image on screen (coaches, photos, body masks) and the body label maps, so
+/// screenshots and taps see them: image decoding is real I/O, outside the test's fake clock.
+Future<void> chargerImages(WidgetTester t) async {
+  await t.runAsync(() async {
+    await BodyLabels.load(BodySide.front);
+    await BodyLabels.load(BodySide.back);
+    for (final e in find.byType(Image).evaluate()) {
+      await precacheImage((e.widget as Image).image, e);
+    }
+  });
+  await t.pump();
 }

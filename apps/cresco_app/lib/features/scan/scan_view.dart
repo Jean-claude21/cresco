@@ -80,7 +80,7 @@ class _ScanViewState extends State<ScanView> {
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(CrescoMesures.rayon),
+                  borderRadius: CrescoShape.borderRadius,
                   child: MobileScanner(
                     onDetect: (capture) {
                       final code = capture.barcodes.firstOrNull?.rawValue;

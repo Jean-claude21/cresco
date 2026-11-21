@@ -11,6 +11,7 @@ import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
 import 'package:cresco_app/features/training/template_editor_view.dart';
 import 'package:cresco_app/features/training/training_view.dart';
+import 'package:cresco_app/features/welcome/welcome_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,6 +23,7 @@ void main() {
   setUp(preparer);
 
   final ecrans = <String, Widget Function()>{
+    'bienvenue': () => const WelcomeView(),
     'connexion': () => const ConnexionView(),
     'aujourd’hui': () => const AccueilView(),
     'entraînement': () => const Scaffold(body: TrainingView()),

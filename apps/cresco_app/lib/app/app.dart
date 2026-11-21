@@ -9,12 +9,14 @@ import 'package:cresco_app/features/profil/profil_view.dart';
 import 'package:cresco_app/features/scan/scan_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
 import 'package:cresco_app/features/training/template_editor_view.dart';
+import 'package:cresco_app/features/welcome/welcome_view.dart';
 import 'package:stacked/stacked_annotations.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 @StackedApp(
   routes: [
-    MaterialRoute(page: ConnexionView, initial: true),
+    MaterialRoute(page: WelcomeView, initial: true),
+    MaterialRoute(page: ConnexionView),
     MaterialRoute(page: AccueilView),
     MaterialRoute(page: SeanceView),
     MaterialRoute(page: IntervallesView),

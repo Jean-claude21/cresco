@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/features/accueil/saisie_rapide.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
@@ -12,8 +13,25 @@ class TodayViewModel extends FutureViewModel<Json> {
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService nav = locator<NavigationService>();
 
+  /// Days of the current week (Monday = 0) with at least one session done.
+  Set<int> trainedDays = {};
+
   @override
-  Future<Json> futureToRun() => _api.aujourdhui();
+  Future<Json> futureToRun() async {
+    final today = await _api.aujourdhui();
+    try {
+      final now = maintenant();
+      final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+      trainedDays = {
+        for (final s in await _api.recentSessions())
+          if (DateTime.tryParse(s['le'] as String? ?? '')?.toLocal() case final d? when !d.isBefore(monday))
+            d.weekday - 1,
+      };
+    } on Exception {
+      // The week strip simply shows no session.
+    }
+    return today;
+  }
 
   Future<void> refresh() => initialise();
 
@@ -24,7 +42,7 @@ class TodayViewModel extends FutureViewModel<Json> {
   }
 }
 
-/// Today (mockup "Aujourd’hui"): form score, today's session, energy, fasting, body map.
+/// Today (mockup G "Aujourd’hui"): week strip, shortcuts, form, today's session, energy, fasting, body.
 class TodayView extends StatelessWidget {
   const new({super.key});
 
@@ -35,21 +53,38 @@ class TodayView extends StatelessWidget {
       builder: (context, vm, _) {
         final d = vm.data;
         final cards = <Widget>[
+          _Week(trained: vm.trainedDays),
+          _Shortcuts(
+            onSession: () => vm.open(Routes.seanceView),
+            onMeal: () => ouvrirSaisieRapide(context),
+            onFast: () => vm.open(Routes.jeuneView),
+            onSleep: () => logNight(context),
+          ),
           if (d != null) ...[
             _FormCard(d['forme']! as Json),
             _SessionCard(d['seance']! as Json, onOpen: () => vm.open(Routes.seanceView)),
-            _EnergyAndFast(
-              energy: d['energie']! as Json,
-              fast: d['jeune'] as Json?,
-              onFast: () => vm.open(Routes.jeuneView),
+            _EnergyCard(d['energie']! as Json),
+            _FastRow(d['jeune'] as Json?, onTap: () => vm.open(Routes.jeuneView)),
+            _Row(
+              icon: Icons.accessibility_new,
+              title: 'Mon corps',
+              subtitle: 'Le travail de chaque muscle cette semaine',
+              onTap: () => vm.open(Routes.bodyMapView),
             ),
-            _BodyCard(onTap: () => vm.open(Routes.bodyMapView)),
           ],
         ];
         return PageCresco(
-          titre: 'Les jours forts font les résultats.',
+          titre: 'Bonjour',
           onRefresh: vm.refresh,
-          surTitre: _Header(onProfile: () => vm.open(Routes.profilView)),
+          entete: IconButton.outlined(
+            tooltip: 'Profil et réglages',
+            onPressed: () => vm.open(Routes.profilView),
+            style: IconButton.styleFrom(
+              fixedSize: const Size(44, 44),
+              side: BorderSide(color: context.palette.line, width: CrescoShape.border),
+            ),
+            icon: const Icon(Icons.person_outline),
+          ),
           enfants: [
             if (vm.isBusy && d == null) const Chargement(),
             if (vm.hasError && d == null) MessageErreur('Ta journée n’a pas pu se charger.', reessayer: vm.refresh),
@@ -61,41 +96,132 @@ class TodayView extends StatelessWidget {
   }
 }
 
-class _Header extends StatelessWidget {
-  const new({required this.onProfile});
-  final VoidCallback onProfile;
+/// Date and the days of the week; today is outlined, days with a session are filled.
+class _Week extends StatelessWidget {
+  const new({required this.trained});
+  final Set<int> trained;
+
+  static const _letters = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final date = DateFormat('EEEE d MMMM', 'fr_FR').format(maintenant());
-    return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '${date[0].toUpperCase()}${date.substring(1)}',
-              style: TextStyle(color: p.muted, fontSize: 14, fontWeight: FontWeight.w600),
-            ),
+    final now = maintenant();
+    final date = DateFormat('EEEE d MMMM', 'fr_FR').format(now);
+    final today = now.weekday - 1;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('${date[0].toUpperCase()}${date.substring(1)}', style: context.mutedStyle.copyWith(fontSize: 15)),
+        const SizedBox(height: 10),
+        Semantics(
+          label: 'Cette semaine : ${trained.length} séance${trained.length > 1 ? 's' : ''}',
+          excludeSemantics: true,
+          child: Row(
+            children: [
+              for (var i = 0; i < 7; i++)
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: trained.contains(i) ? p.ink : null,
+                        borderRadius: CrescoShape.borderRadius,
+                        border: Border.all(
+                          color: i == today ? p.effort : (trained.contains(i) ? p.ink : p.line),
+                          width: i == today ? 2 : CrescoShape.border,
+                        ),
+                      ),
+                      child: Text(
+                        _letters[i],
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: trained.contains(i) ? p.background : (i > today ? p.muted : p.ink),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-          IconButton.filled(
-            tooltip: 'Profil et réglages',
-            onPressed: onProfile,
-            style: IconButton.styleFrom(
-              backgroundColor: p.surface,
-              foregroundColor: p.ink,
-              fixedSize: const Size(44, 44),
+        ),
+      ],
+    );
+  }
+}
+
+class _Shortcuts extends StatelessWidget {
+  const new({required this.onSession, required this.onMeal, required this.onFast, required this.onSleep});
+  final VoidCallback onSession;
+  final VoidCallback onMeal;
+  final VoidCallback onFast;
+  final VoidCallback onSleep;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      (ShortcutIcon.seance, 'Séance', onSession),
+      (ShortcutIcon.repas, 'Repas', onMeal),
+      (ShortcutIcon.jeune, 'Jeûne', onFast),
+      (ShortcutIcon.sommeil, 'Sommeil', onSleep),
+    ];
+    return Row(
+      children: [
+        for (final (i, (icon, label, onTap)) in items.indexed) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: Material(
+              color: context.palette.surface,
+              shape: CrescoShape.rectangle(context.palette.line),
+              child: InkWell(
+                customBorder: CrescoShape.rectangle(),
+                onTap: onTap,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    children: [
+                      ShortcutIconImage(icon, size: 44),
+                      const SizedBox(height: 4),
+                      FittedBox(
+                        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            icon: const Icon(Icons.person_outline),
           ),
         ],
+      ],
+    );
+  }
+}
+
+/// Outlined card used on this screen; tappable when [onTap] is set.
+class _Card extends StatelessWidget {
+  const new({required this.child, this.onTap, this.padding = const EdgeInsets.all(16)});
+  final Widget child;
+  final VoidCallback? onTap;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Material(
+      color: p.surface,
+      shape: CrescoShape.rectangle(p.line),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
 }
 
-/// Black hero card: form score ring, its inputs, and how it is computed.
+/// Form score ring (braise) with its inputs and how it is computed.
 class _FormCard extends StatelessWidget {
   const new(this.form);
   final Json form;
@@ -105,61 +231,66 @@ class _FormCard extends StatelessWidget {
     final p = context.palette;
     final c = form['composantes']! as Json;
     final value = nombre(form['valeur']);
-    final inputs = [
-      'Sommeil ${duree(c['dormiMin'])}',
-      if (c['vfc'] != null) 'VFC ${entier(c['vfc'])} ms',
-      if (c['energie'] != null) 'ressenti ${entier(c['energie'])}/5',
-    ].join(' · ');
+    final rows = [
+      ('Sommeil', duree(c['dormiMin'])),
+      ('VFC', c['vfc'] == null ? '—' : '${entier(c['vfc'])} ms'),
+      ('Ressenti', c['energie'] == null ? '—' : '${entier(c['energie'])}/5'),
+    ];
     return _Card(
-      color: p.hero,
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 14,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ScoreRing(
-            fraction: value / 100,
-            child: Semantics(
-              label: 'Forme ${entier(value)} sur 100',
-              child: ExcludeSemantics(
+          const Text('Forme du jour', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              ScoreRing(
+                fraction: value / 100,
+                size: 104,
+                color: p.effort,
+                track: p.line,
+                child: Semantics(
+                  label: 'Forme ${entier(value)} sur 100',
+                  child: ExcludeSemantics(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(entier(value), style: CrescoTextes.chiffre.copyWith(fontSize: 36)),
+                        Text('/100', style: context.mutedStyle.copyWith(fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(entier(value), style: CrescoTextes.chiffre.copyWith(color: Colors.white, fontSize: 34)),
-                    Text('forme', style: TextStyle(color: p.onHeroMuted, fontSize: 12)),
+                    for (final (label, v) in rows)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Expanded(child: Text(label, style: context.mutedStyle.copyWith(fontSize: 15))),
+                            Text(v, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                          ],
+                        ),
+                      ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: () => _explain(context),
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 40)),
+                        child: const Text(
+                          'Comment c’est calculé',
+                          style: TextStyle(decoration: TextDecoration.underline),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ),
-          ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 150, maxWidth: 190),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('FORME DU JOUR', style: context.overlineStyle.copyWith(color: p.lime)),
-                const SizedBox(height: 6),
-                Text(inputs, style: TextStyle(color: p.onHeroMuted, fontSize: 14, height: 1.4)),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => _explain(context),
-                  style: TextButton.styleFrom(
-                    foregroundColor: p.lime,
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 44),
-                    textStyle: Theme.of(context).textTheme.labelLarge
-                        ?.copyWith(fontWeight: FontWeight.w800, fontSize: 14),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(child: Text('Comment c’est calculé')),
-                      Icon(Icons.chevron_right, size: 18),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ],
       ),
@@ -195,7 +326,7 @@ class _FormCard extends StatelessWidget {
   }
 }
 
-/// Lime card: today's session as decided by the engine.
+/// Black card: today's session as decided by the engine, with one braise button.
 class _SessionCard extends StatelessWidget {
   const new(this.session, {required this.onOpen});
   final Json session;
@@ -212,88 +343,59 @@ class _SessionCard extends StatelessWidget {
       if (volume < 0 && !noSession) 'Volume ${signe((volume * 100).round())} %',
       ?session['raison'] as String?,
     ].join(' · ');
-    return _Card(
-      color: noSession ? p.surface : p.lime,
-      onTap: noSession ? null : onOpen,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Material(
+      color: p.hero,
+      shape: CrescoShape.rectangle(p.background.computeLuminance() < 0.2 ? p.line : null),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: [
-          Text('SÉANCE DU JOUR', style: context.overlineStyle.copyWith(color: noSession ? p.muted : p.onLime)),
-          const SizedBox(height: 6),
-          Text(
-            noSession ? libellesDecision[code]! : session['nom']! as String,
-            style: CrescoTextes.titrePage.copyWith(color: noSession ? p.ink : p.onLime, fontSize: 28),
+          Positioned.fill(
+            left: null,
+            child: ShaderMask(
+              shaderCallback: (r) => const LinearGradient(colors: [Colors.transparent, Colors.black]).createShader(r),
+              blendMode: BlendMode.dstIn,
+              child: const Opacity(opacity: 0.55, child: CrescoPhotoImage(CrescoPhoto.seanceDuJour, width: 170)),
+            ),
           ),
-          if (detail.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              detail,
-              style: TextStyle(color: noSession ? p.muted : const Color(0xFF33372F), fontSize: 14, height: 1.4),
-            ),
-          ],
-          if (!noSession) ...[
-            const SizedBox(height: 14),
-            Material(
-              color: p.onLime,
-              shape: const StadiumBorder(),
-              child: InkWell(
-                customBorder: const StadiumBorder(),
-                onTap: onOpen,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.play_arrow_rounded, color: p.lime),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Ouvrir la séance',
-                        style: TextStyle(color: p.lime, fontWeight: FontWeight.w800, fontSize: 16),
-                      ),
-                    ],
-                  ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Séance du jour',
+                  style: TextStyle(color: p.onHeroMuted, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  noSession ? libellesDecision[code]! : session['nom']! as String,
+                  style: CrescoTextes.titrePage.copyWith(color: Colors.white, fontSize: 28),
+                ),
+                if (detail.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(detail, style: TextStyle(color: p.onHeroMuted, fontSize: 14, height: 1.4)),
+                ],
+                if (!noSession) ...[
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: onOpen,
+                      style: effortButtonStyle(context),
+                      child: const Text('Démarrer la séance'),
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
   }
 }
 
-/// Energy and fasting tiles: side by side when there is room, stacked otherwise
-/// (narrow phones, large text).
-class _EnergyAndFast extends StatelessWidget {
-  const new({required this.energy, required this.fast, required this.onFast});
-  final Json energy;
-  final Json? fast;
-  final VoidCallback onFast;
-
-  @override
-  Widget build(BuildContext context) {
-    final energyTile = _EnergyTile(energy);
-    final fastTile = _FastTile(fast, onTap: onFast);
-    return LayoutBuilder(
-      builder: (context, box) {
-        final roomy = box.maxWidth >= 340 && MediaQuery.textScalerOf(context).scale(10) <= 11.5;
-        if (!roomy) return Column(children: [energyTile, const SizedBox(height: 12), fastTile]);
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: energyTile),
-              const SizedBox(width: 12),
-              Expanded(child: fastTile),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _EnergyTile extends StatelessWidget {
+class _EnergyCard extends StatelessWidget {
   const new(this.energy);
   final Json energy;
 
@@ -302,58 +404,58 @@ class _EnergyTile extends StatelessWidget {
     final p = context.palette;
     final day = energy['jour']! as Json;
     final targets = energy['cibles'] as Json?;
-    final suspended = energy['ciblesSuspendues'] == true || targets == null;
+    if (energy['ciblesSuspendues'] == true || targets == null) {
+      return _Card(
+        child: Text(
+          'Cibles suspendues pendant le jeûne',
+          style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 16),
+        ),
+      );
+    }
     final kcal = nombre(day['kcal']);
-    final kcalTarget = nombre(targets?['kcal']);
+    final kcalTarget = nombre(targets['kcal']);
     final protein = nombre(day['proteines']);
-    final proteinTarget = nombre(targets?['proteines']);
+    final proteinTarget = nombre(targets['proteines']);
     return _Card(
-      color: p.surface,
-      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('ÉNERGIE DU JOUR', style: context.overlineStyle.copyWith(color: p.muted)),
-          const SizedBox(height: 8),
-          if (suspended)
-            Text(
-              'Cibles suspendues pendant le jeûne',
-              style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 16),
-            )
-          else ...[
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: entier((kcalTarget - kcal).clamp(0, 99999))),
-                  TextSpan(
-                    text: ' kcal restantes',
-                    style: TextStyle(
-                      fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: p.muted,
-                      letterSpacing: 0,
-                    ),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: entier((kcalTarget - kcal).clamp(0, 99999))),
+                TextSpan(
+                  text: ' kcal restantes',
+                  style: TextStyle(
+                    fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
                   ),
-                ],
+                ),
+              ],
+            ),
+            style: CrescoTextes.chiffre.copyWith(fontSize: 34),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: Text('Protéines', style: context.mutedStyle.copyWith(fontSize: 15))),
+              Text(
+                '${entier(protein)} / ${entier(proteinTarget)} g',
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
-              style: CrescoTextes.chiffre.copyWith(color: p.ink, fontSize: 26),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Protéines ${entier(protein)} / ${entier(proteinTarget)} g',
-              style: TextStyle(color: p.ink, fontSize: 13, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            _Bar(value: proteinTarget > 0 ? protein / proteinTarget : 0, color: p.ink, track: p.line),
-          ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          BarreProgres(valeur: proteinTarget > 0 ? protein / proteinTarget : 0),
         ],
       ),
     );
   }
 }
 
-class _FastTile extends StatelessWidget {
+class _FastRow extends StatelessWidget {
   const new(this.fast, {required this.onTap});
   final Json? fast;
   final VoidCallback onTap;
@@ -363,101 +465,72 @@ class _FastTile extends StatelessWidget {
     final p = context.palette;
     final f = fast?['jeune'] as Json?;
     return _Card(
-      color: p.fast,
-      padding: const EdgeInsets.all(16),
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.nightlight_round, color: p.onFast),
-          const SizedBox(height: 8),
-          Text(
-            f == null ? 'Suivi du jeûne' : 'Jeûne en cours · ${duree(nombre(f['heures']) * 60)}',
-            style: TextStyle(color: p.onFast, fontWeight: FontWeight.w800, fontSize: 16),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            f == null ? 'Aucun jeûne en cours' : libellesPhase[f['phase']] ?? '',
-            style: TextStyle(color: p.onFast, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BodyCard extends StatelessWidget {
-  const new({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return _Card(
-      color: p.surface,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      onTap: onTap,
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: p.lime, borderRadius: BorderRadius.circular(14)),
-            child: Icon(Icons.accessibility_new, color: p.onLime),
-          ),
+          const ShortcutIconImage(ShortcutIcon.jeune, size: 32),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Mon corps',
-                  style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 16),
+                  f == null ? 'Suivi du jeûne' : 'Jeûne en cours',
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                 ),
-                Text('Le travail de chaque muscle cette semaine', style: TextStyle(color: p.muted, fontSize: 13)),
+                if (f == null) Text('Aucun jeûne en cours', style: context.mutedStyle),
+                if (f != null) Text(libellesPhase[f['phase']] ?? '', style: context.mutedStyle),
               ],
             ),
           ),
-          Icon(Icons.chevron_right, color: p.ink),
+          if (f != null)
+            Text(
+              duree(nombre(f['heures']) * 60),
+              style: CrescoTextes.chiffre.copyWith(fontSize: 24, color: p.onRestSoft),
+            )
+          else
+            Icon(Icons.chevron_right, color: p.ink),
         ],
       ),
     );
   }
 }
 
-/// Rounded card used on this screen; tappable when [onTap] is set.
-class _Card extends StatelessWidget {
-  const new({required this.color, required this.child, this.onTap, this.padding = const EdgeInsets.all(18)});
-  final Color color;
-  final Widget child;
-  final VoidCallback? onTap;
-  final EdgeInsets padding;
+class _Row extends StatelessWidget {
+  const new({required this.icon, required this.title, required this.subtitle, required this.onTap});
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: color,
-      borderRadius: BorderRadius.circular(26),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(padding: padding, child: child),
+    final p = context.palette;
+    return _Card(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(color: p.effortSoft, borderRadius: CrescoShape.borderRadius),
+            child: Icon(icon, color: p.onEffortSoft),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                Text(subtitle, style: context.mutedStyle),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right, color: p.ink),
+        ],
       ),
-    );
-  }
-}
-
-class _Bar extends StatelessWidget {
-  const new({required this.value, required this.color, required this.track});
-  final double value;
-  final Color color;
-  final Color track;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: LinearProgressIndicator(value: value.clamp(0, 1), minHeight: 8, color: color, backgroundColor: track),
     );
   }
 }

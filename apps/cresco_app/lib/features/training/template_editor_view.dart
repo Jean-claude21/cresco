@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/features/exercises/exercise_picker.dart';
+import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
@@ -187,6 +188,7 @@ class TemplateEditorView extends StatelessWidget {
               if (vm.items.isEmpty && !vm.isBusy)
                 const EmptyState(
                   icon: Icons.fitness_center,
+                  illustration: MyCoach(CoachPose.explique, height: 160),
                   title: 'Ajoute tes exercices',
                   message: 'Choisis-les dans la bibliothèque : par défaut, seulement ce qu’il y a dans ta salle.',
                 ),
@@ -246,7 +248,7 @@ class _ItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return DecoratedBox(
-      decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(22)),
+      decoration: CrescoShape.outlined(p),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 8, 12),
         child: Column(
@@ -261,7 +263,9 @@ class _ItemCard extends StatelessWidget {
                     child: Icon(Icons.drag_indicator, color: p.muted, semanticLabel: 'Déplacer'),
                   ),
                 ),
-                Expanded(child: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
+                Expanded(
+                  child: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                ),
                 IconButton(tooltip: 'Retirer ${item.name}', onPressed: onRemove, icon: const Icon(Icons.close)),
               ],
             ),
@@ -326,7 +330,7 @@ class _Stepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return DecoratedBox(
-      decoration: BoxDecoration(color: p.background, borderRadius: BorderRadius.circular(16)),
+      decoration: CrescoShape.outlined(p, fill: p.background),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: Row(

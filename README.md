@@ -26,6 +26,9 @@ Application mobile de musculation, cardio, nutrition, sommeil et jeûne, qui pro
 | [docs/architecture/MODELE_DONNEES.md](docs/architecture/MODELE_DONNEES.md) | Entités et format des séances |
 | [docs/architecture/API_MCP.md](docs/architecture/API_MCP.md) | API publique, permissions, outils MCP |
 | [docs/architecture/decisions/](docs/architecture/decisions/) | Décisions d'architecture (ADR) |
+| [docs/design/DESIGN.md](docs/design/DESIGN.md) | Design validé : couleurs, formes, coachs, Mon corps, écrans |
+| [docs/design/propositions-v2/](docs/design/propositions-v2/README.md) | Les directions explorées et le chemin vers le design validé |
+| [docs/design/medias/](docs/design/medias/README.md) | Médias générés avec ChatGPT : inventaire, consignes, scripts |
 
 ## État
 

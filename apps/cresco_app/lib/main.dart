@@ -37,7 +37,7 @@ class CrescoApp extends StatelessWidget {
       navigatorKey: StackedService.navigatorKey,
       scaffoldMessengerKey: locator<Messages>().cle,
       onGenerateRoute: StackedRouter().onGenerateRoute,
-      initialRoute: connecte ? Routes.accueilView : Routes.connexionView,
+      initialRoute: connecte ? Routes.accueilView : Routes.welcomeView,
     );
   }
 }

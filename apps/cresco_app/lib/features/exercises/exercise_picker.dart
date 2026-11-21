@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/features/body/body_map_view.dart';
+import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
@@ -93,7 +94,10 @@ class _PickerState extends State<_Picker> {
           SwitchListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 20),
             title: const Text('Seulement ma salle', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text('Machines et matériel cochés dans « Ma salle »', style: context.mutedStyle.copyWith(fontSize: 13)),
+            subtitle: Text(
+              'Machines et matériel cochés dans « Ma salle »',
+              style: context.mutedStyle.copyWith(fontSize: 13),
+            ),
             value: _gymOnly,
             onChanged: (v) {
               setState(() => _gymOnly = v);
@@ -122,12 +126,19 @@ class _PickerState extends State<_Picker> {
           const SizedBox(height: 8),
           Expanded(
             child: _error != null
-                ? Padding(padding: const EdgeInsets.all(20), child: ErrorState(message: _error!, onRetry: _load))
+                ? Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: ErrorState(message: _error!, onRetry: _load),
+                  )
                 : _items == null
-                ? const Padding(padding: EdgeInsets.all(20), child: LoadingState(heights: [64, 64, 64]))
+                ? const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: LoadingState(heights: [64, 64, 64]),
+                  )
                 : shown.isEmpty
                 ? EmptyState(
                     icon: Icons.search_off,
+                    illustration: const MyCoach(CoachPose.reflechit, height: 150),
                     title: 'Aucun exercice',
                     message: _gymOnly
                         ? 'Rien ne correspond dans ta salle. Coche plus de matériel dans « Ma salle », ou cherche dans tout le catalogue.'
@@ -142,12 +153,15 @@ class _PickerState extends State<_Picker> {
                       final primary = (e['muscles_primaires'] as List<Object?>? ?? const []).cast<String>();
                       return Material(
                         color: p.surface,
-                        borderRadius: BorderRadius.circular(18),
+                        shape: CrescoShape.rectangle(context.palette.line),
                         child: ListTile(
                           key: ValueKey('exercise-${e['id']}'),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                          shape: const RoundedRectangleBorder(borderRadius: CrescoShape.borderRadius),
                           title: Text(e['nom']! as String, style: const TextStyle(fontWeight: FontWeight.w700)),
-                          subtitle: Text(primary.map((m) => muscleNames[m] ?? m).join(' · '), style: context.mutedStyle),
+                          subtitle: Text(
+                            primary.map((m) => muscleNames[m] ?? m).join(' · '),
+                            style: context.mutedStyle,
+                          ),
                           trailing: Icon(Icons.add_circle, color: p.ink),
                           onTap: () => Navigator.pop(context, e),
                         ),

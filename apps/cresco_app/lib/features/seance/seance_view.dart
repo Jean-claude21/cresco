@@ -257,129 +257,141 @@ class SeanceView extends StatelessWidget {
     return ViewModelBuilder<SeanceViewModel>.reactive(
       viewModelBuilder: () => SeanceViewModel(templateId: templateId),
       onViewModelReady: (vm) => vm.charger(),
-      builder: (context, vm, _) {
-        final s = vm.courante;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Séance en cours', style: TextStyle(fontWeight: FontWeight.w700)),
-            actions: [
-              if (vm.charge && vm.erreur == null)
-                IconButton(
-                  tooltip: 'Ajouter un exercice',
-                  icon: const Icon(Icons.playlist_add),
-                  onPressed: () async {
-                    final e = await showExercisePicker(context);
-                    if (e != null) vm.addExercise(e);
-                  },
-                ),
-            ],
-          ),
-          body: vm.isBusy || !vm.charge
-              ? const Chargement()
-              : vm.erreur != null
-              ? Padding(padding: const EdgeInsets.all(18), child: MessageErreur(vm.erreur!))
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(18, 4, 18, 30),
-                  children: [
-                    if (s != null) ...[
-                      Text(s.nom, style: CrescoTextes.titrePage.copyWith(fontSize: 36)),
-                      const SizedBox(height: 4),
-                      Text((vm.exercices[s.exerciceId]?['consignes'] as String?) ?? '', style: context.mutedStyle),
-                      const SizedBox(height: 14),
-                      _Demonstration(onVideo: () => vm.ouvrirVideo(context)),
-                      const SizedBox(height: 12),
-                      _CarteSerie(vm: vm, s: s),
-                    ] else if (vm.series.isEmpty)
-                      const CrescoCarte(
-                        child: Text('Aucune série de musculation prévue aujourd’hui.', style: CrescoTextes.corps),
-                      )
-                    else
-                      CrescoCarte(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+      // Mockup G: the session screen is always dark, readable from a meter away between sets.
+      builder: (context, vm, _) => Theme(
+        data: crescoTheme(brightness: Brightness.dark, fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily),
+        child: Builder(builder: (context) => _build(context, vm)),
+      ),
+    );
+  }
+
+  Widget _build(BuildContext context, SeanceViewModel vm) {
+    final s = vm.courante;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Séance en cours', style: TextStyle(fontWeight: FontWeight.w700)),
+        actions: [
+          if (vm.charge && vm.erreur == null)
+            IconButton(
+              tooltip: 'Ajouter un exercice',
+              icon: const Icon(Icons.playlist_add),
+              onPressed: () async {
+                final e = await showExercisePicker(context);
+                if (e != null) vm.addExercise(e);
+              },
+            ),
+        ],
+      ),
+      body: vm.isBusy || !vm.charge
+          ? const Chargement()
+          : vm.erreur != null
+          ? Padding(padding: const EdgeInsets.all(18), child: MessageErreur(vm.erreur!))
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(18, 4, 18, 30),
+              children: [
+                if (s != null) ...[
+                  Text(s.nom, style: CrescoTextes.titrePage.copyWith(fontSize: 36)),
+                  const SizedBox(height: 4),
+                  Text((vm.exercices[s.exerciceId]?['consignes'] as String?) ?? '', style: context.mutedStyle),
+                  const SizedBox(height: 14),
+                  _Demonstration(exerciseId: s.exerciceId, onVideo: () => vm.ouvrirVideo(context)),
+                  const SizedBox(height: 12),
+                  _CarteSerie(vm: vm, s: s),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final e = await showExercisePicker(context);
+                      if (e != null) vm.addExercise(e);
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Ajouter un exercice'),
+                  ),
+                ] else if (vm.series.isEmpty)
+                  const CrescoCarte(
+                    child: Text('Aucune série de musculation prévue aujourd’hui.', style: CrescoTextes.corps),
+                  )
+                else
+                  CrescoCarte(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Séance terminée', style: CrescoTextes.titreCarte),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${vm.faites.length} séries enregistrées. Note l’effort global (RPE) :',
+                          style: context.mutedStyle,
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
-                            const Text('Séance terminée', style: CrescoTextes.titreCarte),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${vm.faites.length} séries enregistrées. Note l’effort global (RPE) :',
-                              style: context.mutedStyle,
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (var r = 4; r <= 10; r++)
-                                  ActionChip(label: Text('$r'), onPressed: () => vm.terminer(r)),
-                              ],
-                            ),
+                            for (var r = 4; r <= 10; r++)
+                              ActionChip(label: Text('$r'), onPressed: () => vm.terminer(r)),
                           ],
                         ),
-                      ),
-                    if (vm.repos > 0) ...[
-                      const SizedBox(height: 12),
-                      CrescoCarteSombre(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Surtitre('Repos restant', couleur: context.palette.lime),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    '${(vm.repos ~/ 60).toString().padLeft(2, '0')}:${(vm.repos % 60).toString().padLeft(2, '0')}',
-                                    style: CrescoTextes.chiffre.copyWith(color: Colors.white, fontSize: 52),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton.outlined(
-                              tooltip: 'Passer le repos',
-                              onPressed: vm.passerRepos,
-                              icon: const Icon(Icons.skip_next, color: Colors.white),
-                            ),
-                          ],
+                      ],
+                    ),
+                  ),
+                if (vm.repos > 0) ...[
+                  const SizedBox(height: 12),
+                  CrescoCarte(
+                    child: Row(
+                      children: [
+                        Icon(Icons.timer_outlined, color: context.palette.rest),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Repos',
+                            style: TextStyle(color: context.palette.ink, fontSize: 18, fontWeight: FontWeight.w700),
+                          ),
                         ),
-                      ),
-                    ],
-                  ],
-                ),
-        );
-      },
+                        Text(
+                          '${(vm.repos ~/ 60).toString().padLeft(2, '0')}:${(vm.repos % 60).toString().padLeft(2, '0')}',
+                          style: CrescoTextes.chiffre.copyWith(color: context.palette.rest, fontSize: 44),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton.outlined(
+                          tooltip: 'Passer le repos',
+                          onPressed: vm.passerRepos,
+                          icon: const Icon(Icons.skip_next),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
     );
   }
 }
 
+/// Black-and-white gym photo matching the exercise, with the user's own video link.
 class _Demonstration extends StatelessWidget {
-  const new({required this.onVideo});
+  const new({required this.exerciseId, required this.onVideo});
+  final String exerciseId;
   final VoidCallback onVideo;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: context.palette.limeSoft,
-        borderRadius: BorderRadius.circular(CrescoMesures.rayon),
-      ),
-      child: SizedBox(
-        height: 150,
-        child: Stack(
-          children: [
-            Center(child: Icon(Icons.fitness_center, size: 72, color: context.palette.onLimeSoft)),
-            Positioned(
-              right: 12,
-              bottom: 12,
-              child: ActionChip(
-                avatar: const Icon(Icons.open_in_new, size: 18),
-                label: const Text('Ma vidéo', style: TextStyle(fontWeight: FontWeight.w700)),
-                backgroundColor: context.palette.surface,
-                onPressed: onVideo,
-              ),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ClipRRect(
+          borderRadius: CrescoShape.borderRadius,
+          child: CrescoPhotoImage(CrescoPhoto.forExercise(exerciseId), height: 170),
         ),
-      ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: onVideo,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: context.palette.effort,
+            side: BorderSide(color: context.palette.effort, width: CrescoShape.border),
+          ),
+          icon: const Icon(Icons.play_circle_outline),
+          label: const Text('Ma vidéo'),
+        ),
+      ],
     );
   }
 }
@@ -407,7 +419,7 @@ class _CarteSerie extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
                     color: i < s.numero
-                        ? context.palette.accent
+                        ? context.palette.effort
                         : (i == s.numero ? context.palette.ink : context.palette.line),
                   ),
                 ),
@@ -423,10 +435,13 @@ class _CarteSerie extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: s.chargeKg == null ? '—' : decimal(s.chargeKg),
-                    style: CrescoTextes.chiffre.copyWith(fontSize: 54),
+                    style: CrescoTextes.chiffre.copyWith(fontSize: 58, color: context.palette.effort),
                   ),
                   TextSpan(text: ' kg  ×  ', style: context.unitStyle),
-                  TextSpan(text: '${s.reps}', style: CrescoTextes.chiffre.copyWith(fontSize: 54)),
+                  TextSpan(
+                    text: '${s.reps}',
+                    style: CrescoTextes.chiffre.copyWith(fontSize: 58, color: context.palette.effort),
+                  ),
                   TextSpan(text: ' répétitions', style: context.unitStyle),
                 ],
               ),
@@ -476,9 +491,13 @@ class _CarteSerie extends StatelessWidget {
                       labelStyle: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: vm.rirChoisi == r ? context.palette.onAction : context.palette.ink,
+                        color: vm.rirChoisi == r ? context.palette.onEffort : context.palette.ink,
                       ),
-                      selectedColor: context.palette.action,
+                      side: BorderSide(
+                        color: vm.rirChoisi == r ? context.palette.effort : context.palette.ink,
+                        width: CrescoShape.border,
+                      ),
+                      selectedColor: context.palette.effort,
                       backgroundColor: context.palette.background,
                       selected: vm.rirChoisi == r,
                       onSelected: (_) => vm.choisirRir(r),
@@ -489,6 +508,7 @@ class _CarteSerie extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           FilledButton(
+            style: effortButtonStyle(context),
             onPressed: vm.rirChoisi == null ? null : vm.validerSerie,
             child: Text(suivante == null ? 'Valider la dernière série' : 'Valider la série'),
           ),

@@ -77,7 +77,7 @@ class PageCresco extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final liste = ListView(
-      padding: const EdgeInsets.fromLTRB(CrescoMesures.marge, 8, CrescoMesures.marge, 130),
+      padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 8, CrescoSpacing.margin, 28),
       children: [
         ?surTitre,
         Row(
@@ -88,7 +88,7 @@ class PageCresco extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 18),
-        for (final e in enfants) ...[e, const SizedBox(height: CrescoMesures.gouttiere)],
+        for (final e in enfants) ...[e, const SizedBox(height: CrescoSpacing.gutter)],
         ?basDePage,
       ],
     );

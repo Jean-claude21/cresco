@@ -69,6 +69,13 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect(r.corps.taille_cm).toBe(180);
   });
 
+  it('remembers the chosen coach without touching the other preferences', async () => {
+    const r = await appel('PATCH', '/v1/moi', { preferences: { coach: 'homme' } });
+    expect(r.corps.preferences.coach).toBe('homme');
+    expect(r.corps.preferences.besoinSommeilMin).toBe(480);
+    expect((await appel('PATCH', '/v1/moi', { preferences: { coach: 'robot' } })).status).toBe(400);
+  });
+
   it('enregistre une séance et calcule e1RM et sRPE', async () => {
     const r = await appel('POST', '/v1/seances', {
       type: 'muscu',

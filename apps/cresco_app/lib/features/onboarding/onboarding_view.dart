@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
@@ -12,8 +13,9 @@ class OnboardingViewModel extends BaseViewModel {
   final NavigationService _nav = locator<NavigationService>();
   final Messages _messages = locator<Messages>();
 
-  static const steps = 4;
+  static const steps = 5;
   int step = 0;
+  Coach coach = currentCoach();
   String goal = 'maintien';
   String level = 'intermediaire';
   final restDays = <int>{0};
@@ -39,6 +41,12 @@ class OnboardingViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  Future<void> pickCoach(Coach c) async {
+    coach = c;
+    notifyListeners();
+    await saveCoach(c, remote: false);
+  }
+
   Future<void> openGym() async {
     await _nav.navigateTo<void>(Routes.gymView);
     gymDone = true;
@@ -52,7 +60,7 @@ class OnboardingViewModel extends BaseViewModel {
       await _api.modifierProfil({
         'objectif': goal,
         'niveau': level,
-        'preferences': {'moduleFoi': faith, 'joursReposVerrouilles': restDays.toList()..sort()},
+        'preferences': {'moduleFoi': faith, 'joursReposVerrouilles': restDays.toList()..sort(), 'coach': coach.name},
       });
     } on ErreurApi {
       _messages.afficher(message: 'Profil non enregistré : tu pourras le compléter dans Profil.');
@@ -62,7 +70,8 @@ class OnboardingViewModel extends BaseViewModel {
   }
 }
 
-/// First launch after sign-up (mockup "Démarrage"): goal, rhythm, my gym, fasting and faith.
+/// First launch after sign-up (mockup G "Démarrage"): coach, goal, rhythm, my gym, fasting and faith.
+/// The chosen coach asks each question.
 class OnboardingView extends StatelessWidget {
   const new({super.key});
 
@@ -81,7 +90,7 @@ class OnboardingView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 16, CrescoSpacing.margin, 4),
                   child: Semantics(
                     label: 'Étape ${vm.step + 1} sur ${OnboardingViewModel.steps}',
                     child: Row(
@@ -93,8 +102,8 @@ class OnboardingView extends StatelessWidget {
                               duration: const Duration(milliseconds: 300),
                               height: 6,
                               decoration: BoxDecoration(
-                                color: i <= vm.step ? p.ink : p.line,
-                                borderRadius: BorderRadius.circular(3),
+                                color: i <= vm.step ? p.effort : p.line,
+                                borderRadius: const BorderRadius.all(Radius.circular(2)),
                               ),
                             ),
                           ),
@@ -105,7 +114,9 @@ class OnboardingView extends StatelessWidget {
                 ),
                 Expanded(
                   child: AnimatedSwitcher(
-                    duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 380),
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 380),
                     transitionBuilder: (child, a) => FadeTransition(
                       opacity: a,
                       child: SlideTransition(
@@ -115,27 +126,58 @@ class OnboardingView extends StatelessWidget {
                     ),
                     child: ListView(
                       key: ValueKey(vm.step),
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                      padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 12, CrescoSpacing.margin, 20),
                       children: switch (vm.step) {
                         0 => [
+                          const _Title('Qui t’accompagne ?'),
+                          const _Lead(
+                            'Ton coach t’accueille, t’explique et t’encourage. Tu pourras changer dans Profil.',
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (final (i, c) in Coach.values.indexed) ...[
+                                if (i > 0) const SizedBox(width: 12),
+                                Expanded(
+                                  child: _CoachChoice(coach: c, selected: vm.coach == c, onTap: () => vm.pickCoach(c)),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                        1 => [
+                          _Bubble(coach: vm.coach, pose: CoachPose.explique, text: 'On commence par ton objectif.'),
                           const _Title('Qu’est-ce que tu veux changer ?'),
-                          const _Lead('Tes objectifs d’énergie et de séances partent de là.'),
                           for (final (id, label, hint) in const [
                             ('perte', 'Perdre du gras', 'Déficit modéré, force préservée'),
                             ('maintien', 'Être en forme', 'Garder mon poids, progresser'),
                             ('prise', 'Prendre du muscle', 'Léger surplus, volume suffisant'),
                           ])
-                            _Choice(label: label, hint: hint, selected: vm.goal == id, onTap: () => vm.set(() => vm.goal = id)),
+                            _Choice(
+                              label: label,
+                              hint: hint,
+                              selected: vm.goal == id,
+                              onTap: () => vm.set(() => vm.goal = id),
+                            ),
                         ],
-                        1 => [
+                        2 => [
+                          _Bubble(
+                            coach: vm.coach,
+                            pose: CoachPose.reflechit,
+                            text: 'Mieux vaut trois séances tenues que cinq abandonnées.',
+                          ),
                           const _Title('Ton rythme, sans te mentir.'),
-                          const _Lead('Mieux vaut trois séances tenues que cinq abandonnées.'),
                           for (final (id, label, hint) in const [
                             ('debutant', 'Débutant', 'Moins de 6 mois de musculation'),
                             ('intermediaire', 'Intermédiaire', '6 mois à 2 ans, je connais les mouvements'),
                             ('avance', 'Confirmé', 'Plus de 2 ans, je suis mes charges'),
                           ])
-                            _Choice(label: label, hint: hint, selected: vm.level == id, onTap: () => vm.set(() => vm.level = id)),
+                            _Choice(
+                              label: label,
+                              hint: hint,
+                              selected: vm.level == id,
+                              onTap: () => vm.set(() => vm.level = id),
+                            ),
                           const SizedBox(height: 12),
                           Text('Jours de repos verrouillés', style: context.overlineStyle),
                           const SizedBox(height: 8),
@@ -145,6 +187,7 @@ class OnboardingView extends StatelessWidget {
                             children: [
                               for (var d = 0; d < 7; d++)
                                 FilterChip(
+                                  showCheckmark: false,
                                   label: Text(_days[d]),
                                   selected: vm.restDays.contains(d),
                                   onSelected: (on) => vm.set(() => on ? vm.restDays.add(d) : vm.restDays.remove(d)),
@@ -152,9 +195,10 @@ class OnboardingView extends StatelessWidget {
                             ],
                           ),
                         ],
-                        2 => [
+                        3 => [
+                          _Bubble(coach: vm.coach, pose: CoachPose.carnet, text: 'Dis-moi ce qu’il y a dans ta salle.'),
                           const _Title('Ma salle'),
-                          const _Lead('Coche les machines de ta salle : tes séances et ton IA n’utiliseront que ça.'),
+                          const _Lead('Coche tes machines : tes séances et ton IA n’utiliseront que ça.'),
                           FilledButton.icon(
                             onPressed: vm.openGym,
                             icon: Icon(vm.gymDone ? Icons.check : Icons.place_outlined),
@@ -164,20 +208,17 @@ class OnboardingView extends StatelessWidget {
                           Text('Tu peux aussi le faire plus tard, depuis Entraînement.', style: context.mutedStyle),
                         ],
                         _ => [
+                          _Bubble(coach: vm.coach, pose: CoachPose.pouce, text: 'Dernière question, et c’est parti.'),
                           const _Title('Jeûne et foi'),
                           const _Lead('Optionnel. Si tu jeûnes, tes séances s’adaptent aux phases de ton jeûne.'),
                           Material(
-                            color: faithColor(p, on: vm.faith),
-                            borderRadius: BorderRadius.circular(22),
+                            color: p.background,
+                            shape: CrescoShape.rectangle(p.line),
                             child: SwitchListTile(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-                              title: Text(
-                                'Module foi',
-                                style: TextStyle(fontWeight: FontWeight.w800, color: vm.faith ? Colors.white : p.ink),
-                              ),
+                              title: const Text('Module foi', style: TextStyle(fontWeight: FontWeight.w800)),
                               subtitle: Text(
                                 'Un verset et une intention privée pour accompagner tes jeûnes',
-                                style: TextStyle(color: vm.faith ? const Color(0xFFB8B2E8) : p.muted),
+                                style: context.mutedStyle,
                               ),
                               value: vm.faith,
                               onChanged: (v) => vm.set(() => vm.faith = v),
@@ -195,23 +236,17 @@ class OnboardingView extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 0, CrescoSpacing.margin, 16),
                   child: Row(
                     children: [
                       if (vm.step > 0) ...[
-                        IconButton.filled(
-                          tooltip: 'Étape précédente',
-                          onPressed: vm.back,
-                          style: IconButton.styleFrom(
-                            backgroundColor: p.surface,
-                            foregroundColor: p.ink,
-                            fixedSize: const Size(56, 56),
-                          ),
-                          icon: const Icon(Icons.chevron_left),
+                        Expanded(
+                          child: OutlinedButton(onPressed: vm.back, child: const Text('Retour')),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                       ],
                       Expanded(
+                        flex: 2,
                         child: FilledButton(
                           onPressed: vm.isBusy ? null : (last ? vm.finish : vm.next),
                           child: Text(last ? 'C’est parti' : 'Continuer'),
@@ -227,9 +262,6 @@ class OnboardingView extends StatelessWidget {
       },
     );
   }
-
-  /// Night card when the faith module is on, the normal surface otherwise.
-  static Color faithColor(CrescoPalette p, {required bool on}) => on ? const Color(0xFF15122E) : p.surface;
 }
 
 class _Title extends StatelessWidget {
@@ -237,8 +269,10 @@ class _Title extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(text, style: CrescoTextes.titrePage.copyWith(fontSize: 30)));
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(text, style: CrescoTextes.titrePage.copyWith(fontSize: 30)),
+  );
 }
 
 class _Lead extends StatelessWidget {
@@ -246,8 +280,84 @@ class _Lead extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Padding(padding: const EdgeInsets.only(bottom: 18), child: Text(text, style: context.mutedStyle.copyWith(fontSize: 15)));
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 18),
+    child: Text(text, style: context.mutedStyle.copyWith(fontSize: 15)),
+  );
+}
+
+/// The coach, small, with a speech bubble.
+class _Bubble extends StatelessWidget {
+  const new({required this.coach, required this.pose, required this.text});
+  final Coach coach;
+  final CoachPose pose;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          CoachIllustration(coach: coach, pose: pose, height: 120),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: DecoratedBox(
+                decoration: CrescoShape.outlined(p, fill: p.background, outline: p.ink),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, height: 1.3)),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CoachChoice extends StatelessWidget {
+  const new({required this.coach, required this.selected, required this.onTap});
+  final Coach coach;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Semantics(
+      selected: selected,
+      button: true,
+      label: coach.label,
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? p.effortSoft : p.background,
+        shape: CrescoShape.rectangle(selected ? p.effort : p.line),
+        child: InkWell(
+          key: ValueKey('coach-${coach.name}'),
+          customBorder: CrescoShape.rectangle(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            child: Column(
+              children: [
+                CoachIllustration(coach: coach, pose: CoachPose.salue, height: 190),
+                const SizedBox(height: 8),
+                Text(coach.label, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                const SizedBox(height: 4),
+                Icon(selected ? Icons.check_box : Icons.check_box_outline_blank, color: selected ? p.effort : p.muted),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _Choice extends StatelessWidget {
@@ -267,10 +377,10 @@ class _Choice extends StatelessWidget {
         selected: selected,
         button: true,
         child: Material(
-          color: selected ? p.action : p.surface,
-          borderRadius: BorderRadius.circular(20),
+          color: selected ? p.action : p.background,
+          shape: CrescoShape.rectangle(selected ? p.action : p.line),
           child: InkWell(
-            borderRadius: BorderRadius.circular(20),
+            customBorder: CrescoShape.rectangle(),
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -280,12 +390,18 @@ class _Choice extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(label, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: ink)),
+                        Text(
+                          label,
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: ink),
+                        ),
                         Text(hint, style: TextStyle(fontSize: 13, color: ink.withValues(alpha: 0.75))),
                       ],
                     ),
                   ),
-                  if (selected) Icon(Icons.check_circle, color: p.onAction),
+                  Icon(
+                    selected ? Icons.check_box : Icons.check_box_outline_blank,
+                    color: selected ? p.effort : p.muted,
+                  ),
                 ],
               ),
             ),

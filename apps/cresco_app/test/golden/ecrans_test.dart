@@ -13,6 +13,7 @@ import 'package:cresco_app/features/profil/profil_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
 import 'package:cresco_app/features/training/training_view.dart';
+import 'package:cresco_app/features/welcome/welcome_view.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,18 +24,28 @@ import '../support.dart';
 void main() {
   setUp(preparer);
 
-  Future<void> capturer(WidgetTester tester, Widget ecran, String nom, {Brightness brightness = Brightness.light}) async {
+  Future<void> capturer(
+    WidgetTester tester,
+    Widget ecran,
+    String nom, {
+    Brightness brightness = Brightness.light,
+  }) async {
     await taillerTelephone(tester);
     await tester.pumpWidget(
       brightness == Brightness.light
           ? enveloppe(ecran)
-          : MaterialApp(debugShowCheckedModeBanner: false, theme: crescoTheme(fontFamily: 'Roboto', brightness: brightness), home: ecran),
+          : MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: crescoTheme(fontFamily: 'Roboto', brightness: brightness),
+              home: ecran,
+            ),
     );
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 200));
     }
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
-    await tester.pump();
+    await chargerImages(tester);
+    await tester.pump(const Duration(milliseconds: 400));
     await expectLater(find.byWidgetPredicate((w) => w is MaterialApp), matchesGoldenFile('captures/$nom.png'));
     // Démonte l'écran et vide les minuteurs (repos, horloge) avant la fin du test.
     await tester.pumpWidget(const SizedBox.shrink());
@@ -63,6 +74,7 @@ void main() {
     testWidgets('$nom (sombre)', (t) => capturer(t, ecran, '$fichier-sombre', brightness: Brightness.dark));
   }
   testWidgets('12 Ma salle', (t) => capturer(t, const GymView(), '12-ma-salle'));
+  testWidgets('00 Bienvenue', (t) => capturer(t, const WelcomeView(), '00-bienvenue'));
   testWidgets('13 Démarrage', (t) => capturer(t, const OnboardingView(), '13-demarrage'));
   testWidgets('10 Mon corps', (t) => capturer(t, const BodyMapView(), '10-mon-corps'));
   testWidgets(

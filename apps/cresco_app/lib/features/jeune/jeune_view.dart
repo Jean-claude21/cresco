@@ -187,7 +187,7 @@ class JeuneView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Surtitre(libellesDecision[code]!, couleur: context.palette.lime),
+            Surtitre(libellesDecision[code]!, couleur: context.palette.effort),
             const SizedBox(height: 8),
             Text(switch (code) {
               'ARRET' => 'Stop',
