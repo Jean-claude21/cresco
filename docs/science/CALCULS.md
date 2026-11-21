@@ -26,7 +26,7 @@ si reps_eff ≤ 10 :  e1RM = charge × 36 / (37 − reps_eff)        (Brzycki)
 sinon             :  e1RM = charge × (1 + reps_eff / 30)          (Epley)
 si reps_eff > 12  :  confiance = basse (série exclue de la tendance)
 ```
-Sources : [S-01][S-02]. Preuve : **bonne** sous 10 reps, l'erreur augmente au-delà.
+Sources : [S-01][S-02]. Preuve : **bonne** sous 10 reps, l'erreur augmente au-delà. Brzycki a proposé sa formule sans étude empirique : la preuve vient des études de validation ultérieures (à ajouter dans SOURCES.md).
 
 Pour une séance, on retient la **meilleure série** (e1RM max) par exercice : c'est le point utilisé par la tendance.
 
@@ -52,7 +52,7 @@ séries_efficaces(muscle, semaine) = Σ séries avec RIR ≤ 3
    (muscle primaire = 1 ; secondaire = 0,5)
 tonnage = Σ charge × reps        (affiché, non utilisé pour le verdict)
 ```
-Repère hypertrophie : **≥ 10 séries efficaces par muscle et par semaine** [S-05] (solide). La plage proposée par défaut est 10–20 **[H]**.
+Repère hypertrophie : **≥ 10 séries efficaces par muscle et par semaine** [S-05] (solide). La méta-analyse n'a pu établir la relation que jusqu'à environ 10 séries : au-delà, les études divergent (gain supplémentaire ou plateau). La plage proposée par défaut, 10–20, est donc **[H]** au-dessus de 10.
 
 ### C-PERF-6 : performance cardio
 ```

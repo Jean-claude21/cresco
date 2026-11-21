@@ -12,7 +12,7 @@ Le jeûne est au cœur de Cresco. Il est d'abord **spirituel** : l'app le protè
 | `intermittent` | Fenêtre sans calories (ex. 16/8, 18/6, 20/4) | Eau, café et thé sans sucre autorisés |
 | `eau` | Aucune calorie, eau à volonté, durée ≥ 24 h | Électrolytes conseillés au-delà de 24 h |
 | `sec` | Ni nourriture ni eau (ex. jeûne de type Ramadan, jeûne biblique d'Esther 4:16) | Limité à 24 h dans l'app ; rupture souvent le soir |
-| `partiel` | Restriction d'aliments, pas de calories (ex. jeûne de Daniel : végétal, sans viande, sans sucreries, sans vin, Daniel 1:12 et 10:3) | Entraînement normal ; vigilance sur les protéines |
+| `partiel` | Restriction d'aliments, pas de calories (ex. jeûne de Daniel : végétal, sans viande, sans sucreries, sans vin, Daniel 1:12 et 10:3 ; la version étudiée [S-51] exclut aussi les produits transformés, la caféine et l'alcool) | Entraînement normal ; vigilance sur les protéines ; l'apport baisse souvent (≈ −20 % dans [S-51]) |
 
 Chaque jeûne a un **motif** : `spirituel | sante | autre`, et une **intention** libre (texte, optionnel, privé).
 
@@ -35,7 +35,7 @@ L'« autophagie » est démontrée chez l'animal ; **chez l'humain, les preuves 
 | Muscu à jeun (après la nuit) vs nourri | Effets similaires sur force, hypertrophie, composition | Bonne | [S-46] |
 | Jeûne intermittent + muscu : perte de muscle ? | Masse maigre maintenue, masse grasse en baisse, si protéines ≥ 1,6 g/kg | Bonne | [S-43][S-44][S-45][S-48] |
 | Le jeûne améliore-t-il la performance ? | Pas clairement ; il aide au poids et au gras | Bonne | [S-47] |
-| Endurance à jeun | Pas d'effet sous ~60 min ; baisse sur les efforts longs | Modérée | [S-49] |
+| Endurance à jeun | Aucune différence sur les efforts courts ; manger avant améliore les efforts aérobies prolongés (46 études) | Modérée | [S-49] |
 | Jeûne sec (type Ramadan) | Force et anaérobie plutôt maintenues ; aérobie et puissance en baisse, surtout le matin | Modérée, mixte | [S-50] |
 | Jeûne de Daniel | Bien toléré, profil métabolique amélioré | Modérée | [S-51] |
 
