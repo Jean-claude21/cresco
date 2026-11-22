@@ -219,6 +219,7 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     const r = await appel('GET', '/v1/progression');
     expect(r.status).toBe(200);
     expect(r.corps.seancesSemaine).toBeGreaterThanOrEqual(1);
+    expect(r.corps.objectifSeancesSemaine).toBe(3);
     // The bench press session recorded earlier in this suite: 100 kg × 5.
     expect(r.corps.record).toMatchObject({ exerciceId: 'developpe-couche-barre', chargeKg: 100, reps: 5 });
   });

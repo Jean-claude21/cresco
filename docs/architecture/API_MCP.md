@@ -22,7 +22,7 @@
 | `/nuits`, `/mesures`, `/ressentis` | lire, créer (import ou saisie) |
 | `/jeunes` | démarrer, terminer, ajouter un événement, `GET /jeunes/en-cours/decision` |
 | `/calculs/{regle}` | exécuter une règle sur des entrées (ex. `C-PERF-2`) : le moteur en libre-service |
-| `/progression` | tendances, verdict hebdo, séances de la semaine (`seancesSemaine`), dernier record (`record`), bilan énergie |
+| `/progression` | tendances, verdict hebdo, séances de la semaine (`seancesSemaine`) et objectif (`objectifSeancesSemaine`, préférence `seancesParSemaine`, 3 par défaut), dernier record (`record`), bilan énergie |
 | `/muscles?jours=7` | séries efficaces par muscle (C-PERF-5) et repère hebdomadaire de 10 séries |
 | `/regles`, `/sources` | lire le catalogue des règles (version, paramètres, sources) et la bibliothèque de sources |
 

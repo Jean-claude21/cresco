@@ -213,6 +213,7 @@ final reponses = <String, Object?>{
     'verdict': 'progression',
     'explication': 'Ta force estimée monte au rythme attendu pour ton niveau.',
     'seancesSemaine': 4,
+    'objectifSeancesSemaine': 5,
     'record': {'exerciceId': 'chest-press', 'nom': 'Chest press', 'chargeKg': 60, 'reps': 8},
     'exercices': [
       {

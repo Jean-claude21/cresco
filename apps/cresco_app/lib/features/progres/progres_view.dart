@@ -49,6 +49,7 @@ class ProgresView extends StatelessWidget {
               _VerdictCard(
                 verdict: d['verdict'] as String?,
                 sessions: (d['seancesSemaine'] as num?)?.toInt(),
+                goal: (d['objectifSeancesSemaine'] as num?)?.toInt(),
                 sleepMin: d['sommeilMoyenMin'],
               ),
               if (exercices.isNotEmpty)
@@ -131,9 +132,12 @@ Future<void> _explain(BuildContext context, String explanation) => showModalBott
 
 /// Week verdict: big title (braise arrow when you progress), sessions this week, average sleep.
 class _VerdictCard extends StatelessWidget {
-  const new({required this.verdict, required this.sessions, required this.sleepMin});
+  const new({required this.verdict, required this.sessions, required this.sleepMin, this.goal});
   final String? verdict;
   final int? sessions;
+
+  /// Sessions aimed for this week (Profil); null hides the goal.
+  final int? goal;
   final Object? sleepMin;
 
   @override
@@ -168,7 +172,16 @@ class _VerdictCard extends StatelessWidget {
               ],
             ],
           ),
-          if (count != null) line(Icons.calendar_today_outlined, '$count séance${count > 1 ? 's' : ''} cette semaine'),
+          if (count != null && goal != null) ...[
+            line(
+              Icons.calendar_today_outlined,
+              '$count séance${count > 1 ? 's' : ''} sur $goal cette semaine'
+              '${count >= goal! ? ' · objectif atteint' : ''}',
+            ),
+            const SizedBox(height: 8),
+            BarreProgres(valeur: (count / goal!).clamp(0, 1).toDouble(), couleur: p.effort),
+          ] else if (count != null)
+            line(Icons.calendar_today_outlined, '$count séance${count > 1 ? 's' : ''} cette semaine'),
           if (sleep is num) line(Icons.bed_outlined, 'Sommeil moyen ${duree(sleep)}'),
         ],
       ),

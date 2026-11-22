@@ -42,6 +42,8 @@ export interface Profil {
     besoinSommeilMin: number;
     /** Illustrated coach picked at onboarding (absent until chosen). */
     coach?: 'femme' | 'homme';
+    /** Sessions the user aims for each week (onboarding, Profil); 3 when not set. */
+    seancesParSemaine?: number;
   };
 }
 
@@ -70,6 +72,7 @@ export const ProfilPatch = z.object({
       joursReposVerrouilles: z.array(z.number().int().min(0).max(6)).optional(),
       besoinSommeilMin: z.number().min(360).max(600).optional(),
       coach: z.enum(['femme', 'homme']).optional(),
+      seancesParSemaine: z.number().int().min(1).max(7).optional(),
     })
     .optional(),
 });
@@ -775,6 +778,7 @@ export async function progression(tx: Tx, userId: string) {
   return {
     verdict,
     seancesSemaine: week[0]?.n ?? 0,
+    objectifSeancesSemaine: p.preferences.seancesParSemaine ?? 3,
     record: await latestRecord(tx),
     explication: explicationVerdict(verdict, contexte.causes, sommeilMoyenMin),
     pctParSemaine: pctGlobal,

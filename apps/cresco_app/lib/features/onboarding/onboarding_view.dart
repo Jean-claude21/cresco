@@ -19,6 +19,7 @@ class OnboardingViewModel extends BaseViewModel {
   String goal = 'maintien';
   String level = 'intermediaire';
   final restDays = <int>{0};
+  int sessionsPerWeek = 3;
   bool faith = false;
   bool gymDone = false;
 
@@ -60,7 +61,12 @@ class OnboardingViewModel extends BaseViewModel {
       await _api.modifierProfil({
         'objectif': goal,
         'niveau': level,
-        'preferences': {'moduleFoi': faith, 'joursReposVerrouilles': restDays.toList()..sort(), 'coach': coach.name},
+        'preferences': {
+          'moduleFoi': faith,
+          'joursReposVerrouilles': restDays.toList()..sort(),
+          'coach': coach.name,
+          'seancesParSemaine': sessionsPerWeek,
+        },
       });
     } on ErreurApi {
       _messages.afficher(message: 'Profil non enregistré : tu pourras le compléter dans Profil.');
@@ -178,6 +184,23 @@ class OnboardingView extends StatelessWidget {
                               selected: vm.level == id,
                               onTap: () => vm.set(() => vm.level = id),
                             ),
+                          const SizedBox(height: 12),
+                          Text('Séances par semaine', style: context.overlineStyle),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              for (var n = 2; n <= 6; n++)
+                                ChoiceChip(
+                                  key: ValueKey('seances-$n'),
+                                  showCheckmark: false,
+                                  label: Text('$n'),
+                                  selected: vm.sessionsPerWeek == n,
+                                  onSelected: (_) => vm.set(() => vm.sessionsPerWeek = n),
+                                ),
+                            ],
+                          ),
                           const SizedBox(height: 12),
                           Text('Jours de repos verrouillés', style: context.overlineStyle),
                           const SizedBox(height: 8),
