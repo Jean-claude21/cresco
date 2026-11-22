@@ -241,27 +241,94 @@ class _Group extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Material(
-          color: p.surface,
-          shape: CrescoShape.rectangle(context.palette.line),
-          clipBehavior: Clip.antiAlias,
+        // Two photo cards per row; a narrow screen or large text gives one per row.
+        LayoutBuilder(
+          builder: (context, box) {
+            final columns = box.maxWidth < 300 || MediaQuery.textScalerOf(context).scale(1) > 1.25 ? 1 : 2;
+            final width = (box.maxWidth - 10 * (columns - 1)) / columns;
+            return Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final e in items)
+                  SizedBox(
+                    width: width,
+                    child: _EquipmentCard(
+                      key: ValueKey('gym-${e.key}'),
+                      equipment: e,
+                      selected: selected.contains(e.key),
+                      onTap: () => onToggle(e.key),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// One piece of equipment: its photo, its name, and a check in the corner when it is in the gym.
+class _EquipmentCard extends StatelessWidget {
+  const new({required this.equipment, required this.selected, required this.onTap, super.key});
+  final Equipment equipment;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Semantics(
+      checked: selected,
+      button: true,
+      label: equipment.label,
+      excludeSemantics: true,
+      child: Material(
+        color: p.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: CrescoShape.borderRadius,
+          side: BorderSide(color: selected ? p.ink : p.line, width: selected ? 2 : CrescoShape.border),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final e in items)
-                CheckboxListTile(
-                  key: ValueKey('gym-${e.key}'),
-                  value: selected.contains(e.key),
-                  onChanged: (_) => onToggle(e.key),
-                  title: Text(e.label, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: p.action,
-                  checkColor: p.onAction,
-                  shape: const RoundedRectangleBorder(borderRadius: CrescoShape.borderRadius),
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 4 / 3,
+                    child: Opacity(opacity: selected ? 1 : 0.55, child: EquipmentPhotoImage(equipment.key)),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        color: selected ? p.action : p.surface,
+                        borderRadius: CrescoShape.borderRadius,
+                        border: Border.all(color: selected ? p.action : p.ink, width: CrescoShape.border),
+                      ),
+                      child: selected ? Icon(Icons.check, size: 18, color: p.onAction) : null,
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Text(
+                  equipment.label,
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: p.ink),
                 ),
+              ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

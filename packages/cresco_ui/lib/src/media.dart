@@ -143,3 +143,37 @@ class CrescoPhotoImage extends StatelessWidget {
     excludeFromSemantics: semanticLabel == null,
   );
 }
+
+/// Photo of a piece of equipment of "Ma salle", by catalog key (`exercise:<id>` or `material:<id>`).
+abstract final class EquipmentPhoto {
+  /// Equipment with its own photo in `assets/equipment/<id>.jpg` (docs/design/medias/equipements).
+  static const own = <String>{};
+
+  /// Asset of [key]: its own photo, or the closest gym photo until it has one.
+  static String asset(String key) {
+    final id = key.split(':').last;
+    if (own.contains(id)) return 'assets/equipment/$id.jpg';
+    return switch (id) {
+      'tapis' || 'velo' || 'rameur' => CrescoPhoto.intervalles,
+      'barre' || 'halteres' => CrescoPhoto.seanceDuJour,
+      _ => CrescoPhoto.forExercise(id),
+    }.asset;
+  }
+}
+
+class EquipmentPhotoImage extends StatelessWidget {
+  const new(this.equipmentKey, {super.key, this.height, this.width});
+  final String equipmentKey;
+  final double? height;
+  final double? width;
+
+  @override
+  Widget build(BuildContext context) => Image.asset(
+    EquipmentPhoto.asset(equipmentKey),
+    package: _package,
+    height: height,
+    width: width,
+    fit: BoxFit.cover,
+    excludeFromSemantics: true,
+  );
+}
