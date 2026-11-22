@@ -46,7 +46,8 @@ void main() {
 
   Future<void> toucher(WidgetTester t, Finder f, {bool defiler = false}) async {
     await attendre(t, f, defiler: defiler);
-    await t.ensureVisible(f.first);
+    // Middle of the screen, like a user: at the top edge the element can sit under the status bar.
+    await Scrollable.ensureVisible(t.element(f.first), alignment: 0.5);
     await t.pump(const Duration(milliseconds: 200));
     // L'élément doit être au premier plan (pas sous un autre écran ni une animation en cours).
     try {

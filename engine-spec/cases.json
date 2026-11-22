@@ -67,6 +67,13 @@
     { "regle": "J-EFFET", "fonction": "effetJeune", "entree": { "pendant": [3, 4], "hors": [3, 3, 3] }, "sortie": { "effet": 0.5, "suffisant": false } },
     { "regle": "C-ENERGIE-9", "fonction": "nutrimentsPlat", "entree": { "ingredients": [{ "masse": 200, "kcal100": 130 }, { "masse": 100, "kcal100": 165 }], "masseCuite": 400, "portions": 4 }, "sortie": { "masse": 400, "massePortion": 100 } },
     { "regle": "C-ENERGIE-9", "fonction": "portion", "entree": { "kcal100": 106.25, "proteines100": 9.1, "massePortion": 100, "portions": 1.5 }, "sortie": { "masse": 150, "kcal": 159.375, "proteines": 13.65 } },
-    { "regle": "C-ENERGIE-9", "fonction": "portion", "entree": { "kcal100": 52, "masse": 250 }, "sortie": { "masse": 250, "kcal": 130, "proteines": 0 } }
+    { "regle": "C-ENERGIE-9", "fonction": "portion", "entree": { "kcal100": 52, "masse": 250 }, "sortie": { "masse": 250, "kcal": 130, "proteines": 0 } },
+    { "regle": "C-FORME", "fonction": "scoreForme", "entree": { "sommeil": 80, "energie": 4, "poids": { "sommeil": 0.5, "ressenti": 0.1 } }, "sortie": { "valeur": 79.17, "confiance": "moyenne" } },
+    { "regle": "C-PERF-7", "fonction": "tendanceVolume", "entree": { "semaines": [8, 10, 9, 13] }, "sortie": { "courante": 13, "moyennePrecedente": 9, "ecart": 4, "sens": "hausse" } },
+    { "regle": "C-PERF-7", "fonction": "tendanceVolume", "entree": { "semaines": [10, 10, 10, 9.5] }, "sortie": { "ecart": -0.5, "sens": "stable" } },
+    { "regle": "C-RECUP-4", "fonction": "recuperationMuscles", "entree": { "series": [{ "heuresDepuis": 0, "rir": 2, "primaires": ["pectoraux"], "secondaires": ["triceps"] }, { "heuresDepuis": 0, "rir": 0, "primaires": ["pectoraux"], "secondaires": ["triceps"] }, { "heuresDepuis": 24, "rir": 5, "primaires": ["dos"], "secondaires": [] }] }, "sortie": { "pectoraux": { "pct": 68.75, "heuresAvantPret": 10.71 }, "triceps": { "pct": 84.38, "heuresAvantPret": 0 } } },
+    { "regle": "C-RECUP-4", "fonction": "recuperationMuscles", "entree": { "series": [{ "heuresDepuis": 48, "rir": 1, "primaires": ["quadriceps"], "secondaires": [] }] }, "sortie": { "quadriceps": { "pct": 98.31, "heuresAvantPret": 0 } } },
+    { "regle": "C-CALIB", "fonction": "poidsPersonnels", "entree": { "minimum": 3, "observations": [{ "composantes": { "sommeil": 60, "ressenti": 50 }, "cible": 0.01 }, { "composantes": { "sommeil": 80, "ressenti": 50 }, "cible": 0.03 }, { "composantes": { "sommeil": 90, "ressenti": 50 }, "cible": 0.04 }] }, "sortie": { "poids": { "sommeil": 0.545, "vfc": 0.175, "fcRepos": 0.07, "ressenti": 0.14, "fatigue": 0.07 }, "observations": 3, "personnalise": true } },
+    { "regle": "C-CALIB", "fonction": "poidsPersonnels", "entree": { "observations": [{ "composantes": { "sommeil": 60 }, "cible": 0.01 }] }, "sortie": { "poids": { "sommeil": 0.35, "vfc": 0.25, "fcRepos": 0.1, "ressenti": 0.2, "fatigue": 0.1 }, "observations": 1, "personnalise": false } }
   ]
 }

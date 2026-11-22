@@ -212,21 +212,100 @@ Json portion(Json e) {
 
 // ------------------------------------------------------------------ C-FORME, C-AJUST
 
+/// C-FORME default weights (heuristic); C-CALIB replaces them by the user's own ones.
+const poidsForme = {'sommeil': 0.35, 'vfc': 0.25, 'fcRepos': 0.10, 'ressenti': 0.20, 'fatigue': 0.10};
+
 Json scoreForme(Json e) {
   double? opt(String k, double Function(double) f) => e[k] == null ? null : f(_n(e[k]));
-  final composantes = <(double, double?)>[
-    (0.35, opt('sommeil', (v) => v)),
-    (0.25, opt('zVfc', (z) => _borne(50 + 15 * z, 0, 100))),
-    (0.10, opt('zFcRepos', (z) => _borne(50 + 15 * z, 0, 100))),
-    (0.20, opt('energie', (v) => _borne((v - 1) * 25 - 10 * _n(e['courbatures']), 0, 100))),
-    (0.10, opt('ratioAiguChronique', (r) => _borne(100 - 50 * math.max(0, r - 1), 0, 100))),
-  ];
-  final presentes = composantes.where((c) => c.$2 != null).toList();
-  final poids = presentes.fold<double>(0, (s, c) => s + c.$1);
-  var valeur = poids > 0 ? presentes.fold<double>(0, (s, c) => s + c.$1 * c.$2!) / poids : 50.0;
+  final perso = (e['poids'] as Map?)?.cast<String, Object?>() ?? const {};
+  double w(String k) => perso[k] == null ? poidsForme[k]! : _n(perso[k]);
+  final valeurs = <String, double?>{
+    'sommeil': opt('sommeil', (v) => v),
+    'vfc': opt('zVfc', (z) => _borne(50 + 15 * z, 0, 100)),
+    'fcRepos': opt('zFcRepos', (z) => _borne(50 + 15 * z, 0, 100)),
+    'ressenti': opt('energie', (v) => _borne((v - 1) * 25 - 10 * _n(e['courbatures']), 0, 100)),
+    'fatigue': opt('ratioAiguChronique', (r) => _borne(100 - 50 * math.max(0, r - 1), 0, 100)),
+  };
+  final presentes = valeurs.keys.where((k) => valeurs[k] != null).toList();
+  final poids = presentes.fold<double>(0, (s, k) => s + w(k));
+  final couverture = presentes.fold<double>(0, (s, k) => s + poidsForme[k]!);
+  var valeur = poids > 0 ? presentes.fold<double>(0, (s, k) => s + w(k) * valeurs[k]!) / poids : 50.0;
   if (_n(e['heuresJeune']) > 16) valeur -= 10;
-  final confiance = poids >= 0.9 ? 'haute' : (poids >= 0.55 ? 'moyenne' : 'basse');
-  return {'valeur': _borne(valeur, 0, 100), 'confiance': confiance};
+  final confiance = couverture >= 0.9 ? 'haute' : (couverture >= 0.55 ? 'moyenne' : 'basse');
+  return {'valeur': _borne(valeur, 0, 100), 'confiance': confiance, 'composantes': valeurs};
+}
+
+/// C-CALIB (heuristic): personal weights of C-FORME (see the TypeScript engine).
+Json poidsPersonnels(Json e) {
+  final minimum = _n(e['minimum'], 20);
+  final obs = (e['observations']! as List).cast<Map<String, Object?>>();
+  final estimes = <String, double>{};
+  var n = 0;
+  for (final k in poidsForme.keys) {
+    final paires = <(double, double)>[
+      for (final o in obs)
+        if ((o['composantes'] as Map?)?[k] != null) (_n((o['composantes']! as Map)[k]), _n(o['cible'])),
+    ];
+    n = math.max(n, paires.length);
+    estimes[k] = paires.length >= minimum ? math.max(0, _pearson(paires)) : 0;
+  }
+  final somme = estimes.values.fold<double>(0, (a, b) => a + b);
+  if (somme == 0) return {'poids': Map<String, double>.of(poidsForme), 'observations': n, 'personnalise': false};
+  final brut = {for (final k in poidsForme.keys) k: 0.7 * poidsForme[k]! + 0.3 * estimes[k]! / somme};
+  final total = brut.values.fold<double>(0, (a, b) => a + b);
+  return {
+    'poids': {for (final k in brut.keys) k: brut[k]! / total},
+    'observations': n,
+    'personnalise': true,
+  };
+}
+
+double _pearson(List<(double, double)> p) {
+  final mx = _moyenne([for (final x in p) x.$1]);
+  final my = _moyenne([for (final x in p) x.$2]);
+  var sxy = 0.0;
+  var sxx = 0.0;
+  var syy = 0.0;
+  for (final (x, y) in p) {
+    sxy += (x - mx) * (y - my);
+    sxx += (x - mx) * (x - mx);
+    syy += (y - my) * (y - my);
+  }
+  return sxx > 0 && syy > 0 ? sxy / math.sqrt(sxx * syy) : 0;
+}
+
+/// C-PERF-7 (heuristic): trend of the weekly effective sets of one muscle (oldest week first).
+Json tendanceVolume(Json e) {
+  final semaines = (e['semaines']! as List).map(_n).toList();
+  final courante = semaines.isEmpty ? 0.0 : semaines.last;
+  final precedentes = semaines.isEmpty ? <double>[] : semaines.sublist(0, semaines.length - 1);
+  final moyennePrecedente = _moyenne(precedentes);
+  final ecart = courante - moyennePrecedente;
+  final sens = precedentes.isEmpty ? 'stable' : (ecart > 1 ? 'hausse' : (ecart < -1 ? 'baisse' : 'stable'));
+  return {'courante': courante, 'moyennePrecedente': moyennePrecedente, 'ecart': ecart, 'sens': sens};
+}
+
+/// C-RECUP-4 (heuristic): recovery of each muscle from its recent effective sets (see the TypeScript engine).
+Json recuperationMuscles(Json e) {
+  const tau = 24.0;
+  const seuil = 8.0;
+  final charge = <String, double>{};
+  for (final s in (e['series']! as List).cast<Map<String, Object?>>()) {
+    final h = _n(s['heuresDepuis']);
+    if (_n(s['rir']) > 3 || h < 0) continue;
+    final f = (_n(s['rir']) == 0 ? 1.5 : 1.0) * math.exp(-h / tau);
+    for (final m in (s['primaires']! as List).cast<String>()) {
+      charge[m] = (charge[m] ?? 0) + f;
+    }
+    for (final m in (s['secondaires']! as List).cast<String>()) {
+      charge[m] = (charge[m] ?? 0) + 0.5 * f;
+    }
+  }
+  const pret = seuil * 0.2;
+  return {
+    for (final MapEntry(key: m, value: c) in charge.entries)
+      m: {'pct': _borne(100 * (1 - c / seuil), 0, 100), 'heuresAvantPret': c > pret ? tau * math.log(c / pret) : 0.0},
+  };
 }
 
 const _prudence = ['NORMALE', 'ADAPTEE', 'LEGERE', 'REPOS_ACTIF', 'REPOS', 'ARRET'];
@@ -367,6 +446,9 @@ const Map<String, Json Function(Json)> fonctions = {
   'chargeCible': chargeCible,
   'ajustementSerie': ajustementSerie,
   'seriesEfficaces': seriesEfficaces,
+  'tendanceVolume': tendanceVolume,
+  'recuperationMuscles': recuperationMuscles,
+  'poidsPersonnels': poidsPersonnels,
   'srpe': srpe,
   'trimp': trimp,
   'fcMax': fcMax,

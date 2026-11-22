@@ -53,6 +53,20 @@ export function seriesEfficaces(e: { series: readonly { rir: number; primaires: 
 /** C-PERF-5 guideline: at least 10 effective sets per muscle per week for hypertrophy [S-05]. */
 export const EFFECTIVE_SETS_GUIDELINE = 10;
 
+/**
+ * C-PERF-7 [H]: trend of the weekly effective sets of one muscle. [semaines] runs from the oldest
+ * week to the current one; the current week is compared with the mean of the previous ones,
+ * with a dead band of one set.
+ */
+export function tendanceVolume(e: { semaines: readonly number[] }) {
+  const courante = e.semaines.at(-1) ?? 0;
+  const precedentes = e.semaines.slice(0, -1);
+  const moyennePrecedente = precedentes.length ? precedentes.reduce((a, b) => a + b, 0) / precedentes.length : 0;
+  const ecart = courante - moyennePrecedente;
+  const sens = precedentes.length === 0 ? 'stable' : ecart > 1 ? 'hausse' : ecart < -1 ? 'baisse' : 'stable';
+  return { courante, moyennePrecedente, ecart, sens };
+}
+
 /** C-PERF-6 */
 export const efficaciteCardio = (vitesseMs: number, fcMoyenne: number) => (fcMoyenne > 0 ? vitesseMs / fcMoyenne : 0);
 
@@ -242,9 +256,41 @@ export function portion(e: {
   };
 }
 
+/**
+ * C-RECUP-4 [H]: recovery of each muscle from its recent effective sets (C-PERF-5 weights:
+ * primary 1, secondary 0.5; a set to failure counts 1.5 times [S-53]), decaying with a 24 h time
+ * constant. Recovered = 100 × (1 − load / 8), bounded 0–100; ready from 80 %.
+ */
+export function recuperationMuscles(e: {
+  series: readonly { heuresDepuis: number; rir: number; primaires: readonly string[]; secondaires: readonly string[] }[];
+}) {
+  const TAU = 24;
+  const SEUIL = 8;
+  const charge: Record<string, number> = {};
+  for (const s of e.series) {
+    if (s.rir > 3 || s.heuresDepuis < 0) continue;
+    const f = (s.rir === 0 ? 1.5 : 1) * Math.exp(-s.heuresDepuis / TAU);
+    for (const m of s.primaires) charge[m] = (charge[m] ?? 0) + f;
+    for (const m of s.secondaires) charge[m] = (charge[m] ?? 0) + 0.5 * f;
+  }
+  const resultat: Record<string, { pct: number; heuresAvantPret: number }> = {};
+  for (const [m, c] of Object.entries(charge)) {
+    const pret = SEUIL * 0.2;
+    resultat[m] = {
+      pct: borne(100 * (1 - c / SEUIL), 0, 100),
+      heuresAvantPret: c > pret ? TAU * Math.log(c / pret) : 0,
+    };
+  }
+  return resultat;
+}
+
 // ---------------------------------------------------------------- C-FORME, C-AJUST
 
 /** C-FORME [H] : composantes absentes → poids redistribués. */
+/** C-FORME default weights [H]; C-CALIB replaces them by the user's own ones. */
+export const POIDS_FORME = { sommeil: 0.35, vfc: 0.25, fcRepos: 0.1, ressenti: 0.2, fatigue: 0.1 } as const;
+export type ComposanteForme = keyof typeof POIDS_FORME;
+
 export function scoreForme(e: {
   sommeil?: number;
   zVfc?: number;
@@ -253,19 +299,73 @@ export function scoreForme(e: {
   courbatures?: number;
   ratioAiguChronique?: number;
   heuresJeune?: number;
+  /** Personal weights (C-CALIB); the default ones when absent. */
+  poids?: Partial<Record<ComposanteForme, number>>;
 }) {
-  const composantes: [number, number | undefined][] = [
-    [0.35, e.sommeil],
-    [0.25, e.zVfc == null ? undefined : borne(50 + 15 * e.zVfc, 0, 100)],
-    [0.1, e.zFcRepos == null ? undefined : borne(50 + 15 * e.zFcRepos, 0, 100)],
-    [0.2, e.energie == null ? undefined : borne((e.energie - 1) * 25 - 10 * (e.courbatures ?? 0), 0, 100)],
-    [0.1, e.ratioAiguChronique == null ? undefined : borne(100 - 50 * Math.max(0, e.ratioAiguChronique - 1), 0, 100)],
-  ];
-  const presentes = composantes.filter(([, v]) => v != null) as [number, number][];
-  const poids = presentes.reduce((s, [w]) => s + w, 0);
-  let valeur = poids > 0 ? presentes.reduce((s, [w, v]) => s + w * v, 0) / poids : 50;
+  const w = { ...POIDS_FORME, ...(e.poids ?? {}) };
+  const valeurs: Record<ComposanteForme, number | undefined> = {
+    sommeil: e.sommeil,
+    vfc: e.zVfc == null ? undefined : borne(50 + 15 * e.zVfc, 0, 100),
+    fcRepos: e.zFcRepos == null ? undefined : borne(50 + 15 * e.zFcRepos, 0, 100),
+    ressenti: e.energie == null ? undefined : borne((e.energie - 1) * 25 - 10 * (e.courbatures ?? 0), 0, 100),
+    fatigue: e.ratioAiguChronique == null ? undefined : borne(100 - 50 * Math.max(0, e.ratioAiguChronique - 1), 0, 100),
+  };
+  const presentes = (Object.keys(valeurs) as ComposanteForme[]).filter((k) => valeurs[k] != null);
+  const poids = presentes.reduce((s, k) => s + w[k], 0);
+  // Coverage, for the confidence, always on the default weights.
+  const couverture = presentes.reduce((s, k) => s + POIDS_FORME[k], 0);
+  let valeur = poids > 0 ? presentes.reduce((s, k) => s + w[k] * valeurs[k]!, 0) / poids : 50;
   if ((e.heuresJeune ?? 0) > 16) valeur -= 10;
-  return { valeur: borne(valeur, 0, 100), confiance: (poids >= 0.9 ? 'haute' : poids >= 0.55 ? 'moyenne' : 'basse') as Confiance };
+  return {
+    valeur: borne(valeur, 0, 100),
+    confiance: (couverture >= 0.9 ? 'haute' : couverture >= 0.55 ? 'moyenne' : 'basse') as Confiance,
+    composantes: valeurs,
+  };
+}
+
+/**
+ * C-CALIB [H]: personal weights of C-FORME. Each component is correlated (Pearson) with the
+ * quality of the sessions that followed; estimated weights ∝ max(0, r), then
+ * new = 0.7 × default + 0.3 × estimated, normalized. Fewer than [minimum] observations of a
+ * component, or no positive correlation: the default weights stay.
+ */
+export function poidsPersonnels(e: {
+  observations: readonly { composantes: Partial<Record<ComposanteForme, number | null>>; cible: number }[];
+  minimum?: number;
+}) {
+  const minimum = e.minimum ?? 20;
+  const cles = Object.keys(POIDS_FORME) as ComposanteForme[];
+  const estimes: Record<string, number> = {};
+  let n = 0;
+  for (const k of cles) {
+    const paires = e.observations.filter((o) => o.composantes[k] != null).map((o) => [o.composantes[k]!, o.cible] as const);
+    n = Math.max(n, paires.length);
+    estimes[k] = paires.length >= minimum ? Math.max(0, pearson(paires)) : 0;
+  }
+  const somme = cles.reduce((s, k) => s + estimes[k]!, 0);
+  if (somme === 0) return { poids: { ...POIDS_FORME }, observations: n, personnalise: false };
+  const brut = Object.fromEntries(cles.map((k) => [k, 0.7 * POIDS_FORME[k] + (0.3 * estimes[k]!) / somme])) as Record<ComposanteForme, number>;
+  const total = cles.reduce((s, k) => s + brut[k], 0);
+  return {
+    poids: Object.fromEntries(cles.map((k) => [k, brut[k] / total])) as Record<ComposanteForme, number>,
+    observations: n,
+    personnalise: true,
+  };
+}
+
+function pearson(paires: readonly (readonly [number, number])[]) {
+  const n = paires.length;
+  const mx = paires.reduce((s, [x]) => s + x, 0) / n;
+  const my = paires.reduce((s, [, y]) => s + y, 0) / n;
+  let sxy = 0;
+  let sxx = 0;
+  let syy = 0;
+  for (const [x, y] of paires) {
+    sxy += (x - mx) * (y - my);
+    sxx += (x - mx) ** 2;
+    syy += (y - my) ** 2;
+  }
+  return sxx > 0 && syy > 0 ? sxy / Math.sqrt(sxx * syy) : 0;
 }
 
 const VOLUME: Record<Decision, number> = { NORMALE: 0, ADAPTEE: -0.2, LEGERE: -0.5, REPOS_ACTIF: -1, REPOS: -1, ARRET: -1 };
@@ -407,6 +507,8 @@ export const REGLES = [
   { id: 'C-PERF-3', version: 1, nom: 'Charge cible', preuve: 'bonne', sources: ['S-02'] },
   { id: 'C-PERF-4', version: 1, nom: 'Ajustement en séance', preuve: 'H', sources: ['S-04'] },
   { id: 'C-PERF-5', version: 1, nom: 'Volume efficace', preuve: 'solide', sources: ['S-05'] },
+  { id: 'C-PERF-7', version: 1, nom: 'Tendance du volume par muscle', preuve: 'H', sources: ['S-05'] },
+  { id: 'C-RECUP-4', version: 1, nom: 'Récupération par muscle (indicatif)', preuve: 'H', sources: ['S-53', 'S-54'] },
   { id: 'C-CHARGE-1', version: 1, nom: 'Charge de séance (sRPE)', preuve: 'solide', sources: ['S-06'] },
   { id: 'C-CHARGE-2', version: 1, nom: 'TRIMP', preuve: 'modérée', sources: ['S-08'] },
   { id: 'C-CHARGE-3', version: 1, nom: 'FC max et zones', preuve: 'bonne', sources: ['S-09', 'S-10'] },
@@ -416,7 +518,9 @@ export const REGLES = [
   { id: 'C-ENERGIE-4', version: 1, nom: 'TDEE adaptatif', preuve: 'H', sources: ['S-20'] },
   { id: 'C-ENERGIE-5', version: 1, nom: 'Verdict énergie', preuve: 'H', sources: [] },
   { id: 'C-ENERGIE-7', version: 1, nom: 'Cibles de macros', preuve: 'bonne', sources: ['S-26', 'S-27', 'S-28', 'S-29', 'S-30', 'S-31'] },
+  { id: 'C-ENERGIE-9', version: 1, nom: 'Recettes et portions', preuve: 'solide', sources: [] },
   { id: 'C-FORME', version: 1, nom: 'Score de forme', preuve: 'H', sources: ['S-15', 'S-16', 'S-21'] },
+  { id: 'C-CALIB', version: 1, nom: 'Poids personnels de la forme', preuve: 'H', sources: [] },
   { id: 'C-AJUST', version: 1, nom: 'Séance ajustée', preuve: 'H', sources: ['S-21', 'S-22'] },
   { id: 'C-PROG-1', version: 1, nom: 'Tendance e1RM', preuve: 'bonne', sources: [] },
   { id: 'C-VERDICT', version: 1, nom: 'Verdict hebdomadaire', preuve: 'H', sources: ['S-21', 'S-22', 'S-23'] },
@@ -431,6 +535,9 @@ export const FONCTIONS = {
   chargeCible,
   ajustementSerie,
   seriesEfficaces,
+  tendanceVolume,
+  recuperationMuscles,
+  poidsPersonnels,
   srpe,
   trimp,
   fcMax,

@@ -61,6 +61,15 @@ km/h = m/s × 3,6     allure (min/km) = 60 / km/h
 ```
 Progression cardio = efficacité en hausse, ou même allure à FC plus basse.
 
+### C-PERF-7 : tendance du volume par muscle — v1, **[H]**
+```
+semaines = séries efficaces du muscle (C-PERF-5), des plus anciennes à la semaine en cours (4 semaines)
+moyenne_précédente = moyenne des semaines avant la semaine en cours
+écart = semaine en cours − moyenne_précédente
+sens = hausse si écart > 1 série, baisse si écart < −1 série, sinon stable
+```
+Paramètres : 4 semaines, zone morte d'une série **[H]**. Sert à dire, dans « Mon corps », si un muscle reçoit plus ou moins de travail qu'avant ; aucune décision n'en découle. Fonction : `tendanceVolume`.
+
 ---
 
 ## 2. Charge et fatigue : `C-CHARGE`
@@ -137,6 +146,16 @@ z_VFC   = (ln rMSSD_jour − moyenne(ln rMSSD, 7 j)) / écart-type(ln rMSSD, 30 
 z_FCrep = −(FC_repos_jour − moyenne(FC_repos, 7 j)) / écart-type(FC_repos, 30 j)
 ```
 Méthode [S-15][S-16], preuve **modérée**. Mesure au réveil, même position. Sans capteur, ces composantes sont retirées et les poids redistribués.
+
+### C-RECUP-4 : récupération par muscle — v1, **[H]**, preuve faible
+```
+charge(muscle) = Σ séries efficaces récentes (RIR ≤ 3 ; principal 1, secondaire 0,5)
+                 × 1,5 si la série est allée à l'échec (RIR 0)
+                 × e^(−heures écoulées / 24)
+récupération (%) = 100 × (1 − charge / 8), bornée 0–100 ; prêt à partir de 80 %
+heures avant prêt = 24 × ln(charge / 1,6) si charge > 1,6, sinon 0
+```
+Repères : la récupération neuromusculaire après une séance prend de 24 à 48 h, plus longtemps quand les séries vont jusqu'à l'échec [S-53] ; travailler un muscle au moins deux fois par semaine favorise l'hypertrophie [S-54], ce qui suppose une récupération en 2 à 3 jours. La constante de 24 h, le seuil de 8 séries et le facteur 1,5 sont **[H]**. Affiché dans « Mon corps » à titre indicatif : **ne modifie jamais seul une séance**. Fonction : `recuperationMuscles`.
 
 ---
 
@@ -307,13 +326,15 @@ Contrôle croisé avec le corps (poids lissé `T` et tour de taille sur 4 semain
 
 ## 8. Calibrage personnel : `C-CALIB`
 
-Après 6 à 8 semaines de données :
+v1, **[H]**. Après au moins 20 jours de séance où la forme du jour est connue :
 ```
-cible = qualité de séance observée (écart RIR réel vs cible, e1RM du jour vs tendance)
-on estime, par régression, quelles composantes de C-FORME prédisent le mieux la cible
-nouveaux poids = 0,7 × poids_défaut + 0,3 × poids_estimés   (puis convergence progressive)
+cible(jour) = moyenne, sur les séries du jour, de (e1RM / e1RM moyen du même exercice sur les 28 jours précédents − 1)
+r(composante) = corrélation de Pearson entre la composante de C-FORME (0–100) et la cible, sur ces jours
+poids_estimé(composante) ∝ max(0, r)          (moins de 20 jours pour une composante : 0)
+nouveaux poids = 0,7 × poids_défaut + 0,3 × poids_estimé, puis normalisés (somme 1)
+aucune corrélation positive : poids par défaut
 ```
-Les poids personnels sont versionnés, visibles et réinitialisables.
+La confiance de C-FORME reste calculée sur les poids par défaut (couverture des données). Les poids personnels sont visibles dans l'API (`forme.poids`) et l'utilisateur peut revenir aux poids par défaut (préférence `calibrageForme`). Fonctions : `poidsPersonnels`, `scoreForme` (paramètre `poids`).
 
 ## 9. Confiance et données manquantes
 

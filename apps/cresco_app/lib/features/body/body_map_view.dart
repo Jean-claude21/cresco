@@ -91,6 +91,10 @@ class BodyMapViewModel extends FutureViewModel<Json> {
 
   num get guideline => (data?['guideline'] as num?) ?? 10;
 
+  /// Volume trend (C-PERF-7) and recovery (C-RECUP-4) of a muscle, as computed by the server.
+  Json? detailOf(String muscle) =>
+      (data?['muscles'] as List<Object?>? ?? const []).cast<Json>().where((m) => m['muscle'] == muscle).firstOrNull;
+
   Map<String, double> get sets => {
     for (final m in (data?['muscles'] as List<Object?>? ?? const []).cast<Json>())
       m['muscle']! as String: nombre(m['effectiveSets']),
@@ -212,6 +216,7 @@ class BodyMapView extends StatelessWidget {
                       muscle: vm.selected,
                       sets: sets[vm.selected] ?? 0,
                       guideline: vm.guideline,
+                      detail: vm.detailOf(vm.selected),
                       exercises: vm.exercisesFor(vm.selected).take(3).toList(),
                       onAdd: vm.addSets,
                     ),
@@ -322,10 +327,14 @@ class _Detail extends StatelessWidget {
     required this.guideline,
     required this.exercises,
     required this.onAdd,
+    this.detail,
   });
   final String muscle;
   final double sets;
   final num guideline;
+
+  /// `trend` and `recovery` of the muscle; absent when it was not worked for 4 weeks.
+  final Json? detail;
   final List<Json> exercises;
   final Future<void> Function(List<Json> exercises) onAdd;
 
@@ -353,6 +362,11 @@ class _Detail extends StatelessWidget {
                 '${decimal(sets)} / ${decimal(guideline)} séries efficaces · $status',
                 style: const TextStyle(fontSize: 15),
               ),
+              if (_recovery case final r?) ...[
+                const SizedBox(height: 8),
+                _Fact(icon: Icons.battery_charging_full, text: r),
+              ],
+              if (_trend case final t?) _Fact(icon: t.$1, text: t.$2),
               const SizedBox(height: 12),
               if (exercises.isNotEmpty) ...[
                 const Text('Exercices', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
@@ -401,6 +415,25 @@ class _Detail extends StatelessWidget {
     );
   }
 
+  /// C-RECUP-4, shown for information only.
+  String? get _recovery {
+    final r = detail?['recovery'] as Json?;
+    if (r == null) return null;
+    final pct = nombre(r['pct']);
+    final hours = nombre(r['heuresAvantPret']);
+    if (pct >= 99) return 'Récupéré';
+    if (hours <= 0) return 'Récupéré à ${entier(pct)} % · prêt';
+    return 'Récupéré à ${entier(pct)} % · prêt dans ${hours < 24 ? '${entier(hours)} h' : '${entier(hours / 24)} j'}';
+  }
+
+  /// C-PERF-7: this week against the three before.
+  (IconData, String)? get _trend => switch (detail?['trend']) {
+    'hausse' => (Icons.trending_up, 'Plus de travail que les 3 semaines précédentes'),
+    'baisse' => (Icons.trending_down, 'Moins de travail que les 3 semaines précédentes'),
+    'stable' => (Icons.trending_flat, 'Autant de travail que les 3 semaines précédentes'),
+    _ => null,
+  };
+
   Future<void> _explain(BuildContext context, num guideline) => showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -409,10 +442,36 @@ class _Detail extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         child: Text(
           'Séries à 3 répétitions en réserve ou moins, sur 7 jours. Muscle principal de l’exercice : 1 série ; '
-          'secondaire : 0,5. Repère : ${decimal(guideline)} séries par semaine (règle C-PERF-5).',
+          'secondaire : 0,5. Repère : ${decimal(guideline)} séries par semaine (règle C-PERF-5).
+
+'
+          'Récupération (C-RECUP-4, indicative) : chaque série récente pèse moins d’heure en heure, '
+          'davantage si elle est allée à l’échec ; prêt à partir de 80 %. Elle ne change jamais ta séance '
+          'à elle seule.
+
+'
+          'Tendance (C-PERF-7) : séries de cette semaine comparées à la moyenne des 3 précédentes.',
           style: CrescoTextes.corps,
         ),
       ),
+    ),
+  );
+}
+
+class _Fact extends StatelessWidget {
+  const new({required this.icon, required this.text});
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Row(
+      children: [
+        Icon(icon, size: 20, color: context.palette.ink),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 15))),
+      ],
     ),
   );
 }

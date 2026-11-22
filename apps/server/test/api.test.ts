@@ -214,6 +214,18 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect(filet.source_attribution).toBe('Ciqual (Anses)');
   });
 
+  it('gives each muscle its 4-week trend and its recovery, and keeps the day form', async () => {
+    const m = await appel('GET', '/v1/muscles?jours=7');
+    const any = m.corps.muscles[0];
+    expect(any.weeks).toHaveLength(4);
+    expect(['hausse', 'stable', 'baisse']).toContain(any.trend);
+    expect(any.recovery.pct).toBeGreaterThanOrEqual(0);
+    expect(any.recovery.pct).toBeLessThanOrEqual(100);
+    const today = await appel('GET', '/v1/aujourdhui');
+    expect(today.corps.forme.poidsPersonnels).toBe(false);
+    expect(today.corps.forme.poids.sommeil).toBeCloseTo(0.35, 5);
+  });
+
   it('the integrated AI is off without an API key', async () => {
     expect((await appel('GET', '/v1/ia')).corps).toEqual({ disponible: false });
     const r = await appel('POST', '/v1/ia/repas-texte', { texte: 'un bol de riz et deux œufs' });

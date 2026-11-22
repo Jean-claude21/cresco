@@ -44,6 +44,8 @@ export interface Profil {
     coach?: 'femme' | 'homme';
     /** Sessions the user aims for each week (onboarding, Profil); 3 when not set. */
     seancesParSemaine?: number;
+    /** C-CALIB: personal form weights (true by default); false keeps the default ones. */
+    calibrageForme?: boolean;
   };
 }
 
@@ -73,6 +75,7 @@ export const ProfilPatch = z.object({
       besoinSommeilMin: z.number().min(360).max(600).optional(),
       coach: z.enum(['femme', 'homme']).optional(),
       seancesParSemaine: z.number().int().min(1).max(7).optional(),
+      calibrageForme: z.boolean().optional(),
     })
     .optional(),
 });
@@ -467,10 +470,18 @@ export async function forme(tx: Tx, userId: string) {
         : undefined,
     heuresJeune: j ? (Date.now() - new Date(j.debut).getTime()) / 3_600_000 : 0,
   };
-  const score = moteur.scoreForme(entree);
+  const calib = p.preferences.calibrageForme === false ? null : await calibrage(tx);
+  const score = moteur.scoreForme({ ...entree, ...(calib?.personnalise ? { poids: calib.poids } : {}) });
+  await tx.query(
+    `insert into forme_jour (user_id, jour, composantes, valeur) values ($1, current_date, $2, $3)
+     on conflict (user_id, jour) do update set composantes = excluded.composantes, valeur = excluded.valeur`,
+    [userId, JSON.stringify(score.composantes), score.valeur],
+  );
   return {
     valeur: Math.round(score.valeur),
     confiance: score.confiance,
+    poids: calib?.personnalise ? calib.poids : moteur.POIDS_FORME,
+    poidsPersonnels: Boolean(calib?.personnalise),
     composantes: {
       sommeil: sommeil == null ? null : Math.round(sommeil),
       dormiMin: derniere?.dormi_min ?? null,
@@ -956,6 +967,29 @@ export async function exporter(tx: Tx, userId: string) {
   return out;
 }
 
+/**
+ * C-CALIB: the days with both a known form (forme_jour) and sets with an e1RM; the target of a day
+ * is the mean, over its sets, of e1RM / mean e1RM of the same exercise in the 28 days before − 1.
+ */
+async function calibrage(tx: Tx) {
+  const { rows } = await tx.query<{ composantes: Record<string, number | null>; cible: string }>(
+    `with series as (
+       select se.le::date as jour, s.exercice_id, s.e1rm,
+              (select avg(s2.e1rm) from serie s2 join seance se2 on se2.id = s2.seance_id
+                where s2.exercice_id = s.exercice_id and s2.e1rm is not null
+                  and se2.le < se.le::date and se2.le >= se.le::date - 28) as reference
+         from serie s join seance se on se.id = s.seance_id
+        where s.e1rm is not null and se.le > now() - interval '180 days')
+     select f.composantes, avg(series.e1rm / series.reference - 1) as cible
+       from forme_jour f join series on series.jour = f.jour
+      where series.reference > 0
+      group by f.jour, f.composantes`,
+  );
+  return moteur.poidsPersonnels({
+    observations: rows.map((r) => ({ composantes: r.composantes, cible: Number(r.cible) })),
+  });
+}
+
 // ---------------------------------------------------------------- Muscles
 
 /**
@@ -963,24 +997,42 @@ export async function exporter(tx: Tx, userId: string) {
  * Sets without a recorded RIR are not counted: the rule needs it. Cardio is not a muscle.
  */
 export async function muscleVolume(tx: Tx, days: number) {
-  const { rows } = await tx.query<{ rir: string; primary: string[]; secondary: string[] }>(
-    `select s.rir, e.muscles_primaires as primary, e.muscles_secondaires as secondary
+  // Four weeks of sets: the window asked for, the weekly trend (C-PERF-7) and recovery (C-RECUP-4).
+  const { rows } = await tx.query<{ rir: string; heures: string; primary: string[]; secondary: string[] }>(
+    `select s.rir, extract(epoch from now() - se.le) / 3600 as heures,
+            e.muscles_primaires as primary, e.muscles_secondaires as secondary
        from serie s
        join seance se on se.id = s.seance_id
        join exercice e on e.id = s.exercice_id
-      where se.le > now() - make_interval(days => $1) and s.rir is not null`,
+      where se.le > now() - make_interval(days => greatest($1, 28)) and s.rir is not null`,
     [days],
   );
   const notCardio = (m: string) => m !== 'cardio';
-  const totals = moteur.seriesEfficaces({
-    series: rows.map((r) => ({ rir: Number(r.rir), primaires: r.primary.filter(notCardio), secondaires: r.secondary.filter(notCardio) })),
-  });
+  const series = rows.map((r) => ({
+    rir: Number(r.rir),
+    heuresDepuis: Number(r.heures),
+    primaires: r.primary.filter(notCardio),
+    secondaires: r.secondary.filter(notCardio),
+  }));
+  const within = (from: number, to: number) => series.filter((s) => s.heuresDepuis >= from * 24 && s.heuresDepuis < to * 24);
+  const totals = moteur.seriesEfficaces({ series: within(0, days) });
+  // Weeks from the oldest to the current one.
+  const weeks = [3, 2, 1, 0].map((w) => moteur.seriesEfficaces({ series: within(w * 7, w * 7 + 7) }));
+  const recovery = moteur.recuperationMuscles({ series: within(0, 7) });
+  const names = new Set([...Object.keys(totals), ...weeks.flatMap((w) => Object.keys(w))]);
   return {
     rule: 'C-PERF-5',
     days,
     guideline: moteur.EFFECTIVE_SETS_GUIDELINE,
-    muscles: Object.entries(totals)
-      .map(([muscle, effectiveSets]) => ({ muscle, effectiveSets }))
+    muscles: [...names]
+      .map((muscle) => ({
+        muscle,
+        effectiveSets: totals[muscle] ?? 0,
+        weeks: weeks.map((w) => w[muscle] ?? 0),
+        trend: moteur.tendanceVolume({ semaines: weeks.map((w) => w[muscle] ?? 0) }).sens,
+        recovery: recovery[muscle] ?? { pct: 100, heuresAvantPret: 0 },
+      }))
+      .filter((m) => m.effectiveSets > 0 || m.weeks.some((w) => w > 0))
       .sort((a, b) => b.effectiveSets - a.effectiveSets),
   };
 }

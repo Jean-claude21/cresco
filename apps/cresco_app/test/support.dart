@@ -97,7 +97,13 @@ final reponses = <String, Object?>{
     'guideline': 10,
     'muscles': [
       {'muscle': 'quadriceps', 'effectiveSets': 12},
-      {'muscle': 'pectoraux', 'effectiveSets': 8.5},
+      {
+        'muscle': 'pectoraux',
+        'effectiveSets': 8.5,
+        'weeks': [6, 7, 6.5, 8.5],
+        'trend': 'hausse',
+        'recovery': {'pct': 69, 'heuresAvantPret': 11},
+      },
       {'muscle': 'dos', 'effectiveSets': 6},
       {'muscle': 'epaules', 'effectiveSets': 4},
       {'muscle': 'triceps', 'effectiveSets': 3.5},

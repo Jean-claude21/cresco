@@ -10,7 +10,7 @@ Dans le code, chaque règle référence ces identifiants (`sources: ["S-05"]`).
 | **Partiel** | Publication confirmée (auteurs, revue, pages), DOI non confirmé |
 | **Non vérifié** | Cité de mémoire, aucune confirmation en ligne : à vérifier avant usage dans le moteur |
 
-Bilan sur 46 références : **28 vérifiées**, **4 partielles**, **14 non vérifiées**. Aucune référence s'est révélée inexistante. Les corrections apportées sont signalées par **Correction**.
+Bilan sur 48 références : **30 vérifiées**, **4 partielles**, **14 non vérifiées**. Aucune référence s'est révélée inexistante. Les corrections apportées sont signalées par **Correction**.
 
 ## Musculation
 
@@ -19,6 +19,9 @@ Bilan sur 46 références : **28 vérifiées**, **4 partielles**, **14 non véri
 - **[S-03]** Zourdos M. C. et al. (2016). Novel resistance training-specific rating of perceived exertion scale measuring repetitions in reserve. *J Strength Cond Res*, 30(1), 267–275. DOI 10.1519/JSC.0000000000001049, PMID 26049792. — **Vérifié**.
 - **[S-04]** Helms E. R., Cronin J., Storey A., Zourdos M. C. (2016). Application of the repetitions in reserve-based rating of perceived exertion scale for resistance training. *Strength Cond J*, 38(4), 42–49. DOI 10.1519/SSC.0000000000000218. — **Vérifié** (DOI vu sur un seul dépôt).
 - **[S-05]** Schoenfeld B. J., Ogborn D., Krieger J. W. (2017). Dose-response relationship between weekly resistance training volume and increases in muscle mass: a systematic review and meta-analysis. *J Sports Sci*, 35(11), 1073–1082. DOI 10.1080/02640414.2016.1210197. — **Vérifié**. **Correction** : la relation dose-réponse n'a pu être établie que **jusqu'à environ 10 séries par muscle et par semaine** (peu d'études au-delà). La plage 10–20 de Cresco au-delà de 10 est une heuristique.
+
+- **[S-53]** Morán-Navarro R. et al. (2017). Time course of recovery following resistance training leading or not to failure. *Eur J Appl Physiol*, 117(12), 2387–2399. DOI 10.1007/s00421-017-3725-7, PMID 28965198. — **Vérifié** (22/11/2026). Récupération neuromusculaire plus lente de 24 à 48 h quand les séries vont jusqu'à l'échec.
+- **[S-54]** Schoenfeld B. J., Ogborn D., Krieger J. W. (2016). Effects of resistance training frequency on measures of muscle hypertrophy: a systematic review and meta-analysis. *Sports Med*, 46(11), 1689–1697. DOI 10.1007/s40279-016-0543-8, PMID 27102172. — **Vérifié** (22/11/2026). Fréquence d'au moins deux fois par semaine favorable ; à volume égal, des méta-analyses plus récentes ne trouvent plus d'effet de la fréquence.
 
 ## Charge d'entraînement
 
