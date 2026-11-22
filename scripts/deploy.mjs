@@ -121,7 +121,10 @@ if (!(detail.environments ?? []).some((e) => e.name === target.environment)) {
 const servers = await coolify('/servers');
 const server = servers.find((s) => s.uuid === own.COOLIFY_SERVER_UUID) ?? servers[0];
 if (!server) throw new Error('Aucun serveur Coolify.');
-const domain = (own[`DOMAIN_${ENV}`] || `https://${target.app}.${server.ip}.sslip.io`).replace(/\/$/u, '');
+// Default domain: <app>.<server wildcard domain> (kete.digital on the Contabo server), else sslip.io.
+const wildcard = (await coolify(`/servers/${server.uuid}`))?.settings?.wildcard_domain;
+const host = wildcard ? new URL(wildcard).host : `${server.ip}.sslip.io`;
+const domain = (own[`DOMAIN_${ENV}`] || `https://${target.app}.${host}`).replace(/\/$/u, '');
 let application = (await coolify('/applications')).find((a) => a.name === target.app);
 if (!application) {
   application = await coolify('/applications/public', {
@@ -156,6 +159,9 @@ const variables = {
   DATABASE_URL: appUrl,
   DATABASE_OWNER_URL: ownerUrl,
   APP_DB_PASSWORD: appPassword,
+  // Integrated AI (src/ia.ts): only when the key is in ../.secrets/cresco.env.
+  ...(own.OPENAI_API_KEY ? { OPENAI_API_KEY: own.OPENAI_API_KEY } : {}),
+  ...(own.OPENAI_MODEL ? { OPENAI_MODEL: own.OPENAI_MODEL } : {}),
 };
 await coolify(`/applications/${application.uuid}/envs/bulk`, {
   method: 'PATCH',

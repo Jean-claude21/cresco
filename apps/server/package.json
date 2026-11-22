@@ -11,11 +11,11 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.12.0",
     "@cresco/engine": "workspace:*",
     "@hono/node-server": "^1.19.5",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "hono": "^4.10.4",
+    "openai": "^7.62.0",
     "pg": "^8.23.1",
     "zod": "^3.25.76"
   },

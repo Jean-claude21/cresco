@@ -54,7 +54,7 @@ Le script lit les clés BrowserStack dans `../.secrets/.admin.env` (jamais affic
 
 | Sujet | Où ça se branche |
 |---|---|
-| Activer l’IA intégrée sur le serveur | variable `ANTHROPIC_API_KEY` dans Coolify ; sans elle, les entrées IA restent masquées (l’API répond 503) |
+| IA intégrée : crédits OpenAI | la clé `OPENAI_API_KEY` est en place (Coolify), mais le compte OpenAI n’a plus de crédit : à recharger sur platform.openai.com ; en attendant, l’app affiche « assistant indisponible » |
 | App iPhone sur appareil réel (le .ipa se construit uniquement sur un Mac) | même parcours `integration_test` ; HealthKit demande d’activer la capacité dans Xcode (`Runner.entitlements` est prêt) |
 | Base locale complète (Drift) | aujourd’hui : toutes les lectures en cache et les saisies en file d’attente ; il manque la création de séances et de plats hors ligne |
 | Abonnements (RevenueCat) | comptes Apple, Google et RevenueCat à créer ; après la phase 5 |

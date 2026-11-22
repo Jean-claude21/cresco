@@ -9,10 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 typedef Json = Map<String, Object?>;
 
-/// Adresse de l'API : `--dart-define=CRESCO_API=…`, sinon le staging.
+/// Adresse de l'API : `--dart-define=CRESCO_API=…`, sinon la production.
 const apiParDefaut = String.fromEnvironment(
   'CRESCO_API',
-  defaultValue: 'https://cresco-staging.169.58.86.123.sslip.io',
+  defaultValue: 'https://cresco.kete.digital',
 );
 
 class ErreurApi implements Exception {

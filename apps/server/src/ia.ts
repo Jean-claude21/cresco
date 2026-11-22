@@ -1,46 +1,64 @@
 /**
  * Integrated AI (ADR-0002: the engine computes, the AI proposes).
  *
- * - Meal in words or plate photo: Claude names the foods and estimates their grams; the server
+ * - Meal in words or plate photo: the model names the foods and estimates their grams; the server
  *   matches each one in the food base (Ciqual, Open Food Facts, own foods) and the user confirms
  *   before anything is saved. Nutrients always come from the base and the engine, never from the AI.
- * - Weekly review: Claude writes a short text from the figures the engine already computed
+ * - Weekly review: the model writes a short text from the figures the engine already computed
  *   (progression, energy, sleep), and is told not to produce any other number.
  *
- * Off when ANTHROPIC_API_KEY is not set: the endpoints answer 503 and the app hides the entries.
+ * Provider: OpenAI (Responses API, structured outputs), model OPENAI_MODEL (gpt-5.5 by default).
+ * Off when OPENAI_API_KEY is not set: the endpoints answer 503 and the app hides the entries.
  */
-import Anthropic from '@anthropic-ai/sdk';
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
-import * as z4 from 'zod/v4';
+import OpenAI from 'openai';
+import { zodTextFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
 import type { Tx } from './db.ts';
 import * as svc from './services.ts';
 import { Refus } from './services.ts';
 
-const MODEL = 'claude-opus-5-5';
-/** On a safety decline the API retries on the fallback model it picks (server-side fallback). */
-const FALLBACK = { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' as const };
+const model = () => process.env['OPENAI_MODEL'] || 'gpt-5.5';
 
-let client: Anthropic | null | undefined;
-function claude(): Anthropic {
-  if (client === undefined) client = process.env['ANTHROPIC_API_KEY'] ? new Anthropic() : null;
+let client: OpenAI | null | undefined;
+function openai(): OpenAI {
+  if (client === undefined) client = process.env['OPENAI_API_KEY'] ? new OpenAI({ timeout: 80_000, maxRetries: 1 }) : null;
   if (!client) throw new Refus(503, 'L’assistant IA n’est pas configuré sur ce serveur.');
   return client;
 }
 
-export const iaDisponible = () => Boolean(process.env['ANTHROPIC_API_KEY']);
+export const iaDisponible = () => Boolean(process.env['OPENAI_API_KEY']);
 
-const Estimation = z4.object({
-  aliments: z4
+/** Provider failures (no credit, rate limit, outage) become a clear 503 for the app. */
+async function appel<T>(work: (c: OpenAI) => Promise<T>): Promise<T> {
+  const c = openai();
+  try {
+    return await work(c);
+  } catch (e) {
+    if (e instanceof OpenAI.RateLimitError) {
+      console.error('OpenAI', e.status, e.code);
+      throw new Refus(503, 'L’assistant IA est indisponible pour le moment (quota du fournisseur). Réessaie plus tard.');
+    }
+    if (e instanceof OpenAI.APIError) {
+      console.error('OpenAI', e.status, e.code);
+      throw new Refus(503, 'L’assistant IA ne répond pas pour le moment. Réessaie plus tard.');
+    }
+    throw e;
+  }
+}
+
+const Estimation = z.object({
+  aliments: z
     .array(
-      z4.object({
-        recherche: z4.string().describe('Nom court et générique pour chercher l’aliment dans la table Ciqual, en français (ex. « riz blanc cuit », « poulet, filet, rôti »).'),
-        libelle: z4.string().describe('Ce que la personne a décrit ou ce qui est visible, en français.'),
-        grammes: z4.number().describe('Masse estimée de la portion, en grammes.'),
+      z.object({
+        recherche: z
+          .string()
+          .describe('Nom court et générique pour chercher l’aliment dans la table Ciqual, en français (ex. « riz blanc cuit », « poulet, filet, rôti »).'),
+        libelle: z.string().describe('Ce que la personne a décrit ou ce qui est visible, en français.'),
+        grammes: z.number().describe('Masse estimée de la portion, en grammes.'),
       }),
     )
     .describe('Un élément par aliment ; vide si rien de mangeable n’est décrit.'),
-  remarque: z4.string().describe('Une phrase courte si une estimation est incertaine, sinon une chaîne vide.'),
+  remarque: z.string().describe('Une phrase courte si une estimation est incertaine, sinon une chaîne vide.'),
 });
 
 const SYSTEME_REPAS = `Tu aides à noter un repas dans Cresco, une app de nutrition et de sport.
@@ -58,7 +76,7 @@ export const RepasPhoto = z.object({
 type Proposition = { libelle: string; grammes: number; aliment: Record<string, unknown> | null };
 
 /** Matches each estimated food in the base; the user confirms the list in the app. */
-async function rapprocher(tx: Tx, estimation: z4.infer<typeof Estimation>) {
+async function rapprocher(tx: Tx, estimation: z.infer<typeof Estimation>) {
   const propositions: Proposition[] = [];
   for (const a of estimation.aliments.slice(0, 15)) {
     const grammes = Math.min(Math.max(Math.round(a.grammes), 1), 2000);
@@ -67,29 +85,30 @@ async function rapprocher(tx: Tx, estimation: z4.infer<typeof Estimation>) {
   return { propositions, remarque: estimation.remarque || null };
 }
 
-async function estimer(content: Anthropic.Beta.BetaContentBlockParam[]) {
-  const r = await claude().beta.messages.parse({
-    ...FALLBACK,
-    model: MODEL,
-    max_tokens: 4000,
-    output_config: { effort: 'low', format: betaZodOutputFormat(Estimation) },
-    system: SYSTEME_REPAS,
-    messages: [{ role: 'user', content }],
-  });
-  if (r.stop_reason === 'refusal' || !r.parsed_output) throw new Refus(422, 'L’assistant n’a pas pu analyser ce repas.');
-  return r.parsed_output;
+async function estimer(content: OpenAI.Responses.ResponseInputMessageContentList) {
+  const r = await appel((c) =>
+    c.responses.parse({
+      model: model(),
+      instructions: SYSTEME_REPAS,
+      input: [{ role: 'user', content }],
+      reasoning: { effort: 'low' },
+      text: { format: zodTextFormat(Estimation, 'estimation_repas') },
+    }),
+  );
+  if (!r.output_parsed) throw new Refus(422, 'L’assistant n’a pas pu analyser ce repas.');
+  return r.output_parsed;
 }
 
 export async function repasDepuisTexte(tx: Tx, { texte }: z.infer<typeof RepasTexte>) {
-  return rapprocher(tx, await estimer([{ type: 'text', text: `Repas décrit : ${texte}` }]));
+  return rapprocher(tx, await estimer([{ type: 'input_text', text: `Repas décrit : ${texte}` }]));
 }
 
 export async function repasDepuisPhoto(tx: Tx, p: z.infer<typeof RepasPhoto>) {
   return rapprocher(
     tx,
     await estimer([
-      { type: 'image', source: { type: 'base64', media_type: p.mediaType, data: p.image } },
-      { type: 'text', text: `Photo de l’assiette.${p.precision ? ` Précision : ${p.precision}` : ''}` },
+      { type: 'input_image', image_url: `data:${p.mediaType};base64,${p.image}`, detail: 'auto' },
+      { type: 'input_text', text: `Photo de l’assiette.${p.precision ? ` Précision : ${p.precision}` : ''}` },
     ]),
   );
 }
@@ -112,15 +131,13 @@ export async function bilanSemaine(tx: Tx, userId: string) {
     bilanEnergie: energie?.bilan ?? prog.energie,
     poidsLisseKg: prog.poidsLisse,
   };
-  const r = await claude().beta.messages.create({
-    ...FALLBACK,
-    model: MODEL,
-    max_tokens: 2000,
-    output_config: { effort: 'low' },
-    system: SYSTEME_BILAN,
-    messages: [{ role: 'user', content: `Données de la semaine (JSON) :\n${JSON.stringify(donnees)}` }],
-  });
-  if (r.stop_reason === 'refusal') throw new Refus(422, 'L’assistant n’a pas pu écrire le bilan.');
-  const texte = r.content.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n').trim();
+  const r = await appel((c) => c.responses.create({
+    model: model(),
+    instructions: SYSTEME_BILAN,
+    input: `Données de la semaine (JSON) :\n${JSON.stringify(donnees)}`,
+    reasoning: { effort: 'low' },
+  }));
+  const texte = r.output_text.trim();
+  if (!texte) throw new Refus(422, 'L’assistant n’a pas pu écrire le bilan.');
   return { texte, donnees };
 }
