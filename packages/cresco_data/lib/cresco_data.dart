@@ -91,6 +91,19 @@ class CrescoApi {
     return donnees;
   }
 
+  /// A list read kept for offline use, like [_lireAvecCache].
+  Future<List<Json>> _listeAvecCache(String cle, String route) async {
+    try {
+      final r = ((await requete('GET', route))! as List).cast<Json>();
+      await session.mettreEnCache(cle, {'items': r});
+      return r;
+    } on ErreurApi catch (e) {
+      final c = session.cache(cle);
+      if (e.horsLigne && c != null) return (c['items']! as List).cast<Json>();
+      rethrow;
+    }
+  }
+
   Future<Json> _lireAvecCache(String cle, String route) async {
     try {
       final r = (await requete('GET', route))! as Json;
@@ -196,8 +209,8 @@ class CrescoApi {
   Future<void> deleteTemplate(String id) async => await requete('DELETE', '/v1/modeles-seance/$id');
 
   /// Exercise catalog; with [gymOnly], only what the user's gym allows.
-  Future<List<Json>> exercises({bool gymOnly = false}) async =>
-      ((await requete('GET', gymOnly ? '/v1/exercices?gym=1' : '/v1/exercices'))! as List).cast<Json>();
+  Future<List<Json>> exercises({bool gymOnly = false}) =>
+      _listeAvecCache(gymOnly ? 'exercices-salle' : 'exercices', gymOnly ? '/v1/exercices?gym=1' : '/v1/exercices');
   Future<Json> progression() => _lireAvecCache('progression', '/v1/progression');
 
   /// The main gym ("Ma salle"), its equipment, the catalog and chain presets.
@@ -212,12 +225,12 @@ class CrescoApi {
   Future<Json> energie() => _lireAvecCache('energie', '/v1/energie');
 
   // ----------------------------------------------------------------- Entraînement
-  Future<List<Json>> exercices() async => ((await requete('GET', '/v1/exercices'))! as List).cast<Json>();
+  Future<List<Json>> exercices() => _listeAvecCache('exercices', '/v1/exercices');
   Future<void> enregistrerSeance(Json seance) => _ecrireOuMettreEnAttente('/v1/seances', seance);
 
   /// Sessions done over the last [days] days, newest first (for the week strip).
-  Future<List<Json>> recentSessions({int days = 7}) async =>
-      ((await requete('GET', '/v1/seances?jours=$days'))! as List).cast<Json>();
+  Future<List<Json>> recentSessions({int days = 7}) =>
+      _listeAvecCache('seances-$days', '/v1/seances?jours=$days');
   Future<void> ajouterLienVideo(String exerciceId, String url) async =>
       await requete('POST', '/v1/exercices/$exerciceId/liens', corps: {'url': url});
 
@@ -266,7 +279,7 @@ class CrescoApi {
   Future<List<Json>> chercherAliments(String q) async =>
       ((await requete('GET', '/v1/aliments?q=${Uri.encodeQueryComponent(q)}'))! as List).cast<Json>();
   Future<Json> creerAliment(Json aliment) async => (await requete('POST', '/v1/aliments', corps: aliment))! as Json;
-  Future<List<Json>> plats() async => ((await requete('GET', '/v1/plats'))! as List).cast<Json>();
+  Future<List<Json>> plats() => _listeAvecCache('plats', '/v1/plats');
   Future<Json> creerPlat(Json plat) async => (await requete('POST', '/v1/plats', corps: plat))! as Json;
 
   /// How many servings a dish makes; the answer carries the new `massePortion`.
@@ -275,7 +288,7 @@ class CrescoApi {
   Future<void> ajouterRepas(Json repas) => _ecrireOuMettreEnAttente('/v1/repas', repas);
 
   // ----------------------------------------------------------------- Jeûne
-  Future<List<Json>> jeunes() async => ((await requete('GET', '/v1/jeunes'))! as List).cast<Json>();
+  Future<List<Json>> jeunes() => _listeAvecCache('jeunes', '/v1/jeunes');
   Future<Json> demarrerJeune(Json jeune) async => (await requete('POST', '/v1/jeunes', corps: jeune))! as Json;
   Future<Json?> decisionJeune() async {
     try {
