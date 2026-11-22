@@ -24,6 +24,7 @@ flutter:
     - assets/coach/
     - assets/dishes/
     - assets/equipment/
+    - assets/exercises/
     - assets/icons/
     - assets/photos/
   fonts:

@@ -372,7 +372,7 @@ class SeanceView extends StatelessWidget {
                   const SizedBox(height: 12),
                   ClipRRect(
                     borderRadius: CrescoShape.borderRadius,
-                    child: CrescoPhotoImage(CrescoPhoto.forExercise(s.exerciceId), height: 180),
+                    child: ExerciseDemo(s.exerciceId, height: 180, semanticLabel: 'Démonstration : ${s.nom}'),
                   ),
                   const SizedBox(height: 10),
                   Row(

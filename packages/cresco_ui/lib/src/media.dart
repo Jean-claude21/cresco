@@ -191,3 +191,107 @@ class EquipmentPhotoImage extends StatelessWidget {
     excludeFromSemantics: true,
   );
 }
+
+/// Demonstration of an exercise: its start and end positions (ChatGPT, docs/design/medias/exercices)
+/// shown in turn, like a flip book with a short fade (the two frames are not framed exactly alike,
+/// so a slow blend would ghost); the gym photo of its family when it has none. Still on the start
+/// position when the system asks for less motion.
+class ExerciseDemo extends StatefulWidget {
+  const new(this.exerciseId, {super.key, this.height, this.width, this.semanticLabel});
+  final String? exerciseId;
+  final double? height;
+  final double? width;
+  final String? semanticLabel;
+
+  /// Exercises with their two positions in `assets/exercises/`.
+  static const available = {
+    'developpe-couche-barre',
+    'developpe-incline-halteres',
+    'developpe-militaire',
+    'elevations-laterales',
+    'tractions',
+    'tirage-vertical',
+    'rowing-barre',
+    'rowing-assis-poulie',
+    'squat-barre',
+    'presse-cuisses',
+    'souleve-de-terre',
+    'souleve-terre-roumain',
+    'fentes-halteres',
+    'leg-curl',
+    'leg-extension',
+    'hip-thrust',
+    'mollets-debout',
+    'curl-halteres',
+    'extension-triceps-poulie',
+    'dips',
+    'pompes',
+    'crunch-poulie',
+  };
+
+  @override
+  State<ExerciseDemo> createState() => _ExerciseDemoState();
+}
+
+class _ExerciseDemoState extends State<ExerciseDemo> with SingleTickerProviderStateMixin {
+  late final AnimationController _loop = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400));
+
+  bool get _animated => ExerciseDemo.available.contains(widget.exerciseId);
+
+  /// Start held, quick fade, end held, quick fade back.
+  static final _flip = TweenSequence<double>([
+    TweenSequenceItem(tween: ConstantTween(0), weight: 42),
+    TweenSequenceItem(tween: Tween(begin: 0, end: 1), weight: 8),
+    TweenSequenceItem(tween: ConstantTween(1), weight: 42),
+    TweenSequenceItem(tween: Tween(begin: 1, end: 0), weight: 8),
+  ]);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_animated && !MediaQuery.disableAnimationsOf(context)) {
+      if (!_loop.isAnimating) _loop.repeat();
+    } else {
+      _loop.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _loop.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final id = widget.exerciseId;
+    if (!_animated || id == null) {
+      return CrescoPhotoImage(
+        CrescoPhoto.forExercise(id),
+        height: widget.height,
+        width: widget.width,
+        semanticLabel: widget.semanticLabel,
+      );
+    }
+    Widget frame(String name) => Image.asset(
+      'assets/exercises/$id-$name.jpg',
+      package: _package,
+      height: widget.height,
+      width: widget.width,
+      fit: BoxFit.cover,
+      gaplessPlayback: true,
+      excludeFromSemantics: true,
+    );
+    return Semantics(
+      image: true,
+      label: widget.semanticLabel,
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          frame('depart'),
+          FadeTransition(opacity: _flip.animate(_loop), child: frame('arrivee')),
+        ],
+      ),
+    );
+  }
+}
