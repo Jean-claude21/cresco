@@ -315,6 +315,9 @@ Future<void> _chargerPolices() async {
   }
   final icones = FontLoader('MaterialIcons')..addFont(lire('materialicons-regular.otf'));
   await icones.load();
+  for (final style in ['Regular', 'Bold']) {
+    await (FontLoader('packages/cresco_ui/Phosphor$style')..addFont(lirePaquet('Phosphor-$style.ttf'))).load();
+  }
 }
 
 /// Enveloppe un écran dans le thème Cresco, au format d'un iPhone (402 × 874 pt).

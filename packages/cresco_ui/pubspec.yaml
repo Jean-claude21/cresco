@@ -43,3 +43,10 @@ flutter:
         - asset: fonts/Gelasio[wght].ttf
         - asset: fonts/Gelasio-Italic[wght].ttf
           style: italic
+    # Phosphor Icons — MIT (fonts/LICENSE-Phosphor.txt). Thin line icons of mockup G (CrescoIcons).
+    - family: PhosphorRegular
+      fonts:
+        - asset: fonts/Phosphor-Regular.ttf
+    - family: PhosphorBold
+      fonts:
+        - asset: fonts/Phosphor-Bold.ttf

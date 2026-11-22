@@ -137,7 +137,9 @@ class _BodyMapState extends State<BodyMap> {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTapUp: (d) {
-              final hit = _labels?.muscleAt(Offset(d.localPosition.dx / box.maxWidth, d.localPosition.dy / box.maxHeight));
+              final hit = _labels?.muscleAt(
+                Offset(d.localPosition.dx / box.maxWidth, d.localPosition.dy / box.maxHeight),
+              );
               if (hit != null) widget.onSelect(hit);
             },
             child: Stack(
@@ -145,7 +147,10 @@ class _BodyMapState extends State<BodyMap> {
               children: [
                 // Outline of the selected muscle: its mask, dilated and drawn in ink underneath.
                 if (selected != null && BodyMuscles.of(widget.side).contains(selected))
-                  ImageFiltered(imageFilter: ui.ImageFilter.dilate(radiusX: 4, radiusY: 4), child: mask(selected, p.ink)),
+                  ImageFiltered(
+                    imageFilter: ui.ImageFilter.dilate(radiusX: 4, radiusY: 4),
+                    child: mask(selected, p.ink),
+                  ),
                 for (final m in BodyMuscles.of(widget.side)) mask(m, widget.colors[m] ?? neutral),
                 Image.asset(
                   'assets/body/$file-base.png',

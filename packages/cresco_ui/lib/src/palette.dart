@@ -181,7 +181,8 @@ extension CrescoPaletteContext on BuildContext {
 /// Secondary text styles in the current theme's muted color (they follow dark mode).
 extension CrescoMutedStyles on BuildContext {
   TextStyle get mutedStyle => TextStyle(fontSize: 14, height: 1.35, color: palette.muted);
-  TextStyle get overlineStyle => TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: palette.muted);
+  TextStyle get overlineStyle =>
+      TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: palette.muted);
   TextStyle get unitStyle => TextStyle(fontSize: 17, color: palette.muted);
   TextStyle get verseStyle => TextStyle(
     fontFamily: 'packages/cresco_ui/Gelasio',

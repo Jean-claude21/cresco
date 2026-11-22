@@ -13,7 +13,10 @@ class Skeleton extends StatefulWidget {
 }
 
 class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
-  late final AnimationController _shimmer = AnimationController(vsync: this, duration: const Duration(milliseconds: 1300));
+  late final AnimationController _shimmer = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1300),
+  );
 
   @override
   void didChangeDependencies() {
@@ -70,10 +73,7 @@ class LoadingState extends StatelessWidget {
       liveRegion: true,
       child: Column(
         children: [
-          for (final (i, h) in heights.indexed) ...[
-            if (i > 0) const SizedBox(height: 10),
-            Skeleton(height: h),
-          ],
+          for (final (i, h) in heights.indexed) ...[if (i > 0) const SizedBox(height: 10), Skeleton(height: h)],
         ],
       ),
     );
@@ -124,7 +124,11 @@ class EmptyState extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 16),
-          Text(title, textAlign: TextAlign.center, style: CrescoTextes.titreCarte.copyWith(color: p.ink, fontSize: 24)),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: CrescoTextes.titreCarte.copyWith(color: p.ink, fontSize: 24),
+          ),
           const SizedBox(height: 8),
           Text(message, textAlign: TextAlign.center, style: context.mutedStyle.copyWith(fontSize: 15)),
           if (actionLabel != null && onAction != null) ...[
@@ -213,7 +217,10 @@ class OfflineBanner extends StatelessWidget {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(text: 'Hors ligne. ', style: TextStyle(fontWeight: FontWeight.w800)),
+                      const TextSpan(
+                        text: 'Hors ligne. ',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
                       TextSpan(text: detail),
                     ],
                   ),

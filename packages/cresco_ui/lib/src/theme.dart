@@ -167,7 +167,9 @@ ThemeData crescoTheme({String? fontFamily, Brightness brightness = Brightness.li
         shape: WidgetStatePropertyAll(CrescoShape.rectangle()),
         textStyle: WidgetStatePropertyAll(TextStyle(fontFamily: family, fontSize: 15, fontWeight: FontWeight.w600)),
         side: WidgetStatePropertyAll(BorderSide(color: p.ink, width: CrescoShape.border)),
-        backgroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.action : p.background),
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? p.action : p.background,
+        ),
         foregroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.onAction : p.ink),
       ),
     ),
@@ -189,7 +191,9 @@ ThemeData crescoTheme({String? fontFamily, Brightness brightness = Brightness.li
     checkboxTheme: CheckboxThemeData(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(2))),
       side: BorderSide(color: p.ink, width: CrescoShape.border),
-      fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.action : Colors.transparent),
+      fillColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected) ? p.action : Colors.transparent,
+      ),
       checkColor: WidgetStatePropertyAll(p.onAction),
     ),
     switchTheme: SwitchThemeData(
@@ -201,7 +205,9 @@ ThemeData crescoTheme({String? fontFamily, Brightness brightness = Brightness.li
     progressIndicatorTheme: ProgressIndicatorThemeData(color: p.ink, linearTrackColor: p.line),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: p.background,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(CrescoShape.radius))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(CrescoShape.radius)),
+      ),
     ),
     dialogTheme: DialogThemeData(backgroundColor: p.background, shape: CrescoShape.rectangle()),
     snackBarTheme: SnackBarThemeData(

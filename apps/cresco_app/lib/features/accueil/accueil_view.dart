@@ -57,19 +57,19 @@ class _TabBar extends StatelessWidget {
   final ValueChanged<int> onTap;
   final VoidCallback onAdd;
 
-  // Same thin line icons for every state, as in the mockup: only the label marks the active tab.
-  static const List<(IconData, String)> _items = [
-    (Icons.calendar_today_outlined, 'Aujourd’hui'),
-    (Icons.fitness_center_outlined, 'Entraînement'),
-    (Icons.restaurant_outlined, 'Nutrition'),
-    (Icons.signal_cellular_alt, 'Progrès'),
+  // Phosphor line icons, as in mockup G2: regular stroke, bold for the active tab with its bold label and underline.
+  static const List<(IconData, IconData, String)> _items = [
+    (CrescoIcons.calendar, CrescoIcons.calendarBold, 'Aujourd’hui'),
+    (CrescoIcons.barbell, CrescoIcons.barbellBold, 'Entraînement'),
+    (CrescoIcons.forkKnife, CrescoIcons.forkKnifeBold, 'Nutrition'),
+    (CrescoIcons.chartBar, CrescoIcons.chartBarBold, 'Progrès'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     Widget tab(int i) {
-      final (icon, label) = _items[i];
+      final (icon, activeIcon, label) = _items[i];
       final on = i == index;
       return Expanded(
         child: Semantics(
@@ -81,11 +81,11 @@ class _TabBar extends StatelessWidget {
             key: ValueKey('onglet-$label'),
             onTap: () => onTap(i),
             child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              padding: const EdgeInsets.only(top: 7, bottom: 3),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 22, color: p.ink),
+                  Icon(on ? activeIcon : icon, size: 24, color: p.ink),
                   const SizedBox(height: 3),
                   FittedBox(
                     child: Text(
@@ -122,7 +122,7 @@ class _TabBar extends StatelessWidget {
         top: false,
         // Grows with large text instead of clipping the labels.
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 66),
+          constraints: const BoxConstraints(minHeight: 60),
           child: Row(
             children: [
               tab(0),
@@ -133,7 +133,7 @@ class _TabBar extends StatelessWidget {
                 child: Center(
                   heightFactor: 1,
                   child: SizedBox.square(
-                    dimension: 44,
+                    dimension: 40,
                     child: FloatingActionButton(
                       heroTag: 'plus',
                       elevation: 0,

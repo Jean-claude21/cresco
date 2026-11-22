@@ -3,6 +3,7 @@ library;
 
 export 'src/body_map.dart';
 export 'src/composants.dart';
+export 'src/icons.dart';
 export 'src/media.dart';
 export 'src/motion.dart';
 export 'src/palette.dart';

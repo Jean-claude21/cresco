@@ -88,11 +88,11 @@ Tous les médias viennent de ChatGPT (via Codex). Leur fabrication, leur inventa
 | Aujourd’hui | Série de jours actifs (pastille flamme « 12 jours ») et accès au profil en haut ; date et bandeau des jours (lettres simples, aujourd’hui cerclé, point braise sous les jours entraînés) ; tuiles Séance, Repas, Jeûne, Sommeil ; anneau de forme braise ; carte noire de la séance du jour avec un seul bouton braise ; énergie avec barre de protéines noire ; jeûne ; Mon corps |
 | Séance en cours | Toujours sombre ; nom, matériel, photo ; « Consignes » et « Ma vidéo » en contour braise ; « Série x sur y » avec barres ; charge × répétitions en grands chiffres braise ; RIR en rectangles ; repos en glacier ; « Ajouter un exercice » et « Valider la série » fixés en bas |
 | Entraînement (Mes séances) | Titre « Mes séances » ; carte « Ma salle » (pictogramme, séparateur, salle et nombre d’équipements) ; carte noire du jour ; séances et intervalles en lignes avec vignette et bouton lecture noir ; en bas « Demander à mon IA » (explique le MCP) et « Nouvelle séance » |
-| Mon corps | Titre et sous-titre ; Face/Dos ; corps et liste des muscles visibles ; légende ; fiche du muscle : séries / repère et ce qu’il manque sur une ligne, exercices de la salle qui le travaillent, « Ajouter des séries » (ouvre l’éditeur avec l’exercice), « Comment c’est calculé » |
+| Mon corps | Titre et sous-titre ; muscles triés du plus travaillé au moins travaillé, légende sous la liste, le tout à côté du corps ; Face/Dos ; corps et liste des muscles visibles ; légende ; fiche du muscle : séries / repère et ce qu’il manque sur une ligne, exercices de la salle qui le travaillent, « Ajouter des séries » (ouvre l’éditeur avec l’exercice), « Comment c’est calculé » |
 | Jeûne | Cadran glacier, début et fin prévue, phase estimée avec la frise des phases (`J-PHASE`), décision du jour, « + 250 ml d’eau » (glacier) et « Signaler un symptôme » côte à côte, intention et verset, « Terminer le jeûne » |
 | Nutrition (« Mes plats ») | Reste du jour (kcal, protéines), recherche « Qu’est-ce que tu as dans ton frigo ? » avec le scan, quatre filtres 2 × 2, grille de plats en photos avec « + » braise, panneau de portion (grammes − +, « Ajouter au déjeuner » selon l’heure) |
 | Progrès | Verdict de la semaine (flèche braise quand tu progresses, séances de la semaine, sommeil moyen), force estimée sur 8 semaines et sa courbe en braise (valeurs de départ et d’arrivée, S1 à S8), record, bilan énergie, poids lissé, « Comment c’est calculé » |
-| Barre d’onglets | Aujourd’hui (calendrier), Entraînement, « + » rond noir, Nutrition, Progrès ; pictogrammes noirs fins, libellés noirs, onglet actif en gras et souligné de noir |
+| Barre d’onglets | Aujourd’hui (calendrier), Entraînement (barre à disques horizontale), « + » rond noir de 40, Nutrition, Progrès ; pictogrammes Phosphor noirs (trait normal, gras pour l’onglet actif), libellés noirs, onglet actif en gras et souligné de noir ; la braise reste réservée à l’effort |
 
 Les photos de plats viennent de neuf familles générées avec ChatGPT ([medias/plats](medias/plats/NOTES.md)) ; l’app choisit la famille d’après le nom du plat. Les filtres de « Mes plats » lisent les étiquettes enregistrées sur le plat (`tags` : proteines, rapide, vegetarien, daniel), posées par l’utilisateur ou son IA ; rien n’est deviné.
 
@@ -112,3 +112,7 @@ Chaque écran qui charge des données prévoit quatre états, communs à toute l
 2. **Chargement** : des squelettes à la forme des cartes.
 3. **Erreur** : ce qui s’est passé, le rappel que rien n’est perdu, et « Réessayer ».
 4. **Hors ligne** : un bandeau, et la séance reste possible.
+
+## Pictogrammes
+
+Pictogrammes de ligne **Phosphor** (licence MIT), polices embarquées dans `cresco_ui` et exposées par `CrescoIcons` : trait normal par défaut, gras pour un état actif. On ajoute une icône à `CrescoIcons` plutôt que de mélanger les jeux sur un écran. Le paquet `phosphor_flutter` n’est pas utilisé : il étend `IconData`, devenue `final` dans Flutter.

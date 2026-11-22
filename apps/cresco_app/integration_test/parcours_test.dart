@@ -96,7 +96,10 @@ void main() {
     await toucher(t, find.text('Continuer'));
     await attendre(t, find.text('Qu’est-ce que tu veux changer ?'));
     await toucher(t, find.text('Prendre du muscle'));
-    for (var i = 0; i < 3; i++) {
+    await toucher(t, find.text('Continuer'));
+    // Sunday is the default locked rest day: free it so the path runs on any day of the week.
+    await toucher(t, find.text('Dim'), defiler: true);
+    for (var i = 0; i < 2; i++) {
       await toucher(t, find.text('Continuer'));
       await t.pump(const Duration(milliseconds: 500));
     }
@@ -109,7 +112,16 @@ void main() {
     // ---------------------------------------------------------------- Séance complète
     await toucher(t, find.text('Démarrer la séance'));
     await attendre(t, find.text('Développé couché'));
-    // Nouveau compte : pas d'historique, on fixe la charge à 40 kg pour la première série.
+    // Set the first load to 40 kg: back to 0 first, whatever the engine proposed.
+    String load() => t
+        .widgetList<Text>(find.byType(Text))
+        .map((w) => w.textSpan?.toPlainText() ?? w.data ?? '')
+        .firstWhere((text) => text.contains(' × '), orElse: () => '');
+    for (var i = 0; i < 400 && !(load().startsWith('0 kg') || load().startsWith('—')); i++) {
+      await t.ensureVisible(find.byTooltip('Moins 2,5 kg'));
+      await t.tap(find.byTooltip('Moins 2,5 kg'));
+      await t.pump(const Duration(milliseconds: 30));
+    }
     for (var i = 0; i < 16; i++) {
       await t.ensureVisible(find.byTooltip('Plus 2,5 kg'));
       await t.tap(find.byTooltip('Plus 2,5 kg'));

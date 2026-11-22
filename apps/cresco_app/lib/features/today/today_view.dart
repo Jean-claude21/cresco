@@ -219,13 +219,13 @@ class _Shortcuts extends StatelessWidget {
                 customBorder: CrescoShape.rectangle(),
                 onTap: onTap,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
                   child: Column(
                     children: [
-                      ShortcutIconImage(icon, size: 52),
-                      const SizedBox(height: 4),
+                      ShortcutIconImage(icon, size: 64),
+                      const SizedBox(height: 2),
                       FittedBox(
-                        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                       ),
                     ],
                   ),
@@ -394,7 +394,7 @@ class _SessionCard extends StatelessWidget {
             child: ShaderMask(
               shaderCallback: (r) => const LinearGradient(colors: [Colors.transparent, Colors.black]).createShader(r),
               blendMode: BlendMode.dstIn,
-              child: const Opacity(opacity: 0.55, child: CrescoPhotoImage(CrescoPhoto.seanceDuJour, width: 170)),
+              child: const Opacity(opacity: 0.8, child: CrescoPhotoImage(CrescoPhoto.seanceDuJour, width: 230)),
             ),
           ),
           Padding(
@@ -409,11 +409,11 @@ class _SessionCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   noSession ? libellesDecision[code]! : session['nom']! as String,
-                  style: CrescoTextes.titrePage.copyWith(color: Colors.white, fontSize: 28),
+                  style: CrescoTextes.titrePage.copyWith(color: Colors.white, fontSize: 34),
                 ),
                 if (detail.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text(detail, style: TextStyle(color: p.onHeroMuted, fontSize: 14, height: 1.4)),
+                  Text(detail, style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.4)),
                 ],
                 if (!noSession) ...[
                   const SizedBox(height: 14),

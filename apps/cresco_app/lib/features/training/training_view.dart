@@ -184,7 +184,7 @@ class _GymCard extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                gym == null ? Icons.place_outlined : Icons.fitness_center,
+                gym == null ? Icons.place_outlined : CrescoIcons.barbell,
                 color: gym == null ? p.onWarningSoft : p.ink,
               ),
               if (gym != null)

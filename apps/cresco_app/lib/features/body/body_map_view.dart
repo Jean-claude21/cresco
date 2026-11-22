@@ -157,7 +157,7 @@ class BodyMapView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          flex: 9,
+                          flex: 10,
                           child: AnimatedSwitcher(
                             duration: MediaQuery.disableAnimationsOf(context)
                                 ? Duration.zero
@@ -177,10 +177,14 @@ class BodyMapView extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          flex: 11,
+                          flex: 10,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              for (final m in BodyMuscles.of(vm.side))
+                              // Most worked first, as in the mockup.
+                              for (final m in [
+                                ...BodyMuscles.of(vm.side),
+                              ]..sort((a, b) => (sets[b] ?? 0).compareTo(sets[a] ?? 0)))
                                 _MuscleRow(
                                   key: ValueKey('muscle-$m'),
                                   name: muscleNames[m]!,
@@ -189,14 +193,14 @@ class BodyMapView extends StatelessWidget {
                                   selected: m == vm.selected,
                                   onTap: () => vm.select(m),
                                 ),
+                              const SizedBox(height: 8),
+                              _Legend(palette: p),
                             ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _Legend(palette: p),
                   const SizedBox(height: 16),
                   FadeSlideIn(
                     index: 1,
@@ -237,7 +241,7 @@ class _MuscleRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 5),
       child: Semantics(
         selected: selected,
         button: true,
@@ -250,9 +254,9 @@ class _MuscleRow extends StatelessWidget {
             customBorder: CrescoShape.rectangle(),
             onTap: onTap,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 44),
+              constraints: const BoxConstraints(minHeight: 40),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: Row(
                   children: [
                     Container(
@@ -264,7 +268,7 @@ class _MuscleRow extends StatelessWidget {
                     Expanded(
                       child: Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                     ),
-                    Text(decimal(sets), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
+                    Text(decimal(sets), style: CrescoTextes.chiffre.copyWith(fontSize: 20, color: p.ink)),
                   ],
                 ),
               ),
@@ -283,8 +287,8 @@ class _Legend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 14,
-      runSpacing: 6,
+      direction: Axis.vertical,
+      spacing: 4,
       children: [
         for (final (level, (_, label)) in volumeScale.indexed)
           Row(
@@ -362,7 +366,7 @@ class _Detail extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           child: Row(
                             children: [
-                              Icon(Icons.fitness_center, size: 20, color: p.ink),
+                              Icon(CrescoIcons.barbell, size: 22, color: p.ink),
                               const SizedBox(width: 12),
                               Expanded(child: Text(e['nom']! as String, style: const TextStyle(fontSize: 16))),
                               Icon(Icons.chevron_right, color: p.ink),

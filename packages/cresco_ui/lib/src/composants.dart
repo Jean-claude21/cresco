@@ -54,7 +54,10 @@ class CrescoCarteSombre extends StatelessWidget {
             padding: padding,
             child: DefaultTextStyle.merge(
               style: const TextStyle(color: Colors.white),
-              child: IconTheme.merge(data: const IconThemeData(color: Colors.white), child: child),
+              child: IconTheme.merge(
+                data: const IconThemeData(color: Colors.white),
+                child: child,
+              ),
             ),
           ),
         ),
@@ -480,12 +483,7 @@ class ProgressChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final label = TextStyle(
-      fontFamily: CrescoTextes.sans,
-      fontSize: 15,
-      fontWeight: FontWeight.w800,
-      color: p.ink,
-    );
+    final label = TextStyle(fontFamily: CrescoTextes.sans, fontSize: 15, fontWeight: FontWeight.w800, color: p.ink);
     return Semantics(
       label: values.length < 2
           ? 'Pas encore assez de séances pour une courbe'
@@ -512,8 +510,13 @@ class _ProgressPainter extends CustomPainter {
   final CrescoPalette p;
   final TextStyle label;
 
-  TextPainter _text(String s, {Color? c}) =>
-      TextPainter(text: TextSpan(text: s, style: label.copyWith(color: c)), textDirection: TextDirection.ltr)..layout();
+  TextPainter _text(String s, {Color? c}) => TextPainter(
+    text: TextSpan(
+      text: s,
+      style: label.copyWith(color: c),
+    ),
+    textDirection: TextDirection.ltr,
+  )..layout();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -535,7 +538,8 @@ class _ProgressPainter extends CustomPainter {
     final mn = v.reduce(math.min);
     final mx = v.reduce(math.max);
     final span = mx - mn == 0 ? 1 : mx - mn;
-    Offset pt(int i) => Offset(10 + i / (v.length - 1) * (size.width - 20), bottom - (v[i] - mn) / span * (bottom - top));
+    Offset pt(int i) =>
+        Offset(10 + i / (v.length - 1) * (size.width - 20), bottom - (v[i] - mn) / span * (bottom - top));
     final line = Path()..moveTo(pt(0).dx, pt(0).dy);
     for (var i = 1; i < v.length; i++) {
       line.lineTo(pt(i).dx, pt(i).dy);

@@ -53,10 +53,7 @@ class ScoreRing extends StatelessWidget {
         tween: Tween(begin: still ? target : 0, end: target),
         duration: const Duration(milliseconds: 1400),
         curve: const Cubic(0.2, 0.8, 0.2, 1),
-        builder: (context, v, child) => CustomPaint(
-          painter: _RingPainter(v, stroke, color, track),
-          child: child,
-        ),
+        builder: (context, v, child) => CustomPaint(painter: _RingPainter(v, stroke, color, track), child: child),
         child: Center(child: child),
       ),
     );
