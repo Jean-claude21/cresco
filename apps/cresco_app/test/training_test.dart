@@ -30,8 +30,8 @@ void main() {
       await taillerTelephone(t);
       await t.pumpWidget(enveloppe(const Scaffold(body: TrainingView())));
       await t.pumpAndSettle();
-      expect(find.text('Basic-Fit Bastille'), findsOneWidget);
-      expect(find.text('Ma salle · 3 équipements'), findsOneWidget);
+      expect(find.text('Ma salle'), findsOneWidget);
+      expect(find.text('Basic-Fit Bastille · 3 équipements'), findsOneWidget);
       expect(find.textContaining('créée par ton IA'), findsOneWidget);
     });
 

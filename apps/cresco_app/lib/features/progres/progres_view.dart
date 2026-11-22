@@ -68,7 +68,8 @@ class ProgresView extends StatelessWidget {
                 _InfoRow(
                   icon: Icons.emoji_events_outlined,
                   title: 'Record',
-                  detail: '${decimal(record['chargeKg'])} kg × ${record['reps']} au ${(record['nom']! as String).toLowerCase()}',
+                  detail:
+                      '${decimal(record['chargeKg'])} kg × ${record['reps']} au ${(record['nom']! as String).toLowerCase()}',
                 ),
               if (energie != null)
                 _InfoRow(
@@ -81,7 +82,11 @@ class ProgresView extends StatelessWidget {
                         _ => 'équilibre',
                       }} estimé ${signe(nombre(energie['moyen7j']).round())} kcal/j, confiance ${energie['confiance']}',
                 ),
-              _InfoRow(icon: Icons.monitor_weight_outlined, title: 'Poids lissé', value: '${decimal(d['poidsLisse'])} kg'),
+              _InfoRow(
+                icon: Icons.monitor_weight_outlined,
+                title: 'Poids lissé',
+                value: '${decimal(d['poidsLisse'])} kg',
+              ),
               OutlinedButton(
                 onPressed: () => _explain(context, d['explication'] as String? ?? ''),
                 child: const Text('Comment c’est calculé'),
@@ -154,7 +159,9 @@ class _VerdictCard extends StatelessWidget {
           const Text('Verdict de la semaine', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
           Row(
             children: [
-              Flexible(child: Text(libellesVerdict[verdict] ?? '', style: CrescoTextes.titrePage.copyWith(fontSize: 32))),
+              Flexible(
+                child: Text(libellesVerdict[verdict] ?? '', style: CrescoTextes.titrePage.copyWith(fontSize: 32)),
+              ),
               if (verdict == 'progression') ...[
                 const SizedBox(width: 10),
                 Icon(Icons.north_east, color: p.effort, size: 34),

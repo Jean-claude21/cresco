@@ -61,19 +61,19 @@ void main() {
       expect(find.byKey(const ValueKey('muscle-ischios')), findsOneWidget);
       await t.tap(find.byKey(const ValueKey('muscle-ischios')));
       await t.pumpAndSettle();
-      expect(find.text('Aucune série efficace cette semaine pour ce muscle.'), findsOneWidget);
+      expect(find.textContaining('aucune série efficace cette semaine'), findsOneWidget);
     });
 
     testWidgets('touching the body selects the muscle under the finger', (t) async {
       await open(t);
       await t.tap(find.byKey(const ValueKey('muscle-quadriceps')));
       await t.pumpAndSettle();
-      expect(find.text('Repère hebdomadaire atteint.'), findsOneWidget);
+      expect(find.textContaining('repère hebdomadaire atteint'), findsOneWidget);
       final box = t.getRect(find.byType(BodyMap));
       // Left pectoral, as a fraction of the body image.
       await t.tapAt(Offset(box.left + box.width * 0.40, box.top + box.height * 0.23));
       await t.pumpAndSettle();
-      expect(find.text('Encore 1,5 série pour atteindre le repère.'), findsOneWidget);
+      expect(find.textContaining('encore 1,5 série pour le repère'), findsOneWidget);
     });
   });
 }

@@ -187,8 +187,11 @@ class StackedRouter extends _i1.RouterBase {
         orElse: () => const TemplateEditorViewArguments(),
       );
       return _i14.MaterialPageRoute<dynamic>(
-        builder: (context) =>
-            _i13.TemplateEditorView(key: args.key, template: args.template),
+        builder: (context) => _i13.TemplateEditorView(
+          key: args.key,
+          template: args.template,
+          initialExercises: args.initialExercises,
+        ),
         settings: data,
       );
     },
@@ -450,26 +453,34 @@ class OnboardingViewArguments {
 }
 
 class TemplateEditorViewArguments {
-  const TemplateEditorViewArguments({this.key, this.template});
+  const TemplateEditorViewArguments({
+    this.key,
+    this.template,
+    this.initialExercises = const [],
+  });
 
   final _i14.Key? key;
 
   final Map<String, Object?>? template;
 
+  final List<Map<String, Object?>> initialExercises;
+
   @override
   String toString() {
-    return '{"key": "$key", "template": "$template"}';
+    return '{"key": "$key", "template": "$template", "initialExercises": "$initialExercises"}';
   }
 
   @override
   bool operator ==(covariant TemplateEditorViewArguments other) {
     if (identical(this, other)) return true;
-    return other.key == key && other.template == template;
+    return other.key == key &&
+        other.template == template &&
+        other.initialExercises == initialExercises;
   }
 
   @override
   int get hashCode {
-    return key.hashCode ^ template.hashCode;
+    return key.hashCode ^ template.hashCode ^ initialExercises.hashCode;
   }
 }
 
@@ -678,6 +689,7 @@ extension NavigatorStateExtension on _i15.NavigationService {
   Future<dynamic> navigateToTemplateEditorView({
     _i14.Key? key,
     Map<String, Object?>? template,
+    List<Map<String, Object?>> initialExercises = const [],
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -686,7 +698,11 @@ extension NavigatorStateExtension on _i15.NavigationService {
   }) async {
     return navigateTo<dynamic>(
       Routes.templateEditorView,
-      arguments: TemplateEditorViewArguments(key: key, template: template),
+      arguments: TemplateEditorViewArguments(
+        key: key,
+        template: template,
+        initialExercises: initialExercises,
+      ),
       id: routerId,
       preventDuplicates: preventDuplicates,
       parameters: parameters,
@@ -898,6 +914,7 @@ extension NavigatorStateExtension on _i15.NavigationService {
   Future<dynamic> replaceWithTemplateEditorView({
     _i14.Key? key,
     Map<String, Object?>? template,
+    List<Map<String, Object?>> initialExercises = const [],
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -906,7 +923,11 @@ extension NavigatorStateExtension on _i15.NavigationService {
   }) async {
     return replaceWith<dynamic>(
       Routes.templateEditorView,
-      arguments: TemplateEditorViewArguments(key: key, template: template),
+      arguments: TemplateEditorViewArguments(
+        key: key,
+        template: template,
+        initialExercises: initialExercises,
+      ),
       id: routerId,
       preventDuplicates: preventDuplicates,
       parameters: parameters,

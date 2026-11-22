@@ -45,10 +45,13 @@ class TemplateItem {
 }
 
 class TemplateEditorViewModel extends BaseViewModel {
-  new({this.template});
+  new({this.template, this.initialExercises = const []});
 
   /// Template being edited; null creates a new one.
   final Json? template;
+
+  /// Exercises already added to a new template ("Ajouter des séries" from Mon corps).
+  final List<Json> initialExercises;
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService _nav = locator<NavigationService>();
   final Messages _messages = locator<Messages>();
@@ -63,6 +66,7 @@ class TemplateEditorViewModel extends BaseViewModel {
   String? get templateId => template?['id'] as String?;
 
   Future<void> load() async {
+    initialExercises.forEach(add);
     final t = template;
     if (t == null) return;
     name.text = t['nom'] as String? ?? '';
@@ -151,13 +155,14 @@ class TemplateEditorViewModel extends BaseViewModel {
 
 /// Creates or edits one of "Mes séances": exercises from the library, sets, reps, load, rest.
 class TemplateEditorView extends StatelessWidget {
-  const new({super.key, this.template});
+  const new({super.key, this.template, this.initialExercises = const []});
   final Json? template;
+  final List<Json> initialExercises;
 
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<TemplateEditorViewModel>.reactive(
-      viewModelBuilder: () => TemplateEditorViewModel(template: template),
+      viewModelBuilder: () => TemplateEditorViewModel(template: template, initialExercises: initialExercises),
       onViewModelReady: (vm) => vm.load(),
       builder: (context, vm, _) {
         final p = context.palette;

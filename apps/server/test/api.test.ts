@@ -206,6 +206,15 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect((await appel('PUT', `/v1/plats/${plat.corps.id}/tags`, { tags: [] }, autreJeton)).status).toBe(404);
   });
 
+  it('counts the streak of active days in local time', async () => {
+    const r = await appel('GET', '/v1/aujourdhui?tz=60');
+    expect(r.status).toBe(200);
+    // Sessions, meals and nights were logged earlier today in this suite.
+    expect(r.corps.streakDays).toBeGreaterThanOrEqual(1);
+    const fresh = await appel('POST', '/v1/auth/inscription', { email: 'serie@cresco.test', motDePasse: 'un-mot-de-passe-long' }, '');
+    expect((await appel('GET', '/v1/aujourdhui', undefined, fresh.corps.jeton)).corps.streakDays).toBe(0);
+  });
+
   it('gives the week count and the latest record in the progression', async () => {
     const r = await appel('GET', '/v1/progression');
     expect(r.status).toBe(200);

@@ -1,9 +1,11 @@
 import 'package:cresco_app/app/app.locator.dart';
+import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
+import 'package:stacked_services/stacked_services.dart';
 
 /// French names of the exercise catalog's muscle slugs, in body order.
 const muscleNames = {
@@ -52,11 +54,40 @@ int volumeLevel(double effectiveSets, num guideline) {
 class BodyMapViewModel extends FutureViewModel<Json> {
   final CrescoApi _api = locator<CrescoApi>();
 
+  final NavigationService _nav = locator<NavigationService>();
   BodySide side = BodySide.front;
   String selected = 'pectoraux';
 
+  /// Exercise catalog limited to the user's gym, to list what works each muscle.
+  List<Json> catalog = [];
+
   @override
-  Future<Json> futureToRun() => _api.muscleVolume();
+  Future<Json> futureToRun() async {
+    final volume = await _api.muscleVolume();
+    try {
+      catalog = await _api.exercises(gymOnly: true);
+    } on Exception {
+      // The muscle card simply lists no exercise.
+    }
+    return volume;
+  }
+
+  /// Exercises whose primary muscles include [muscle], then those where it is secondary.
+  List<Json> exercisesFor(String muscle) {
+    bool has(Json e, String key) => ((e[key] as List<Object?>?) ?? const []).contains(muscle);
+    return [
+      ...catalog.where((e) => has(e, 'muscles_primaires')),
+      ...catalog.where((e) => has(e, 'muscles_secondaires')),
+    ];
+  }
+
+  /// Opens the session editor with [exercises] already added.
+  Future<void> addSets(List<Json> exercises) =>
+      _nav.navigateTo<void>(
+        Routes.templateEditorView,
+        arguments: TemplateEditorViewArguments(initialExercises: exercises),
+      ) ??
+      Future.value();
 
   num get guideline => (data?['guideline'] as num?) ?? 10;
 
@@ -95,15 +126,14 @@ class BodyMapView extends StatelessWidget {
         final sets = vm.sets;
         final colors = {for (final m in muscleNames.keys) m: volumeColor(volumeLevel(sets[m] ?? 0, vm.guideline), p)};
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Mon corps', style: TextStyle(fontWeight: FontWeight.w900)),
-          ),
+          appBar: AppBar(),
           body: SafeArea(
             top: false,
             child: ListView(
               padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 4, CrescoSpacing.margin, 32),
               children: [
-                Text('Séries efficaces de la semaine', style: context.mutedStyle.copyWith(fontSize: 15)),
+                const Text('Mon corps', style: CrescoTextes.titrePage),
+                const Text('Séries efficaces de la semaine', style: TextStyle(fontSize: 17)),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -170,7 +200,13 @@ class BodyMapView extends StatelessWidget {
                   const SizedBox(height: 16),
                   FadeSlideIn(
                     index: 1,
-                    child: _Detail(muscle: vm.selected, sets: sets[vm.selected] ?? 0, guideline: vm.guideline),
+                    child: _Detail(
+                      muscle: vm.selected,
+                      sets: sets[vm.selected] ?? 0,
+                      guideline: vm.guideline,
+                      exercises: vm.exercisesFor(vm.selected).take(3).toList(),
+                      onAdd: vm.addSets,
+                    ),
                   ),
                 ],
               ],
@@ -272,67 +308,83 @@ class _Legend extends StatelessWidget {
 }
 
 class _Detail extends StatelessWidget {
-  const new({required this.muscle, required this.sets, required this.guideline});
+  const new({
+    required this.muscle,
+    required this.sets,
+    required this.guideline,
+    required this.exercises,
+    required this.onAdd,
+  });
   final String muscle;
   final double sets;
   final num guideline;
+  final List<Json> exercises;
+  final Future<void> Function(List<Json> exercises) onAdd;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final reached = sets >= guideline;
+    final left = guideline - sets;
+    final status = sets == 0
+        ? 'aucune série efficace cette semaine'
+        : left <= 0
+        ? 'repère hebdomadaire atteint'
+        : 'encore ${decimal(left)} série${left >= 2 ? 's' : ''} pour le repère';
     return Semantics(
       liveRegion: true,
       child: DecoratedBox(
         decoration: CrescoShape.outlined(p),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(muscleNames[muscle] ?? muscle, style: CrescoTextes.titreCarte),
-              const SizedBox(height: 8),
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: decimal(sets),
-                      style: TextStyle(color: p.effort),
-                    ),
-                    TextSpan(
-                      text: ' / ${decimal(guideline)} séries efficaces',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: p.muted, letterSpacing: 0),
-                    ),
-                  ],
-                ),
-                style: CrescoTextes.chiffre.copyWith(fontSize: 34),
-              ),
-              const SizedBox(height: 10),
-              ClipRRect(
-                borderRadius: CrescoShape.borderRadius,
-                child: TweenAnimationBuilder<double>(
-                  key: ValueKey(muscle),
-                  tween: Tween(begin: 0, end: guideline > 0 ? (sets / guideline).clamp(0, 1).toDouble() : 0),
-                  duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 700),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, v, _) =>
-                      LinearProgressIndicator(value: v, minHeight: 8, color: p.effort, backgroundColor: p.line),
-                ),
+              Text(muscleNames[muscle] ?? muscle, style: CrescoTextes.titreCarte.copyWith(fontSize: 26)),
+              const SizedBox(height: 2),
+              Text(
+                '${decimal(sets)} / ${decimal(guideline)} séries efficaces · $status',
+                style: const TextStyle(fontSize: 15),
               ),
               const SizedBox(height: 12),
-              Text(
-                sets == 0
-                    ? 'Aucune série efficace cette semaine pour ce muscle.'
-                    : reached
-                    ? 'Repère hebdomadaire atteint.'
-                    : 'Encore ${decimal(guideline - sets)} série${guideline - sets >= 2 ? 's' : ''} pour atteindre le repère.',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              if (exercises.isNotEmpty) ...[
+                const Text('Exercices', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                const SizedBox(height: 6),
+                for (final e in exercises)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Material(
+                      color: p.background,
+                      shape: CrescoShape.rectangle(p.line),
+                      child: InkWell(
+                        customBorder: CrescoShape.rectangle(),
+                        onTap: () => onAdd([e]),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(Icons.fitness_center, size: 20, color: p.ink),
+                              const SizedBox(width: 12),
+                              Expanded(child: Text(e['nom']! as String, style: const TextStyle(fontSize: 16))),
+                              Icon(Icons.chevron_right, color: p.ink),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 8),
+              ],
+              FilledButton(
+                onPressed: exercises.isEmpty ? null : () => onAdd([exercises.first]),
+                child: const Text('Ajouter des séries'),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Séries à 3 répétitions en réserve ou moins, sur 7 jours. Muscle principal de l’exercice : 1 série ; '
-                'secondaire : 0,5. Repère : ${decimal(guideline)} séries par semaine (règle C-PERF-5).',
-                style: context.mutedStyle.copyWith(fontSize: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () => _explain(context, guideline),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  child: const Text('Comment c’est calculé', style: TextStyle(decoration: TextDecoration.underline)),
+                ),
               ),
             ],
           ),
@@ -340,4 +392,19 @@ class _Detail extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _explain(BuildContext context, num guideline) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: Text(
+          'Séries à 3 répétitions en réserve ou moins, sur 7 jours. Muscle principal de l’exercice : 1 série ; '
+          'secondaire : 0,5. Repère : ${decimal(guideline)} séries par semaine (règle C-PERF-5).',
+          style: CrescoTextes.corps,
+        ),
+      ),
+    ),
+  );
 }

@@ -266,46 +266,78 @@ class SeanceView extends StatelessWidget {
   }
 
   Widget _build(BuildContext context, SeanceViewModel vm) {
+    final p = context.palette;
     final s = vm.courante;
+    final exercise = s == null ? null : vm.exercices[s.exerciceId];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Séance en cours', style: TextStyle(fontWeight: FontWeight.w700)),
-        actions: [
-          if (vm.charge && vm.erreur == null)
-            IconButton(
-              tooltip: 'Ajouter un exercice',
-              icon: const Icon(Icons.playlist_add),
-              onPressed: () async {
-                final e = await showExercisePicker(context);
-                if (e != null) vm.addExercise(e);
-              },
-            ),
-        ],
+        centerTitle: false,
+        titleSpacing: 0,
+        title: const Text('Séance en cours', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
       ),
+      bottomNavigationBar: s == null || vm.erreur != null
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 8, CrescoSpacing.margin, 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () async {
+                        final e = await showExercisePicker(context);
+                        if (e != null) vm.addExercise(e);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: p.effort,
+                        side: BorderSide(color: p.effort, width: CrescoShape.border),
+                      ),
+                      child: const Text('Ajouter un exercice'),
+                    ),
+                    const SizedBox(height: 10),
+                    FilledButton(
+                      style: effortButtonStyle(context),
+                      onPressed: vm.rirChoisi == null ? null : vm.validerSerie,
+                      child: Text(vm.index + 1 >= vm.series.length ? 'Valider la dernière série' : 'Valider la série'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
       body: vm.isBusy || !vm.charge
           ? const Chargement()
           : vm.erreur != null
           ? Padding(padding: const EdgeInsets.all(18), child: MessageErreur(vm.erreur!))
           : ListView(
-              padding: const EdgeInsets.fromLTRB(18, 4, 18, 30),
+              padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 0, CrescoSpacing.margin, 20),
               children: [
                 if (s != null) ...[
                   Text(s.nom, style: CrescoTextes.titrePage.copyWith(fontSize: 36)),
-                  const SizedBox(height: 4),
-                  Text((vm.exercices[s.exerciceId]?['consignes'] as String?) ?? '', style: context.mutedStyle),
-                  const SizedBox(height: 14),
-                  _Demonstration(exerciseId: s.exerciceId, onVideo: () => vm.ouvrirVideo(context)),
+                  if (materialLabel(exercise?['materiel'] as String?) case final m?)
+                    Text(m, style: TextStyle(color: p.onHeroMuted, fontSize: 18)),
                   const SizedBox(height: 12),
-                  _CarteSerie(vm: vm, s: s),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      final e = await showExercisePicker(context);
-                      if (e != null) vm.addExercise(e);
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Ajouter un exercice'),
+                  ClipRRect(
+                    borderRadius: CrescoShape.borderRadius,
+                    child: CrescoPhotoImage(CrescoPhoto.forExercise(s.exerciceId), height: 180),
                   ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _EffortOutline(
+                          label: 'Consignes',
+                          onTap: () => _instructions(context, s.nom, (exercise?['consignes'] as String?) ?? ''),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _EffortOutline(label: 'Ma vidéo', onTap: () => vm.ouvrirVideo(context)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  _SetBlock(vm: vm, s: s),
                 ] else if (vm.series.isEmpty)
                   const CrescoCarte(
                     child: Text('Aucune série de musculation prévue aujourd’hui.', style: CrescoTextes.corps),
@@ -333,194 +365,182 @@ class SeanceView extends StatelessWidget {
                       ],
                     ),
                   ),
-                if (vm.repos > 0) ...[
-                  const SizedBox(height: 12),
-                  CrescoCarte(
-                    child: Row(
-                      children: [
-                        Icon(Icons.timer_outlined, color: context.palette.rest),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Repos',
-                            style: TextStyle(color: context.palette.ink, fontSize: 18, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        Text(
-                          '${(vm.repos ~/ 60).toString().padLeft(2, '0')}:${(vm.repos % 60).toString().padLeft(2, '0')}',
-                          style: CrescoTextes.chiffre.copyWith(color: context.palette.rest, fontSize: 44),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton.outlined(
-                          tooltip: 'Passer le repos',
-                          onPressed: vm.passerRepos,
-                          icon: const Icon(Icons.skip_next),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ],
             ),
     );
   }
+
+  Future<void> _instructions(BuildContext context, String name, String text) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(name, style: CrescoTextes.titreCarte),
+            const SizedBox(height: 10),
+            Text(text.isEmpty ? 'Pas encore de consignes pour cet exercice.' : text, style: CrescoTextes.corps),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
-/// Black-and-white gym photo matching the exercise, with the user's own video link.
-class _Demonstration extends StatelessWidget {
-  const new({required this.exerciseId, required this.onVideo});
-  final String exerciseId;
-  final VoidCallback onVideo;
+/// French label of the catalog's equipment, shown under the exercise name.
+String? materialLabel(String? material) => switch (material) {
+  'machine' => 'Machine',
+  'barre' => 'Barre',
+  'halteres' => 'Haltères',
+  'poids_du_corps' => 'Poids du corps',
+  'tapis' => 'Tapis de course',
+  'velo' => 'Vélo',
+  'rameur' => 'Rameur',
+  _ => null,
+};
+
+/// Braise outlined button of the session screen.
+class _EffortOutline extends StatelessWidget {
+  const new({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ClipRRect(
-          borderRadius: CrescoShape.borderRadius,
-          child: CrescoPhotoImage(CrescoPhoto.forExercise(exerciseId), height: 170),
-        ),
-        const SizedBox(height: 10),
-        OutlinedButton.icon(
-          onPressed: onVideo,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: context.palette.effort,
-            side: BorderSide(color: context.palette.effort, width: CrescoShape.border),
-          ),
-          icon: const Icon(Icons.play_circle_outline),
-          label: const Text('Ma vidéo'),
-        ),
-      ],
+    final p = context.palette;
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: p.effort,
+        side: BorderSide(color: p.effort, width: CrescoShape.border),
+      ),
+      child: Text(label),
     );
   }
 }
 
-class _CarteSerie extends StatelessWidget {
+/// The set to do, flat as in the mockup: progress, load × reps in braise, target RIR, real RIR,
+/// rest timer and the next set.
+class _SetBlock extends StatelessWidget {
   const new({required this.vm, required this.s});
   final SeanceViewModel vm;
   final SerieAFaire s;
 
   @override
   Widget build(BuildContext context) {
-    final suivante = vm.index + 1 < vm.series.length ? vm.series[vm.index + 1] : null;
-    return CrescoCarte(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Surtitre('Série ${s.numero} sur ${s.total}')),
-              for (var i = 1; i <= s.total; i++)
-                Container(
-                  margin: const EdgeInsets.only(left: 6),
-                  width: 26,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    color: i < s.numero
-                        ? context.palette.effort
-                        : (i == s.numero ? context.palette.ink : context.palette.line),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Un seul texte composé : passe à la ligne avec un texte agrandi, chiffres sur la même ligne de base.
-          GestureDetector(
-            onTap: () => vm.changerCharge(2.5),
-            onLongPress: () => vm.changerCharge(-2.5),
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: s.chargeKg == null ? '—' : decimal(s.chargeKg),
-                    style: CrescoTextes.chiffre.copyWith(fontSize: 58, color: context.palette.effort),
-                  ),
-                  TextSpan(text: ' kg  ×  ', style: context.unitStyle),
-                  TextSpan(
-                    text: '${s.reps}',
-                    style: CrescoTextes.chiffre.copyWith(fontSize: 58, color: context.palette.effort),
-                  ),
-                  TextSpan(text: ' répétitions', style: context.unitStyle),
-                ],
+    final p = context.palette;
+    final next = vm.index + 1 < vm.series.length ? vm.series[vm.index + 1] : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Série ${s.numero} sur ${s.total}',
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
               ),
             ),
-          ),
-          Row(
-            children: [
-              IconButton(
-                tooltip: 'Moins 2,5 kg',
-                onPressed: () => vm.changerCharge(-2.5),
-                icon: const Icon(Icons.remove_circle_outline),
-              ),
-              IconButton(
-                tooltip: 'Plus 2,5 kg',
-                onPressed: () => vm.changerCharge(2.5),
-                icon: const Icon(Icons.add_circle_outline),
-              ),
-              if (vm.e1rmCourant != null) Text('e1RM ${decimal(vm.e1rmCourant)} kg', style: context.mutedStyle),
-            ],
-          ),
-          Divider(color: context.palette.line),
-          Row(
-            children: [
-              const Expanded(
-                child: Text('RIR réel', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
-              ),
-              Text(
-                'Cible ${decimal(s.rirCible)}',
-                style: TextStyle(color: context.palette.ink, fontWeight: FontWeight.w800, fontSize: 16),
-              ),
-            ],
-          ),
-          Text('Combien de répétitions restaient possibles ?', style: context.mutedStyle),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              for (final r in [0, 1, 2, 3, 4])
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: ChoiceChip(
-                      showCheckmark: false,
-                      label: SizedBox(
-                        width: double.infinity,
-                        child: Text(r == 4 ? '4+' : '$r', textAlign: TextAlign.center),
-                      ),
-                      labelStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: vm.rirChoisi == r ? context.palette.onEffort : context.palette.ink,
-                      ),
-                      side: BorderSide(
-                        color: vm.rirChoisi == r ? context.palette.effort : context.palette.ink,
-                        width: CrescoShape.border,
-                      ),
-                      selectedColor: context.palette.effort,
-                      backgroundColor: context.palette.background,
-                      selected: vm.rirChoisi == r,
-                      onSelected: (_) => vm.choisirRir(r),
-                    ),
-                  ),
+            for (var i = 1; i <= s.total; i++)
+              Container(
+                margin: const EdgeInsets.only(left: 6),
+                width: 24,
+                height: 5,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(2)),
+                  color: i <= s.numero ? p.effort : p.line,
                 ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            style: effortButtonStyle(context),
-            onPressed: vm.rirChoisi == null ? null : vm.validerSerie,
-            child: Text(suivante == null ? 'Valider la dernière série' : 'Valider la série'),
-          ),
-          if (suivante != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Ensuite : ${suivante.nom} · ${suivante.chargeKg == null ? '' : '${decimal(suivante.chargeKg)} kg × '}${suivante.reps}',
-              style: context.mutedStyle,
-            ),
+              ),
           ],
+        ),
+        const SizedBox(height: 6),
+        // One composed text: wraps with large text, figures on the same baseline.
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: s.chargeKg == null ? '—' : '${decimal(s.chargeKg)} kg'),
+              const TextSpan(text: ' × '),
+              TextSpan(text: '${s.reps}'),
+            ],
+          ),
+          style: CrescoTextes.chiffre.copyWith(fontSize: 64, color: p.effort),
+        ),
+        Row(
+          children: [
+            Text('RIR visé ${decimal(s.rirCible)}', style: const TextStyle(fontSize: 17)),
+            const Spacer(),
+            if (vm.e1rmCourant != null) Text('e1RM ${decimal(vm.e1rmCourant)} kg  ', style: context.mutedStyle),
+            IconButton(
+              tooltip: 'Moins 2,5 kg',
+              onPressed: () => vm.changerCharge(-2.5),
+              icon: const Icon(Icons.remove),
+            ),
+            IconButton(tooltip: 'Plus 2,5 kg', onPressed: () => vm.changerCharge(2.5), icon: const Icon(Icons.add)),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text('RIR réel', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+        Text('Combien de répétitions restaient possibles ?', style: context.mutedStyle),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            for (final r in [0, 1, 2, 3, 4]) ...[
+              if (r > 0) const SizedBox(width: 8),
+              Expanded(
+                child: ChoiceChip(
+                  showCheckmark: false,
+                  label: SizedBox(
+                    width: double.infinity,
+                    child: Text(r == 4 ? '4+' : '$r', textAlign: TextAlign.center),
+                  ),
+                  labelStyle: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: vm.rirChoisi == r ? p.onEffort : p.ink,
+                  ),
+                  side: BorderSide(color: vm.rirChoisi == r ? p.effort : p.ink, width: CrescoShape.border),
+                  selectedColor: p.effort,
+                  backgroundColor: p.background,
+                  selected: vm.rirChoisi == r,
+                  onSelected: (_) => vm.choisirRir(r),
+                ),
+              ),
+            ],
+          ],
+        ),
+        if (vm.repos > 0) ...[
+          const SizedBox(height: 14),
+          CrescoCarte(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                Icon(Icons.timer_outlined, color: p.ink),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text('Repos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                ),
+                Text(
+                  '${vm.repos ~/ 60}:${(vm.repos % 60).toString().padLeft(2, '0')}',
+                  style: CrescoTextes.chiffre.copyWith(color: p.rest, fontSize: 48),
+                ),
+                IconButton(tooltip: 'Passer le repos', onPressed: vm.passerRepos, icon: const Icon(Icons.skip_next)),
+              ],
+            ),
+          ),
         ],
-      ),
+        if (next != null) ...[
+          const SizedBox(height: 14),
+          Text(
+            next.exerciceId == s.exerciceId && next.chargeKg != null
+                ? 'Série suivante : ${decimal(next.chargeKg)} kg'
+                : 'Ensuite : ${next.nom}${next.chargeKg == null ? '' : ' · ${decimal(next.chargeKg)} kg'} × ${next.reps}',
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ],
     );
   }
 }

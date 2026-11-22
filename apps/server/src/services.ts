@@ -823,10 +823,41 @@ export async function effetJeune(tx: Tx) {
   return { clarte: indic('clarte'), energie: indic('energie'), regle: 'J-EFFET' };
 }
 
-export async function aujourdhui(tx: Tx, userId: string) {
+export async function aujourdhui(tx: Tx, userId: string, utcOffsetMin = 0) {
   const s = await seanceDuJour(tx, userId);
   const e = await energie(tx, userId);
-  return { forme: s.forme, seance: { decision: s.decision, raison: s.raison, nom: s.modele.nom, type: s.modele.type }, energie: e, jeune: s.jeune };
+  return {
+    forme: s.forme,
+    seance: { decision: s.decision, raison: s.raison, nom: s.modele.nom, type: s.modele.type },
+    energie: e,
+    jeune: s.jeune,
+    streakDays: await streakDays(tx, utcOffsetMin),
+  };
+}
+
+/**
+ * Consecutive days, ending today or yesterday, with at least one entry: a session, a meal, a night,
+ * a fast or a check-in. Days are counted in the user's local time ([utcOffsetMin] minutes from UTC).
+ * A count of the user's own logs, not a health computation.
+ */
+export async function streakDays(tx: Tx, utcOffsetMin: number) {
+  const offset = Math.max(-840, Math.min(840, Math.round(utcOffsetMin)));
+  const { rows } = await tx.query<{ d: string }>(
+    `select distinct to_char((t + make_interval(mins => $1)) at time zone 'UTC', 'YYYY-MM-DD') as d from (
+       select le as t from seance union all select le from repas union all select lever from nuit
+       union all select debut from jeune union all select le from ressenti
+     ) a where t > now() - interval '400 days'`,
+    [offset],
+  );
+  const days = new Set(rows.map((r) => r.d));
+  const day = (k: number) => new Date(Date.now() + offset * 60_000 - k * 86_400_000).toISOString().slice(0, 10);
+  let k = days.has(day(0)) ? 0 : 1;
+  let n = 0;
+  while (days.has(day(k))) {
+    n += 1;
+    k += 1;
+  }
+  return n;
 }
 
 export async function exporter(tx: Tx, userId: string) {

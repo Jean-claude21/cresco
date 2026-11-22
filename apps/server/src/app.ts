@@ -273,7 +273,8 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
   });
 
   // ------------------------------------------------------------ Synthèses, moteur, références
-  app.get('/v1/aujourdhui', async (c) => c.json(await tx(c, (t, u) => svc.aujourdhui(t, u))));
+  // ?tz=<minutes from UTC>: days of the streak in the user's local time.
+  app.get('/v1/aujourdhui', async (c) => c.json(await tx(c, (t, u) => svc.aujourdhui(t, u, Number(c.req.query('tz') ?? 0) || 0))));
   app.get('/v1/progression', async (c) => {
     exige(c, 'entrainement:lecture');
     return c.json(await tx(c, (t, u) => svc.progression(t, u)));

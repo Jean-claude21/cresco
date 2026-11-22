@@ -76,14 +76,17 @@ class TodayView extends StatelessWidget {
         return PageCresco(
           titre: 'Bonjour',
           onRefresh: vm.refresh,
-          entete: IconButton.outlined(
-            tooltip: 'Profil et réglages',
-            onPressed: () => vm.open(Routes.profilView),
-            style: IconButton.styleFrom(
-              fixedSize: const Size(44, 44),
-              side: BorderSide(color: context.palette.line, width: CrescoShape.border),
-            ),
-            icon: const Icon(Icons.person_outline),
+          entete: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (((d?['streakDays'] as num?) ?? 0) > 0) _Streak(days: (d!['streakDays']! as num).toInt()),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'Profil et réglages',
+                onPressed: () => vm.open(Routes.profilView),
+                icon: const Icon(Icons.person_outline),
+              ),
+            ],
           ),
           enfants: [
             if (vm.isBusy && d == null) const Chargement(),
@@ -96,7 +99,7 @@ class TodayView extends StatelessWidget {
   }
 }
 
-/// Date and the days of the week; today is outlined, days with a session are filled.
+/// Lower-case date and the days of the week: today circled, a braise dot under days with a session.
 class _Week extends StatelessWidget {
   const new({required this.trained});
   final Set<int> trained;
@@ -107,13 +110,12 @@ class _Week extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final now = maintenant();
-    final date = DateFormat('EEEE d MMMM', 'fr_FR').format(now);
     final today = now.weekday - 1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('${date[0].toUpperCase()}${date.substring(1)}', style: context.mutedStyle.copyWith(fontSize: 15)),
-        const SizedBox(height: 10),
+        Text(DateFormat('EEEE d MMMM', 'fr_FR').format(now), style: const TextStyle(fontSize: 18)),
+        const SizedBox(height: 12),
         Semantics(
           label: 'Cette semaine : ${trained.length} séance${trained.length > 1 ? 's' : ''}',
           excludeSemantics: true,
@@ -121,33 +123,71 @@ class _Week extends StatelessWidget {
             children: [
               for (var i = 0; i < 7; i++)
                 Expanded(
-                  child: Center(
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: trained.contains(i) ? p.ink : null,
-                        borderRadius: CrescoShape.borderRadius,
-                        border: Border.all(
-                          color: i == today ? p.effort : (trained.contains(i) ? p.ink : p.line),
-                          width: i == today ? 2 : CrescoShape.border,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        alignment: Alignment.center,
+                        decoration: i == today
+                            ? BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: p.ink, width: 1.5),
+                              )
+                            : null,
+                        child: Text(
+                          _letters[i],
+                          style: TextStyle(fontSize: 16, fontWeight: i == today ? FontWeight.w800 : FontWeight.w500),
                         ),
                       ),
-                      child: Text(
-                        _letters[i],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: trained.contains(i) ? p.background : (i > today ? p.muted : p.ink),
+                      const SizedBox(height: 3),
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: trained.contains(i) ? p.effort : Colors.transparent,
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "🔥 12 jours": consecutive days with at least one entry.
+class _Streak extends StatelessWidget {
+  const new({required this.days});
+  final int days;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Semantics(
+      label: 'Série de $days jour${days > 1 ? 's' : ''}',
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: CrescoShape.outlined(p),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.local_fire_department, color: p.effort, size: 20),
+              const SizedBox(width: 4),
+              Text(
+                '$days jour${days > 1 ? 's' : ''}',
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -182,7 +222,7 @@ class _Shortcuts extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Column(
                     children: [
-                      ShortcutIconImage(icon, size: 44),
+                      ShortcutIconImage(icon, size: 52),
                       const SizedBox(height: 4),
                       FittedBox(
                         child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
@@ -255,7 +295,7 @@ class _FormCard extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(entier(value), style: CrescoTextes.chiffre.copyWith(fontSize: 36)),
+                        Text(entier(value), style: CrescoTextes.chiffre.copyWith(fontSize: 46)),
                         Text('/100', style: context.mutedStyle.copyWith(fontSize: 12)),
                       ],
                     ),
@@ -272,7 +312,7 @@ class _FormCard extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(child: Text(label, style: context.mutedStyle.copyWith(fontSize: 15))),
-                            Text(v, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                            Text(v, style: CrescoTextes.chiffre.copyWith(fontSize: 22)),
                           ],
                         ),
                       ),

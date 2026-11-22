@@ -96,7 +96,9 @@ class _TabBar extends StatelessWidget {
                   const SizedBox(height: 3),
                   // Underline of the active tab.
                   AnimatedContainer(
-                    duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200),
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 200),
                     width: on ? 40 : 0,
                     height: 2.5,
                     color: p.ink,

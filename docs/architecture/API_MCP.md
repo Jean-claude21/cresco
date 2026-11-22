@@ -12,6 +12,7 @@
 
 | Ressource | Opérations |
 |---|---|
+| `/aujourdhui` | résumé du jour (forme, séance du jour, énergie, jeûne) ; `?tz=<minutes>` (décalage UTC du téléphone) pour `streakDays` : jours locaux consécutifs avec au moins une saisie (séance, repas, réveil, début de jeûne, ressenti), aujourd’hui ou hier compris |
 | `/exercices` | lire (`?gym=1` : seulement ce que la salle permet, champ `availableAtGym`), liens vidéo perso |
 | `/gym` | `GET` salle principale, équipement coché, catalogue et listes proposées par chaîne ; `PUT` enregistre la salle et son équipement |
 | `/modeles-seance` | lire, créer, `PUT /:id`, `DELETE /:id`, `POST /modeles-seance/valider` (contrôles de sécurité) ; la réponse liste `unavailableAtGym` |

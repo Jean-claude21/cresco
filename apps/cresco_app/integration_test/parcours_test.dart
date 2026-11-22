@@ -147,7 +147,7 @@ void main() {
     await toucher(t, find.textContaining('Enregistrer ·'));
     await attendre(t, find.textContaining('Ma salle est enregistrée'));
     await retour(t);
-    await attendre(t, find.textContaining('Ma salle ·'));
+    await attendre(t, find.textContaining(' équipement'));
 
     await toucher(t, find.text('Intervalles sur tapis'), defiler: true);
     await attendre(t, find.text('TEMPS RESTANT'));
@@ -188,7 +188,7 @@ void main() {
     await attendre(t, find.text('Séries efficaces de la semaine'));
     expect(find.textContaining('/ 10 séries efficaces', findRichText: true), findsOneWidget);
     expect(
-      find.text('Aucune série efficace cette semaine pour ce muscle.'),
+      find.textContaining('aucune série efficace cette semaine'),
       findsNothing,
       reason: 'Pectoraux vides. À l’écran : ${ecran()}',
     );

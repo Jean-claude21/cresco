@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/ui/coach.dart';
@@ -104,15 +106,7 @@ class TrainingView extends StatelessWidget {
         final cards = <Widget>[
           if (vm.gym != null) _GymCard(vm.gym!, onTap: () => vm.open(Routes.gymView)),
           if (loaded) _TodayCard(vm.today!, onStart: () => vm.open(Routes.seanceView)),
-          _SectionTitle(
-            title: 'Mes séances',
-            action: TextButton.icon(
-              key: const ValueKey('template-new'),
-              onPressed: () => vm.open(Routes.templateEditorView),
-              icon: const Icon(Icons.add),
-              label: const Text('Nouvelle'),
-            ),
-          ),
+          const Text('Mes séances', style: CrescoTextes.titreCarte),
           if (loaded && vm.templates.isEmpty)
             EmptyState(
               icon: Icons.fitness_center,
@@ -125,52 +119,37 @@ class TrainingView extends StatelessWidget {
               onSecondary: () => vm.open(Routes.gymView),
             ),
           for (final t in vm.templates) _TemplateCard(t, vm: vm),
-          CrescoCarte(
+          _SessionRow(
+            photo: CrescoPhoto.intervalles,
+            title: 'Intervalles sur tapis',
+            subtitle: '6 × 1 min à 12 km/h',
             onTap: () => vm.open(
               Routes.intervallesView,
               arguments: const IntervallesViewArguments(modele: intervallesParDefaut),
             ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: context.palette.effortSoft,
-                  child: Icon(Icons.directions_run, color: context.palette.onEffortSoft),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Intervalles sur tapis', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
-                      Text('6 × 1 min à 12 km/h · annonces vocales', style: context.mutedStyle),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.auto_awesome_outlined, size: 20, color: context.palette.muted),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Ton assistant IA peut aussi te programmer une séance via le MCP de Cresco : il lit ta salle '
-                    'et la séance apparaît ici, avec les charges calculées par le moteur.',
-                    style: context.mutedStyle,
-                  ),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _askAi(context, vm),
+                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
+                  child: const FittedBox(child: Text('Demander à mon IA', maxLines: 1)),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  key: const ValueKey('template-new'),
+                  onPressed: () => vm.open(Routes.templateEditorView),
+                  child: const Text('Nouvelle séance'),
+                ),
+              ),
+            ],
           ),
         ];
         return PageCresco(
-          titre: 'Entraînement',
+          titre: 'Mes séances',
           onRefresh: vm.load,
           enfants: [
             if (vm.isBusy && !loaded) const Chargement(),
@@ -204,14 +183,20 @@ class _GymCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              Icon(Icons.place_outlined, color: gym == null ? p.onWarningSoft : p.ink),
-              const SizedBox(width: 12),
+              Icon(
+                gym == null ? Icons.place_outlined : Icons.fitness_center,
+                color: gym == null ? p.onWarningSoft : p.ink,
+              ),
+              if (gym != null)
+                SizedBox(height: 36, child: VerticalDivider(width: 28, color: p.line))
+              else
+                const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      gym == null ? 'Décris ta salle' : gym['name']! as String,
+                      gym == null ? 'Décris ta salle' : 'Ma salle',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
@@ -221,7 +206,7 @@ class _GymCard extends StatelessWidget {
                     Text(
                       gym == null
                           ? 'Coche tes machines : tes séances et ton IA n’utiliseront que ça.'
-                          : 'Ma salle · $count équipement${count > 1 ? 's' : ''}',
+                          : '${gym['name']} · $count équipement${count > 1 ? 's' : ''}',
                       style: TextStyle(color: gym == null ? p.onWarningSoft : p.muted, fontSize: 13, height: 1.35),
                     ),
                   ],
@@ -312,20 +297,80 @@ class _TodayCard extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const new({required this.title, required this.action});
+/// How to have a session programmed by the user's AI (MCP), with the way to Profil for the access token.
+Future<void> _askAi(BuildContext context, TrainingViewModel vm) => showModalBottomSheet<void>(
+  context: context,
+  showDragHandle: true,
+  builder: (context) => SafeArea(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Demander à mon IA', style: CrescoTextes.titreCarte),
+          const SizedBox(height: 10),
+          const Text(
+            'Ton assistant IA (Claude, ChatGPT…) se branche sur Cresco par le MCP. Il lit ta salle, ton '
+            'historique et ta forme, puis te programme une séance : elle apparaît ici, avec les charges '
+            'calculées par le moteur et les garde-fous de sécurité.',
+            style: CrescoTextes.corps,
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              unawaited(vm.open(Routes.profilView));
+            },
+            child: const Text('Obtenir mon accès dans Profil'),
+          ),
+        ],
+      ),
+    ),
+  ),
+);
+
+/// Row of "Mes séances": photo thumbnail, name and detail, black play button.
+class _SessionRow extends StatelessWidget {
+  const new({required this.photo, required this.title, required this.subtitle, required this.onTap});
+  final CrescoPhoto photo;
   final String title;
-  final Widget action;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Row(
-        children: [
-          Expanded(child: Text(title, style: CrescoTextes.titreCarte.copyWith(fontSize: 22))),
-          action,
-        ],
+    final p = context.palette;
+    return Material(
+      color: p.surface,
+      shape: CrescoShape.rectangle(p.line),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            children: [
+              ClipRRect(borderRadius: CrescoShape.borderRadius, child: CrescoPhotoImage(photo, width: 72, height: 60)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                    Text(subtitle, style: context.mutedStyle),
+                  ],
+                ),
+              ),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(color: p.action, borderRadius: CrescoShape.borderRadius),
+                child: Icon(Icons.play_arrow_rounded, color: p.onAction),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

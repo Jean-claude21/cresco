@@ -194,7 +194,10 @@ class JeuneView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Phase estimée', style: TextStyle(color: p.ink, fontSize: 16, fontWeight: FontWeight.w500)),
+            Text(
+              'Phase estimée',
+              style: TextStyle(color: p.ink, fontSize: 16, fontWeight: FontWeight.w500),
+            ),
             Text(libellesPhase[j['phase']] ?? '', style: CrescoTextes.titreCarte.copyWith(fontSize: 24)),
             const SizedBox(height: 14),
             _Phases(current: j['phase'] as String?),
@@ -213,7 +216,10 @@ class JeuneView extends StatelessWidget {
             ),
             if (alert != null) ...[
               const SizedBox(height: 6),
-              Text(alert, style: TextStyle(color: p.danger, fontWeight: FontWeight.w600)),
+              Text(
+                alert,
+                style: TextStyle(color: p.danger, fontWeight: FontWeight.w600),
+              ),
             ],
           ],
         ),
@@ -330,7 +336,9 @@ class _Phases extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  FittedBox(child: Text(_labels[phase]!, style: TextStyle(fontSize: 14, color: p.ink))),
+                  FittedBox(
+                    child: Text(_labels[phase]!, style: TextStyle(fontSize: 14, color: p.ink)),
+                  ),
                 ],
               ),
             ),

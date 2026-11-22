@@ -24,6 +24,7 @@ Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.s
 | Design G « Net et braise » ([DESIGN.md](design/DESIGN.md), [ADR-0004](architecture/decisions/0004-design-net-et-braise.md)) | palette claire et sombre (braise pour l’effort, glacier pour le repos), formes de Picnic partout (`CrescoShape`), deux coachs illustrés (accueil, démarrage, états vides, choix dans Profil), corps complet généré et découpé en masques, icônes et photos ; médias générés avec ChatGPT ([medias](design/medias/README.md)) |
 | **Parcours complet sur vrais téléphones** (BrowserStack) | vert sur Galaxy S23 (Android 13), Pixel 8 (14), Galaxy S25 (15), Moto G71 (11), contre le staging : inscription → séance complète → intervalles → jeûne → nutrition → progrès → profil → déconnexion |
 | Design G sur vrai téléphone (22/11/2026) | parcours complet vert sur Galaxy S23 contre le staging : Bienvenue → inscription → choix du coach → démarrage → séance → Mon corps (valeurs réelles) → Ma salle → intervalles → jeûne → nutrition → progrès → profil → déconnexion. Un passage sur trois a échoué une fois sur « Décris ta salle » visible mais pas encore touchable, puis est repassé au vert sans changement : à surveiller |
+| Design G, seconde passe (22/11/2026) | Aujourd’hui (série de jours actifs, calculée par le serveur dans le fuseau du téléphone), Séance, Mon corps (exercices et « Ajouter des séries ») et Mes séances comparés côte à côte avec les maquettes G1 et G2 |
 | Déploiement staging | santé vérifiée depuis Internet |
 
 ### Relancer les tests sur téléphones

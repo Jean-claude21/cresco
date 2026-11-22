@@ -20,6 +20,7 @@ final heureDesCaptures = DateTime(2026, 1, 15, 13, 30);
 /// Réponses de l'API, au format des services du serveur (apps/server/src/services.ts).
 final reponses = <String, Object?>{
   '/v1/aujourdhui': {
+    'streakDays': 12,
     'forme': {
       'valeur': 68,
       'confiance': 'haute',
@@ -141,6 +142,16 @@ final reponses = <String, Object?>{
       'nom': 'Développé couché',
       'consignes': 'Omoplates serrées, barre au bas des pectoraux, pieds ancrés.',
       'liens': <Object?>[],
+      'muscles_primaires': ['pectoraux'],
+      'muscles_secondaires': ['triceps', 'epaules'],
+    },
+    {
+      'id': 'chest-press',
+      'nom': 'Chest press',
+      'consignes': 'Dos collé au dossier, poignées à hauteur de poitrine.',
+      'liens': <Object?>[],
+      'muscles_primaires': ['pectoraux'],
+      'muscles_secondaires': ['triceps'],
     },
   ],
   '/v1/energie': {

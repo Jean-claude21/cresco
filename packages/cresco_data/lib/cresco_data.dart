@@ -155,7 +155,9 @@ class CrescoApi {
   }
 
   // ----------------------------------------------------------------- Synthèses
-  Future<Json> aujourdhui() => _lireAvecCache('aujourdhui', '/v1/aujourdhui');
+  /// Today's summary; the streak counts days in the phone's local time.
+  Future<Json> aujourdhui() =>
+      _lireAvecCache('aujourdhui', '/v1/aujourdhui?tz=${DateTime.now().timeZoneOffset.inMinutes}');
   /// Today's session, adjusted by the engine; [templateId] picks one of "Mes séances" instead of the latest.
   Future<Json> seanceDuJour({String? templateId}) => templateId == null
       ? _lireAvecCache('seance-du-jour', '/v1/seances/du-jour')
