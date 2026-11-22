@@ -27,3 +27,6 @@ Thumbs.db
 .fvm/
 # Flutter golden diffs
 **/test/golden/failures/
+
+# Codex run logs
+docs/design/**/codex.log
