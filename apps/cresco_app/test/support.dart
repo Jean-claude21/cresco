@@ -342,8 +342,7 @@ Future<void> taillerTelephone(WidgetTester tester) async {
 /// screenshots and taps see them: image decoding is real I/O, outside the test's fake clock.
 Future<void> chargerImages(WidgetTester t) async {
   await t.runAsync(() async {
-    await BodyLabels.load(BodySide.front);
-    await BodyLabels.load(BodySide.back);
+    await BodyMap.precache();
     for (final e in find.byType(Image).evaluate()) {
       await precacheImage((e.widget as Image).image, e);
     }

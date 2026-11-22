@@ -62,8 +62,8 @@ Clair et direct au quotidien, électrique quand on s’entraîne.
 
 ## Mon corps
 
-- Corps anatomique complet de face et de dos, généré avec ChatGPT et découpé en un masque par muscle (`BodyMap`) :
-  - chaque muscle est teinté selon ses séries efficaces de la semaine (règle `C-PERF-5`) rapportées au repère de 10 ;
+- Corps anatomique **réaliste en niveaux de gris**, de face et de dos, généré avec ChatGPT et calé sur des cartes à couleurs clés qui donnent un masque par muscle (`BodyMap`) :
+  - chaque muscle travaillé prend la teinte de son niveau de séries efficaces de la semaine (règle `C-PERF-5`, repère de 10), posée sur le modelé du rendu (mode « couleur » après un assombrissement léger) ; un muscle sans série garde les gris du corps ; le short n’est jamais teinté ;
   - le muscle choisi est entouré d’un contour à l’encre ;
   - une carte des zones à un quart de la résolution dit quel muscle est sous le doigt.
 - Échelle : gris (rien cette semaine), puis de l’ambre `#FFE0B3` → `#FFB020` → `#FF7A2A` jusqu’au rouge braise `#E8341C` (repère atteint).

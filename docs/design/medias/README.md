@@ -11,7 +11,8 @@ Tous les médias de l’app ont été **générés avec ChatGPT** (outil de gén
 | Coach femme (Maya) : planche de référence et 6 poses | [coach-femme/BRIEF.md](coach-femme/BRIEF.md) | `packages/cresco_ui/assets/coach/femme-<pose>.png` | 640 px, palette de 256 couleurs |
 | Coach homme (Karim) : planche de référence et 6 poses | [coach-homme/BRIEF.md](coach-homme/BRIEF.md) | `assets/coach/homme-<pose>.png` | idem |
 | Duo d’accueil | [accueil-duo/BRIEF.md](accueil-duo/BRIEF.md) | `assets/coach/duo.png` | 1024 px |
-| Corps complet, face et dos | [corps/BRIEF.md](corps/BRIEF.md) | `assets/body/` (calque de base, un masque par muscle, carte des zones) | 1024 × 2048, environ 330 Ko en tout |
+| Corps complet, face et dos : cartes à couleurs clés | [corps/BRIEF.md](corps/BRIEF.md), découpe `corps/extraire.py` | `assets/body/` (un masque par muscle, carte des zones) | 1024 × 2048 |
+| Corps réaliste, face et dos, calé sur ces cartes | [corps-realiste/BRIEF.md](corps-realiste/BRIEF.md), [notes](corps-realiste/NOTES.md), préparation `corps-realiste/preparer.py` (à lancer après `extraire.py`) | `assets/body/<side>-render.png` | 640 × 1280, gris + alpha, 430 Ko en tout |
 | Icônes 3D (séance, repas, jeûne, sommeil) | [icones-photos/BRIEF.md](icones-photos/BRIEF.md) | `assets/icons/` | 384 px |
 | Photos des 9 familles de plats | [plats/BRIEF.md](plats/BRIEF.md), [notes](plats/NOTES.md) | `assets/dishes/` | 900 px, JPEG |
 | Photos noir et blanc (salle, chest press, tapis, presse à cuisses) | idem | `assets/photos/` | 1200 px, JPEG |

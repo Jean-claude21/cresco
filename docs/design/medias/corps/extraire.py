@@ -1,7 +1,6 @@
 """Turns the key-color body maps (face.png, dos.png) into app assets.
 
 For each side it writes to packages/cresco_ui/assets/body/:
-- <side>-base.png: outlines and skin on a transparent background, muscles left transparent;
 - <side>-<muscle>.png: one white alpha mask per muscle, tinted by the app with its volume color;
 - <side>-labels.png: a quarter-resolution 8-bit map, pixel value = muscle index + 1 (0 = no muscle),
   used to know which muscle is under the finger.
@@ -68,7 +67,7 @@ def main():
                 elif code >= 0:
                     mp[code][x, y] = 255
                     lp[x, y] = code + 1
-        base.save(OUT / f'{side}-base.png', optimize=True)
+        # The drawn base layer is now the realistic render (../corps-realiste/preparer.py).
         present = []
         for i, (slug, _) in enumerate(MUSCLES):
             if masks[i].getbbox() is None:

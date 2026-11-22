@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:cresco_ui/src/palette.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -70,8 +71,40 @@ class BodyLabels {
   }
 }
 
-/// Full anatomical body (front or back) whose muscles are tinted by [colors] and picked by touch.
-/// Drawn from the masks generated with ChatGPT (docs/design/medias/corps).
+/// Decoded images of one side: the realistic render and one alpha mask per visible muscle.
+class _BodyImages {
+  new(this.render, this.masks);
+  final ui.Image render;
+  final Map<String, ui.Image> masks;
+
+  /// Sides already decoded, usable at once.
+  static final ready = <BodySide, _BodyImages>{};
+
+  /// Bumped each time a side is decoded: maps waiting for it rebuild.
+  static final decoded = ValueNotifier<int>(0);
+
+  static final _pending = <BodySide, Future<void>>{};
+
+  static Future<void> load(BodySide side, AssetBundle bundle) =>
+      ready.containsKey(side) ? Future.value() : _pending[side] ??= _decode(side, bundle);
+
+  static Future<void> _decode(BodySide side, AssetBundle bundle) async {
+    Future<ui.Image> decode(String name) async {
+      final data = await bundle.load('packages/cresco_ui/assets/body/${_file(side)}-$name.png');
+      final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+      return (await codec.getNextFrame()).image;
+    }
+
+    final render = await decode('render');
+    final masks = {for (final m in BodyMuscles.of(side)) m: await decode(m)};
+    ready[side] = _BodyImages(render, masks);
+    decoded.value++;
+  }
+}
+
+/// Full anatomical body (front or back), realistic and in grays, whose muscles are tinted by
+/// [colors] and picked by touch. Render and masks generated with ChatGPT
+/// (docs/design/medias/corps-realiste and docs/design/medias/corps).
 class BodyMap extends StatefulWidget {
   const new({
     required this.side,
@@ -84,11 +117,20 @@ class BodyMap extends StatefulWidget {
 
   final BodySide side;
 
-  /// Fill per muscle slug; muscles without a color are drawn in the neutral body tone.
+  /// Tint per muscle slug, multiplied onto the render; a muscle without a color keeps the
+  /// render's grays.
   final Map<String, Color> colors;
   final String? selected;
   final ValueChanged<String> onSelect;
   final String? semanticLabel;
+
+  /// Decodes both sides ahead of display (tests decode inside `runAsync`).
+  static Future<void> precache({AssetBundle? bundle}) async {
+    for (final side in BodySide.values) {
+      if (!_BodyImages.ready.containsKey(side)) await _BodyImages._decode(side, bundle ?? rootBundle);
+      await BodyLabels.load(side, bundle: bundle);
+    }
+  }
 
   @override
   State<BodyMap> createState() => _BodyMapState();
@@ -100,35 +142,49 @@ class _BodyMapState extends State<BodyMap> {
   @override
   void initState() {
     super.initState();
-    unawaited(_load());
+    _BodyImages.decoded.addListener(_redraw);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _load();
   }
 
   @override
   void didUpdateWidget(BodyMap old) {
     super.didUpdateWidget(old);
-    if (old.side != widget.side) unawaited(_load());
+    if (old.side != widget.side) {
+      _labels = null;
+      _load();
+    }
   }
 
-  Future<void> _load() async {
+  @override
+  void dispose() {
+    _BodyImages.decoded.removeListener(_redraw);
+    super.dispose();
+  }
+
+  void _redraw() {
+    if (mounted) setState(() {});
+  }
+
+  void _load() {
     final side = widget.side;
-    final labels = await BodyLabels.load(side, bundle: DefaultAssetBundle.of(context));
-    if (mounted && side == widget.side) setState(() => _labels = labels);
+    final bundle = DefaultAssetBundle.of(context);
+    unawaited(_BodyImages.load(side, bundle));
+    unawaited(
+      BodyLabels.load(side, bundle: bundle).then((labels) {
+        if (mounted && side == widget.side) setState(() => _labels = labels);
+      }),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final neutral = p.background.computeLuminance() < 0.2 ? const Color(0xFF3A3A3A) : const Color(0xFFD5D5D5);
-    final file = _file(widget.side);
-    Widget mask(String muscle, Color color) => Image.asset(
-      'assets/body/$file-$muscle.png',
-      package: 'cresco_ui',
-      color: color,
-      colorBlendMode: BlendMode.srcIn,
-      fit: BoxFit.contain,
-      gaplessPlayback: true,
-    );
-    final selected = widget.selected;
+    final images = _BodyImages.ready[widget.side];
     return AspectRatio(
       aspectRatio: BodyMuscles.aspectRatio,
       child: LayoutBuilder(
@@ -142,29 +198,86 @@ class _BodyMapState extends State<BodyMap> {
               );
               if (hit != null) widget.onSelect(hit);
             },
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Outline of the selected muscle: its mask, dilated and drawn in ink underneath.
-                if (selected != null && BodyMuscles.of(widget.side).contains(selected))
-                  ImageFiltered(
-                    imageFilter: ui.ImageFilter.dilate(radiusX: 4, radiusY: 4),
-                    child: mask(selected, p.ink),
+            child: images == null
+                ? const SizedBox.expand()
+                : CustomPaint(
+                    size: Size.infinite,
+                    painter: _BodyPainter(
+                      images: images,
+                      colors: widget.colors,
+                      selected: BodyMuscles.of(widget.side).contains(widget.selected) ? widget.selected : null,
+                      outline: p.ink,
+                      dim: p.background.computeLuminance() < 0.2,
+                    ),
                   ),
-                for (final m in BodyMuscles.of(widget.side)) mask(m, widget.colors[m] ?? neutral),
-                Image.asset(
-                  'assets/body/$file-base.png',
-                  package: 'cresco_ui',
-                  fit: BoxFit.contain,
-                  color: p.background.computeLuminance() < 0.2 ? const Color(0xFF8A8A8A) : null,
-                  colorBlendMode: BlendMode.modulate,
-                  gaplessPlayback: true,
-                ),
-              ],
-            ),
           ),
         ),
       ),
     );
   }
+}
+
+class _BodyPainter extends CustomPainter {
+  new({required this.images, required this.colors, required this.selected, required this.outline, required this.dim});
+
+  final _BodyImages images;
+  final Map<String, Color> colors;
+  final String? selected;
+  final Color outline;
+
+  /// Dark theme: the render is toned down so the body does not glare.
+  final bool dim;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dst = Offset.zero & size;
+    Rect src(ui.Image i) => Rect.fromLTWH(0, 0, i.width.toDouble(), i.height.toDouble());
+    final quality = Paint()..filterQuality = FilterQuality.medium;
+
+    canvas.drawImageRect(
+      images.render,
+      src(images.render),
+      dst,
+      Paint.from(quality)..colorFilter = dim ? const ColorFilter.mode(Color(0xFFB4B4B4), BlendMode.modulate) : null,
+    );
+    // Each worked muscle takes the hue of its color on the render's own shading: first darkened to
+    // a mid tone (so the color is vivid, not pastel), then colored with the "color" blend (hue and
+    // saturation of the tint, luminosity of the body).
+    Paint tint(Color c) => Paint.from(quality)..colorFilter = ColorFilter.mode(c, BlendMode.srcIn);
+    for (final MapEntry(key: muscle, value: color) in colors.entries) {
+      final mask = images.masks[muscle];
+      if (mask == null) continue;
+      canvas
+        ..saveLayer(dst, Paint()..blendMode = BlendMode.multiply)
+        ..drawImageRect(mask, src(mask), dst, tint(const Color(0xFF9E9E9E)))
+        ..restore()
+        ..saveLayer(dst, Paint()..blendMode = BlendMode.color)
+        ..drawImageRect(mask, src(mask), dst, tint(color))
+        ..restore();
+    }
+    // Selected muscle: an ink ring around its mask (dilated mask minus the mask).
+    final mask = selected == null ? null : images.masks[selected];
+    if (mask != null) {
+      canvas
+        ..saveLayer(dst, Paint())
+        ..drawImageRect(
+          mask,
+          src(mask),
+          dst,
+          Paint.from(quality)
+            ..colorFilter = ColorFilter.mode(outline, BlendMode.srcIn)
+            ..imageFilter = ui.ImageFilter.dilate(radiusX: 3, radiusY: 3),
+        )
+        ..drawImageRect(mask, src(mask), dst, Paint.from(quality)..blendMode = BlendMode.dstOut)
+        ..restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BodyPainter old) =>
+      old.images != images ||
+      old.selected != selected ||
+      old.outline != outline ||
+      old.dim != dim ||
+      !mapEquals(old.colors, colors);
 }

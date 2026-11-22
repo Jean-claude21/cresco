@@ -166,7 +166,11 @@ class BodyMapView extends StatelessWidget {
                             child: BodyMap(
                               key: ValueKey(vm.side),
                               side: vm.side,
-                              colors: colors,
+                              // Untouched muscles keep the body's own grays.
+                              colors: {
+                                for (final m in BodyMuscles.of(vm.side))
+                                  if (volumeLevel(sets[m] ?? 0, vm.guideline) > 0) m: colors[m]!,
+                              },
                               selected: vm.selected,
                               onSelect: vm.select,
                               semanticLabel:
