@@ -295,3 +295,18 @@ class _ExerciseDemoState extends State<ExerciseDemo> with SingleTickerProviderSt
     );
   }
 }
+
+/// The Cresco app icon (docs/design/logo: braise C climbing in steps, on ink).
+class CrescoLogo extends StatelessWidget {
+  const new({super.key, this.size = 56});
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Image.asset(
+    'assets/logo/icone.png',
+    package: _package,
+    width: size,
+    height: size,
+    semanticLabel: 'Cresco',
+  );
+}

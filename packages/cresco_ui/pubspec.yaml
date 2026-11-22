@@ -26,6 +26,7 @@ flutter:
     - assets/equipment/
     - assets/exercises/
     - assets/icons/
+    - assets/logo/
     - assets/photos/
   fonts:
     # Inter — SIL Open Font License (fonts/OFL-Inter.txt). Police variable : graisses 100 à 900.

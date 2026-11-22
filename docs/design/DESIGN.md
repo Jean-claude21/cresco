@@ -60,6 +60,14 @@ Clair et direct au quotidien, électrique quand on s’entraîne.
 - **Six poses par coach** : salue, explique, carnet, pouce, réfléchit, célèbre (`CoachPose`).
 - Le choix est enregistré dans `preferences.coach` (`femme` ou `homme`), lisible par l’IA, et gardé sur le téléphone pour l’affichage hors ligne (`apps/cresco_app/lib/ui/coach.dart`).
 
+## Logo
+
+Direction A, choisie le 22/11/2026 parmi six propositions générées avec ChatGPT ([propositions](logo/propositions/)) : un « C » épais en braise dont l’extrémité basse monte en trois marches, sur un carré d’encre. « Cresco » veut dire « je grandis » : le progrès pas à pas.
+
+- Sources **SVG écrites à la main** et générées par [logo/generer.py](logo/generer.py) : `logo-icone.svg`, `logo-symbole.svg` (le C seul), `logo-horizontal.svg` et `logo-horizontal-blanc.svg` (avec « cresco » en Barlow Condensed ExtraBold vectorisée), `logo-monochrome.svg`.
+- `python -I docs/design/logo/generer.py --png` produit les icônes Android (classiques et adaptatives, 48 à 192 px), l’icône iOS 1024 px, l’image de lancement et `assets/logo/icone.png` (`CrescoLogo`, écran de bienvenue).
+- Lancement : le C seul au centre, sur fond d’encre.
+
 ## Mon corps
 
 - Corps anatomique **réaliste en niveaux de gris**, de face et de dos, généré avec ChatGPT et calé sur des cartes à couleurs clés qui donnent un masque par muscle (`BodyMap`) :

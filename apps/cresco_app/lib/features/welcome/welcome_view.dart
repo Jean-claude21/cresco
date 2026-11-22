@@ -23,6 +23,7 @@ class WelcomeView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const Center(child: CrescoLogo()),
                   const SizedBox(height: 12),
                   FadeSlideIn(
                     child: Center(child: CoachDuo(height: (box.maxHeight * 0.46).clamp(220, 380))),
