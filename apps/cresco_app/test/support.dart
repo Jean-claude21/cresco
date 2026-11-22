@@ -55,11 +55,18 @@ final reponses = <String, Object?>{
   ],
   '/v1/gym': {
     'gym': {'id': 'g1', 'name': 'Basic-Fit Bastille', 'chain': 'Basic-Fit'},
-    'equipment': ['exercise:leg-curl', 'exercise:presse-cuisses', 'material:halteres'],
+    'equipment': ['exercise:developpe-convergent', 'exercise:leg-curl', 'exercise:presse-cuisses', 'material:halteres'],
     'catalog': [
-      {'key': 'exercise:leg-curl', 'label': 'Leg curl', 'kind': 'machine'},
-      {'key': 'exercise:presse-cuisses', 'label': 'Presse à cuisses', 'kind': 'machine'},
-      {'key': 'exercise:tirage-vertical', 'label': 'Tirage vertical', 'kind': 'machine'},
+      {
+        'key': 'exercise:developpe-convergent',
+        'label': 'Presse pectorale convergente',
+        'labelEn': 'Converging Chest Press',
+        'kind': 'machine',
+      },
+      {'key': 'exercise:leg-curl', 'label': 'Leg curl', 'labelEn': 'Lying Leg Curl', 'kind': 'machine'},
+      {'key': 'exercise:presse-cuisses', 'label': 'Presse à cuisses', 'labelEn': '45-Degree Leg Press', 'kind': 'machine'},
+      {'key': 'exercise:tirage-vertical', 'label': 'Tirage vertical', 'labelEn': 'Lat Pulldown', 'kind': 'machine'},
+      {'key': 'material:poulie', 'label': 'Poulie double réglable', 'labelEn': 'Functional Trainer', 'kind': 'station'},
       {'key': 'material:barre', 'label': 'Barres et disques', 'kind': 'free'},
       {'key': 'material:halteres', 'label': 'Haltères', 'kind': 'free'},
       {'key': 'material:tapis', 'label': 'Tapis de course', 'kind': 'cardio'},

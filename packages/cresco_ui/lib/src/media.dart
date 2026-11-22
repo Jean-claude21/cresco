@@ -161,6 +161,43 @@ abstract final class EquipmentPhoto {
     'tapis',
     'velo',
     'rameur',
+    'developpe-convergent',
+    'pec-deck',
+    'developpe-epaules-convergent',
+    'tirage-vertical-divergent',
+    'rowing-divergent',
+    'elevations-laterales-machine',
+    'traction-dips-assistes',
+    'pull-over-machine',
+    'curl-biceps-machine',
+    'extension-triceps-machine',
+    'abdominaux-machine',
+    'rotation-buste',
+    'extension-lombaire-machine',
+    'presse-cuisses-assise',
+    'leg-curl-assis',
+    'adducteurs-abducteurs',
+    'fessiers-machine',
+    'mollets-assis-guidee',
+    'mollets-assis-disques',
+    'poulie',
+    'vis-a-vis',
+    'presse-inclinee-machine',
+    'chaise-romaine',
+    'banc-lombaires',
+    'hack-squat',
+    'pendulum-squat',
+    'belt-squat',
+    'leg-extension-inclinee',
+    'leg-curl-genoux',
+    'hip-thrust-machine',
+    'smith',
+    'rack',
+    'rowing-bas-disques',
+    'rowing-haut-disques',
+    'rowing-incline-levier',
+    'rowing-t-bar',
+    'curl-biceps-surleve',
   };
 
   /// Asset of [key]: its own photo, or the closest gym photo until it has one.
@@ -302,11 +339,6 @@ class CrescoLogo extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => Image.asset(
-    'assets/logo/icone.png',
-    package: _package,
-    width: size,
-    height: size,
-    semanticLabel: 'Cresco',
-  );
+  Widget build(BuildContext context) =>
+      Image.asset('assets/logo/icone.png', package: _package, width: size, height: size, semanticLabel: 'Cresco');
 }

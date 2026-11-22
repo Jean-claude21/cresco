@@ -71,7 +71,13 @@ class _PickerState extends State<_Picker> {
     final q = _query.text.trim().toLowerCase();
     final shown = (_items ?? const <Json>[])
         .where((e) => !(e['muscles_primaires'] as List<Object?>? ?? const []).contains('cardio'))
-        .where((e) => q.isEmpty || (e['nom']! as String).toLowerCase().contains(q))
+        // French or English name: people know the machines by both.
+        .where(
+          (e) =>
+              q.isEmpty ||
+              (e['nom']! as String).toLowerCase().contains(q) ||
+              ((e['nom_en'] as String?) ?? '').toLowerCase().contains(q),
+        )
         .where((e) => _muscle == null || _muscles(e).contains(_muscle))
         .toList();
     return Padding(
@@ -159,7 +165,7 @@ class _PickerState extends State<_Picker> {
                           shape: const RoundedRectangleBorder(borderRadius: CrescoShape.borderRadius),
                           title: Text(e['nom']! as String, style: const TextStyle(fontWeight: FontWeight.w700)),
                           subtitle: Text(
-                            primary.map((m) => muscleNames[m] ?? m).join(' · '),
+                            [?e['nom_en'] as String?, primary.map((m) => muscleNames[m] ?? m).join(' · ')].join(' · '),
                             style: context.mutedStyle,
                           ),
                           trailing: Icon(Icons.add_circle, color: p.ink),

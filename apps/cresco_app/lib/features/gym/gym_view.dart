@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 
 /// One piece of equipment the user can check.
-typedef Equipment = ({String key, String label, String kind});
+typedef Equipment = ({String key, String label, String? labelEn, String kind});
 
 class GymViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
@@ -30,7 +30,12 @@ class GymViewModel extends BaseViewModel {
       final g = await _api.gym();
       catalog = [
         for (final e in (g['catalog']! as List<Object?>).cast<Json>())
-          (key: e['key']! as String, label: e['label']! as String, kind: e['kind']! as String),
+          (
+            key: e['key']! as String,
+            label: e['label']! as String,
+            labelEn: e['labelEn'] as String?,
+            kind: e['kind']! as String,
+          ),
       ];
       presets = {
         for (final MapEntry(:key, :value) in (g['presets']! as Json).entries)
@@ -96,6 +101,7 @@ class GymView extends StatelessWidget {
 
   static const List<(String, String, IconData)> _kinds = [
     ('machine', 'Machines', Icons.precision_manufacturing_outlined),
+    ('station', 'Poulies et postes', Icons.cable),
     ('free', 'Poids libres', Icons.fitness_center),
     ('cardio', 'Cardio', Icons.directions_run),
   ];
@@ -320,9 +326,16 @@ class _EquipmentCard extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                child: Text(
-                  equipment.label,
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: p.ink),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      equipment.label,
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: p.ink),
+                    ),
+                    if (equipment.labelEn != null && equipment.labelEn != equipment.label)
+                      Text(equipment.labelEn!, style: context.mutedStyle.copyWith(fontSize: 13)),
+                  ],
                 ),
               ),
             ],

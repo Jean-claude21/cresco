@@ -1039,24 +1039,47 @@ export async function muscleVolume(tx: Tx, days: number) {
 
 // ---------------------------------------------------------------- Gym ("Ma salle")
 
-/** Free weights and cardio machines, identified by the catalog's `materiel`. Bodyweight is always available. */
-const MATERIALS: Record<string, string> = {
-  barre: 'Barres et disques',
-  halteres: 'Haltères',
-  tapis: 'Tapis de course',
-  velo: 'Vélo',
-  rameur: 'Rameur',
+/**
+ * Equipment that is not one machine exercise, identified by the catalog's `materiel`: free weights,
+ * cardio, cable and free stations, and machines shared by two exercises. French and English names,
+ * as people know them by both. Bodyweight is always available.
+ */
+const MATERIALS: Record<string, { label: string; labelEn: string; kind: 'free' | 'cardio' | 'station' | 'machine' }> = {
+  barre: { label: 'Barres et disques', labelEn: 'Barbells and plates', kind: 'free' },
+  halteres: { label: 'Haltères', labelEn: 'Dumbbells', kind: 'free' },
+  'pec-deck': { label: 'Pec deck / oiseau inversé', labelEn: 'Pectoral Fly / Rear Delt', kind: 'machine' },
+  'traction-dips-assistes': { label: 'Traction et dips assistés', labelEn: 'Assisted Chin / Dip', kind: 'machine' },
+  'adducteurs-abducteurs': { label: 'Adducteurs et abducteurs', labelEn: 'Hip Adductor / Abductor', kind: 'machine' },
+  poulie: { label: 'Poulie double réglable', labelEn: 'Functional Trainer', kind: 'station' },
+  'vis-a-vis': { label: 'Vis-à-vis à poulies', labelEn: 'Cable Crossover', kind: 'station' },
+  smith: { label: 'Smith machine', labelEn: 'Smith Machine', kind: 'station' },
+  rack: { label: 'Rack à squat', labelEn: 'Power Rack', kind: 'station' },
+  'chaise-romaine': { label: 'Chaise romaine', labelEn: 'Captain’s Chair', kind: 'station' },
+  'banc-lombaires': { label: 'Banc à lombaires 45°', labelEn: '45-Degree Back Extension', kind: 'station' },
+  tapis: { label: 'Tapis de course', labelEn: 'Treadmill', kind: 'cardio' },
+  velo: { label: 'Vélo', labelEn: 'Stationary Bike', kind: 'cardio' },
+  rameur: { label: 'Rameur', labelEn: 'Rowing Machine', kind: 'cardio' },
 };
 
 /**
  * Equipment usually found in a chain's clubs, offered as a starting point that the user confirms.
- * Data, not a rule: nothing is assumed available until the user saves it.
+ * Data, not a rule: nothing is assumed available until the user saves it. Basic-Fit clubs are
+ * largely equipped with Matrix machines (docs/design/medias/machines/LISTE.md).
  */
 export const GYM_PRESETS: Record<string, string[]> = {
   'Basic-Fit': [
-    'exercise:presse-cuisses', 'exercise:leg-curl', 'exercise:leg-extension', 'exercise:tirage-vertical',
-    'exercise:rowing-assis-poulie', 'exercise:extension-triceps-poulie', 'exercise:crunch-poulie',
-    'exercise:mollets-debout', 'material:barre', 'material:halteres', 'material:tapis', 'material:velo', 'material:rameur',
+    // Selectorized machines.
+    'exercise:developpe-convergent', 'material:pec-deck', 'exercise:developpe-epaules-convergent',
+    'exercise:tirage-vertical-divergent', 'exercise:rowing-divergent', 'exercise:curl-biceps-machine',
+    'exercise:extension-triceps-machine', 'exercise:abdominaux-machine', 'exercise:extension-lombaire-machine',
+    'exercise:presse-cuisses-assise', 'exercise:leg-extension', 'exercise:leg-curl-assis', 'exercise:leg-curl',
+    'material:adducteurs-abducteurs', 'exercise:fessiers-machine', 'material:traction-dips-assistes',
+    'exercise:tirage-vertical', 'exercise:rowing-assis-poulie', 'exercise:extension-triceps-poulie', 'exercise:crunch-poulie',
+    // Plate-loaded machines and stations.
+    'exercise:presse-cuisses', 'exercise:hack-squat', 'exercise:mollets-debout', 'material:smith', 'material:rack',
+    'material:poulie', 'material:vis-a-vis', 'material:chaise-romaine', 'material:banc-lombaires',
+    // Free weights and cardio.
+    'material:barre', 'material:halteres', 'material:tapis', 'material:velo', 'material:rameur',
   ],
 };
 
@@ -1069,15 +1092,14 @@ export type GymInput = z.infer<typeof GymInput>;
 
 /** Every piece of equipment the user can check: one entry per machine exercise, plus free weights and cardio. */
 async function equipmentCatalog(tx: Tx) {
-  const { rows } = await tx.query<{ id: string; nom: string }>(`select id, nom from exercice where materiel = 'machine' order by nom`);
-  return [
-    ...rows.map((r) => ({ key: `exercise:${r.id}`, label: r.nom, kind: 'machine' as const })),
-    ...Object.entries(MATERIALS).map(([m, label]) => ({
-      key: `material:${m}`,
-      label,
-      kind: ['tapis', 'velo', 'rameur'].includes(m) ? ('cardio' as const) : ('free' as const),
-    })),
+  const { rows } = await tx.query<{ id: string; nom: string; nom_en: string | null }>(
+    `select id, nom, nom_en from exercice where materiel = 'machine' order by nom`,
+  );
+  const items = [
+    ...rows.map((r) => ({ key: `exercise:${r.id}`, label: r.nom, labelEn: r.nom_en, kind: 'machine' as const })),
+    ...Object.entries(MATERIALS).map(([m, x]) => ({ key: `material:${m}`, label: x.label, labelEn: x.labelEn, kind: x.kind })),
   ];
+  return items.sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 }
 
 /** The main gym, its checked equipment, the full catalog to choose from, and the chain presets. */
