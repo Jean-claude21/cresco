@@ -170,6 +170,8 @@ final reponses = <String, Object?>{
       'id': '00000000-0000-0000-0000-000000000101',
       'nom': 'Jollof de poulet',
       'nutriments': {'kcal100': 168, 'proteines100': 15.6},
+      'portions': 4,
+      'massePortion': 350,
       'tags': ['proteines'],
       'cree_par': 'utilisateur',
     },

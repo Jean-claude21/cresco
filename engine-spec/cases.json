@@ -64,6 +64,9 @@
     { "regle": "J-REPRISE", "fonction": "repriseJeune", "entree": { "type": "eau", "heures": 130, "poids": 80 }, "sortie": { "mode": "tres_progressive", "proteinesRepas": 32 } },
     { "regle": "J-REPRISE", "fonction": "repriseJeune", "entree": { "type": "sec", "heures": 14, "poids": 80 }, "sortie": { "mode": "rehydratation", "proteinesRepas": 32 } },
     { "regle": "J-EFFET", "fonction": "effetJeune", "entree": { "pendant": [3, 4, 4, 3, 4, 4], "hors": [3, 3, 3, 3, 3, 3] }, "sortie": { "effet": 0.67, "suffisant": true } },
-    { "regle": "J-EFFET", "fonction": "effetJeune", "entree": { "pendant": [3, 4], "hors": [3, 3, 3] }, "sortie": { "effet": 0.5, "suffisant": false } }
+    { "regle": "J-EFFET", "fonction": "effetJeune", "entree": { "pendant": [3, 4], "hors": [3, 3, 3] }, "sortie": { "effet": 0.5, "suffisant": false } },
+    { "regle": "C-ENERGIE-9", "fonction": "nutrimentsPlat", "entree": { "ingredients": [{ "masse": 200, "kcal100": 130 }, { "masse": 100, "kcal100": 165 }], "masseCuite": 400, "portions": 4 }, "sortie": { "masse": 400, "massePortion": 100 } },
+    { "regle": "C-ENERGIE-9", "fonction": "portion", "entree": { "kcal100": 106.25, "proteines100": 9.1, "massePortion": 100, "portions": 1.5 }, "sortie": { "masse": 150, "kcal": 159.375, "proteines": 13.65 } },
+    { "regle": "C-ENERGIE-9", "fonction": "portion", "entree": { "kcal100": 52, "masse": 250 }, "sortie": { "masse": 250, "kcal": 130, "proteines": 0 } }
   ]
 }

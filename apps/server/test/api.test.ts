@@ -206,6 +206,18 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect((await appel('PUT', `/v1/plats/${plat.corps.id}/tags`, { tags: [] }, autreJeton)).status).toBe(404);
   });
 
+  it('gives the mass of one serving of a dish', async () => {
+    const riz = await appel('POST', '/v1/aliments', { nom: 'Riz basmati cuit', kcal100: 130 });
+    const plat = await appel('POST', '/v1/plats', { nom: 'Riz pour 4', ingredients: [{ alimentId: riz.corps.id, masse: 300 }], masseCuite: 800, portions: 4 });
+    expect(plat.corps.portions).toBe(4);
+    expect(plat.corps.massePortion).toBeCloseTo(200, 5);
+    const deux = await appel('PUT', `/v1/plats/${plat.corps.id}/portions`, { portions: 2 });
+    expect(deux.corps.massePortion).toBeCloseTo(400, 5);
+    expect((await appel('PUT', `/v1/plats/${plat.corps.id}/portions`, { portions: 0 })).status).toBe(400);
+    const liste = await appel('GET', '/v1/plats');
+    expect(liste.corps.find((d: { id: string }) => d.id === plat.corps.id).massePortion).toBeCloseTo(400, 5);
+  });
+
   it('counts the streak of active days in local time', async () => {
     const r = await appel('GET', '/v1/aujourdhui?tz=60');
     expect(r.status).toBe(200);

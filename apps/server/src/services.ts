@@ -567,8 +567,11 @@ export const PlatEntree = z.object({
   masseCuite: z.number().positive().max(20_000).optional(),
   /** Filters of "Mes plats": rich in protein, quick, vegetarian, allowed during a Daniel fast. */
   tags: z.array(z.enum(DISH_TAGS)).max(4).optional(),
+  /** Servings the recipe makes (1: the whole dish is one serving). */
+  portions: z.number().positive().max(50).optional(),
 });
 export const DishTagsInput = z.object({ tags: z.array(z.enum(DISH_TAGS)).max(4) });
+export const DishPortionsInput = z.object({ portions: z.number().positive().max(50) });
 /** C-ENERGIE-9 : l'IA ou l'utilisateur donnent ingrédients et masses, le moteur calcule. */
 export async function creerPlat(tx: Tx, userId: string, p: z.infer<typeof PlatEntree>, creePar = 'utilisateur') {
   const ids = p.ingredients.map((i) => i.alimentId);
@@ -582,9 +585,11 @@ export async function creerPlat(tx: Tx, userId: string, p: z.infer<typeof PlatEn
   const nutriments = moteur.nutrimentsPlat({
     ingredients: p.ingredients.map((i) => ({ masse: i.masse, ...parId.get(i.alimentId)! })),
     ...(p.masseCuite ? { masseCuite: p.masseCuite } : {}),
+    portions: p.portions ?? 1,
   });
   const { rows: plat } = await tx.query(
-    `insert into plat (user_id, nom, ingredients, masse_cuite, nutriments, cree_par, tags) values ($1, $2, $3, $4, $5, $6, $7) returning *`,
+    `insert into plat (user_id, nom, ingredients, masse_cuite, nutriments, cree_par, tags, portions)
+     values ($1, $2, $3, $4, $5, $6, $7, $8) returning *`,
     [
       userId,
       p.nom,
@@ -593,20 +598,41 @@ export async function creerPlat(tx: Tx, userId: string, p: z.infer<typeof PlatEn
       nutriments,
       creePar,
       [...new Set(p.tags ?? [])],
+      p.portions ?? 1,
     ],
   );
-  return plat[0];
+  return withServing(plat[0]);
+}
+
+type DishRow = { ingredients: { masse: number }[]; masse_cuite: string | number | null; portions: string | number };
+
+/** Adds `massePortion`, the mass of one serving, computed by the engine (C-ENERGIE-9). */
+function withServing<T extends DishRow>(row: T) {
+  const n = moteur.nutrimentsPlat({
+    ingredients: row.ingredients.map((i) => ({ masse: Number(i.masse), kcal100: 0 })),
+    ...(row.masse_cuite ? { masseCuite: Number(row.masse_cuite) } : {}),
+    portions: Number(row.portions),
+  });
+  return { ...row, portions: Number(row.portions), massePortion: n.massePortion };
+}
+
+/** Sets how many servings a dish makes. */
+export async function setDishPortions(tx: Tx, id: string, portions: number) {
+  if (!z.string().uuid().safeParse(id).success) throw new Refus(400, 'Identifiant de plat invalide');
+  const { rows } = await tx.query<DishRow>(`update plat set portions = $2 where id = $1 returning *`, [id, portions]);
+  if (!rows[0]) throw new Refus(404, 'Plat introuvable');
+  return withServing(rows[0]);
 }
 
 /** Replaces the filter tags of a dish. */
 export async function setDishTags(tx: Tx, id: string, tags: (typeof DISH_TAGS)[number][]) {
   if (!z.string().uuid().safeParse(id).success) throw new Refus(400, 'Identifiant de plat invalide');
-  const { rows } = await tx.query(`update plat set tags = $2 where id = $1 returning *`, [id, [...new Set(tags)]]);
+  const { rows } = await tx.query<DishRow>(`update plat set tags = $2 where id = $1 returning *`, [id, [...new Set(tags)]]);
   if (!rows[0]) throw new Refus(404, 'Plat introuvable');
-  return rows[0];
+  return withServing(rows[0]);
 }
 export async function plats(tx: Tx) {
-  return (await tx.query(`select * from plat order by cree_le desc`)).rows;
+  return (await tx.query<DishRow>(`select * from plat order by cree_le desc`)).rows.map(withServing);
 }
 
 export const RepasEntree = z.object({

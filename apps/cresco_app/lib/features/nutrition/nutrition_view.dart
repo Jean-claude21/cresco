@@ -3,6 +3,7 @@ import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
+import 'package:cresco_engine/cresco_engine.dart' as moteur;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
@@ -40,6 +41,22 @@ class NutritionViewModel extends BaseViewModel {
       _snack.afficher(message: e.message);
     }
     notifyListeners();
+  }
+
+  /// Sets how many servings dish [id] makes, then refreshes "Mes plats".
+  Future<Json?> setDishPortions(String id, num portions) async {
+    try {
+      final updated = await _api.setDishPortions(id, portions);
+      plats = [
+        for (final d in plats)
+          if (d['id'] == id) updated else d,
+      ];
+      notifyListeners();
+      return updated;
+    } on ErreurApi catch (e) {
+      _snack.afficher(message: e.message);
+      return null;
+    }
   }
 
   Future<void> ajouterPortion({required double masse, String? alimentId, String? platId}) async {
@@ -195,6 +212,9 @@ class _NutritionViewState extends State<NutritionView> {
                   context,
                   d['nom']! as String,
                   (m) => vm.ajouterPortion(platId: d['id']! as String, masse: m),
+                  nutrients: d['nutriments'] as Json? ?? const {},
+                  dish: d,
+                  vm: vm,
                 ),
               ),
             if (vm.resultats.isNotEmpty) const Text('Aliments', style: CrescoTextes.titreCarte),
@@ -223,6 +243,7 @@ class _NutritionViewState extends State<NutritionView> {
                           context,
                           a['nom']! as String,
                           (m) => vm.ajouterPortion(alimentId: a['id']! as String, masse: m),
+                          nutrients: a,
                         ),
                       ),
                     ],
@@ -258,12 +279,21 @@ class _NutritionViewState extends State<NutritionView> {
     );
   }
 
-  /// Bottom panel "name · grams − +" with the black "Ajouter au …" button (mockup G).
-  Future<void> _portion(BuildContext context, String name, Future<void> Function(double grams) add) async {
+  /// Bottom panel of mockup G: what is eaten (servings of a dish, or grams of a food), its kcal,
+  /// then the black "Ajouter au …" button.
+  Future<void> _portion(
+    BuildContext context,
+    String name,
+    Future<void> Function(double grams) add, {
+    required Json nutrients,
+    Json? dish,
+    NutritionViewModel? vm,
+  }) async {
     final grams = await showModalBottomSheet<double>(
       context: context,
       showDragHandle: true,
-      builder: (context) => _PortionSheet(name: name),
+      isScrollControlled: true,
+      builder: (context) => _PortionSheet(name: name, nutrients: nutrients, dish: dish, vm: vm),
     );
     if (grams != null) await add(grams);
   }
@@ -493,21 +523,82 @@ class _DishGrid extends StatelessWidget {
   }
 }
 
-/// Grams of one portion, by steps of 25 g, then "Ajouter au …" for the meal of the moment.
+/// What is eaten: half servings of a dish (mass of one serving from the engine), or grams of a
+/// food by steps of 25 g. The kcal shown come from the engine too (C-ENERGIE-9).
 class _PortionSheet extends StatefulWidget {
-  const new({required this.name});
+  const new({required this.name, required this.nutrients, this.dish, this.vm});
   final String name;
+  final Json nutrients;
+  final Json? dish;
+  final NutritionViewModel? vm;
 
   @override
   State<_PortionSheet> createState() => _PortionSheetState();
 }
 
 class _PortionSheetState extends State<_PortionSheet> {
-  double grams = 200;
+  late Json? dish = widget.dish;
+  double servings = 1;
+  double grams = 150;
+
+  double? get _servingMass => (dish?['massePortion'] as num?)?.toDouble();
+  bool get _byServing => _servingMass != null;
+
+  Json get _eaten => moteur.portion({
+    'kcal100': widget.nutrients['kcal100'] ?? 0,
+    'proteines100': widget.nutrients['proteines100'] ?? 0,
+    if (_byServing) ...{'massePortion': _servingMass, 'portions': servings} else 'masse': grams,
+  });
+
+  String get _servingsLabel {
+    final n = servings == servings.roundToDouble() ? entier(servings) : decimal(servings);
+    return '$n portion${servings > 1 ? 's' : ''}';
+  }
+
+  Future<void> _editServings() async {
+    final d = dish;
+    final vm = widget.vm;
+    if (d == null || vm == null) return;
+    var n = ((d['portions'] as num?) ?? 1).toDouble();
+    final chosen = await showDialog<double>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setLocal) => AlertDialog(
+          title: const Text('Ce plat fait'),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                tooltip: 'Une portion de moins',
+                onPressed: n > 1 ? () => setLocal(() => n--) : null,
+                icon: const Icon(Icons.remove),
+              ),
+              Text('${entier(n)} portion${n > 1 ? 's' : ''}', style: CrescoTextes.titreCarte),
+              IconButton(
+                tooltip: 'Une portion de plus',
+                onPressed: n < 50 ? () => setLocal(() => n++) : null,
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+            TextButton(onPressed: () => Navigator.pop(context, n), child: const Text('Enregistrer')),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null) return;
+    final updated = await vm.setDishPortions(d['id']! as String, chosen);
+    if (updated != null && mounted) setState(() => dish = updated);
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final eaten = _eaten;
+    final mass = nombre(eaten['masse']);
+    final made = ((dish?['portions'] as num?) ?? 1).toDouble();
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(CrescoSpacing.margin, 0, CrescoSpacing.margin, 16),
@@ -515,14 +606,23 @@ class _PortionSheetState extends State<_PortionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(widget.name, style: CrescoTextes.titreCarte.copyWith(fontSize: 22)),
+            const SizedBox(height: 6),
             Row(
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.name, style: CrescoTextes.titreCarte.copyWith(fontSize: 22)),
-                      Text('1 portion', style: TextStyle(color: p.ink, fontSize: 16)),
+                      Text(
+                        _byServing ? _servingsLabel : '${entier(grams)} g',
+                        style: TextStyle(color: p.ink, fontSize: 17, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        '${_byServing ? '${entier(mass)} g · ' : ''}${entier(eaten['kcal'])} kcal · '
+                        '${decimal(eaten['proteines'])} g de protéines',
+                        style: context.mutedStyle,
+                      ),
                     ],
                   ),
                 ),
@@ -532,14 +632,17 @@ class _PortionSheetState extends State<_PortionSheet> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        tooltip: 'Moins 25 g',
-                        onPressed: grams > 25 ? () => setState(() => grams -= 25) : null,
+                        tooltip: _byServing ? 'Une demi-portion de moins' : 'Moins 25 g',
+                        onPressed: _byServing
+                            ? (servings > 0.5 ? () => setState(() => servings -= 0.5) : null)
+                            : (grams > 25 ? () => setState(() => grams -= 25) : null),
                         icon: const Icon(Icons.remove),
                       ),
-                      Text('${entier(grams)} g', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
                       IconButton(
-                        tooltip: 'Plus 25 g',
-                        onPressed: grams < 1500 ? () => setState(() => grams += 25) : null,
+                        tooltip: _byServing ? 'Une demi-portion de plus' : 'Plus 25 g',
+                        onPressed: _byServing
+                            ? (servings < 6 ? () => setState(() => servings += 0.5) : null)
+                            : (grams < 1500 ? () => setState(() => grams += 25) : null),
                         icon: const Icon(Icons.add),
                       ),
                     ],
@@ -547,9 +650,22 @@ class _PortionSheetState extends State<_PortionSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            if (dish != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const ValueKey('plat-portions'),
+                  onPressed: _editServings,
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  child: Text(
+                    'Le plat entier fait ${entier(made)} portion${made > 1 ? 's' : ''}',
+                    style: const TextStyle(decoration: TextDecoration.underline),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
             FilledButton(
-              onPressed: () => Navigator.pop(context, grams),
+              onPressed: () => Navigator.pop(context, mass),
               child: Text('Ajouter au ${mealOf(maintenant()).$2}'),
             ),
           ],

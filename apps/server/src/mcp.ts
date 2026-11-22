@@ -105,6 +105,15 @@ function construire(ctx: Ctx) {
     async (args) => run('nutrition:ecriture', (t) => svc.setDishTags(t, args.id, args.tags))(),
   );
   server.registerTool(
+    'set_dish_portions',
+    {
+      description:
+        'Sets how many servings a dish of "Mes plats" makes. The engine then gives the mass of one serving (cooked mass / servings).',
+      inputSchema: { id: z.string().uuid(), ...svc.DishPortionsInput.shape },
+    },
+    async (args) => run('nutrition:ecriture', (t) => svc.setDishPortions(t, args.id, args.portions))(),
+  );
+  server.registerTool(
     'get_gym',
     {
       description:

@@ -220,8 +220,11 @@ jour de jeûne : cibles suspendues, voir J-REPRISE
 ```
 nutriment(plat, par 100 g) = Σ (nutriment_ingrédient × masse_ingrédient_crue) / masse_plat_cuit
 facteur de cuisson = masse_cuite / masse_crue (pesée, ou par défaut selon le mode de cuisson)
+masse d'une portion = masse_plat_cuit / nombre de portions du plat (1 par défaut : le plat entier)
+masse servie = masse en grammes, ou nombre de portions × masse d'une portion (100 g si inconnue)
 portion = masse servie × nutriment(par 100 g) / 100
 ```
+Fonctions : `nutrimentsPlat` (dont `massePortion`) et `portion`.
 Les ingrédients viennent de Ciqual, d'Open Food Facts ou d'une saisie personnelle. L'IA peut créer un plat via MCP, et le moteur recalcule les valeurs (l'IA ne fournit que les ingrédients et les quantités).
 
 ---

@@ -158,6 +158,7 @@ class CrescoApi {
   /// Today's summary; the streak counts days in the phone's local time.
   Future<Json> aujourdhui() =>
       _lireAvecCache('aujourdhui', '/v1/aujourdhui?tz=${DateTime.now().timeZoneOffset.inMinutes}');
+
   /// Today's session, adjusted by the engine; [templateId] picks one of "Mes séances" instead of the latest.
   Future<Json> seanceDuJour({String? templateId}) => templateId == null
       ? _lireAvecCache('seance-du-jour', '/v1/seances/du-jour')
@@ -178,7 +179,11 @@ class CrescoApi {
 
   /// Creates ([id] null) or replaces a template. The server refuses unsafe sessions (422).
   Future<Json> saveTemplate(Json template, {String? id}) async =>
-      (await requete(id == null ? 'POST' : 'PUT', id == null ? '/v1/modeles-seance' : '/v1/modeles-seance/$id', corps: template))!
+      (await requete(
+            id == null ? 'POST' : 'PUT',
+            id == null ? '/v1/modeles-seance' : '/v1/modeles-seance/$id',
+            corps: template,
+          ))!
           as Json;
 
   Future<void> deleteTemplate(String id) async => await requete('DELETE', '/v1/modeles-seance/$id');
@@ -226,6 +231,10 @@ class CrescoApi {
   Future<Json> creerAliment(Json aliment) async => (await requete('POST', '/v1/aliments', corps: aliment))! as Json;
   Future<List<Json>> plats() async => ((await requete('GET', '/v1/plats'))! as List).cast<Json>();
   Future<Json> creerPlat(Json plat) async => (await requete('POST', '/v1/plats', corps: plat))! as Json;
+
+  /// How many servings a dish makes; the answer carries the new `massePortion`.
+  Future<Json> setDishPortions(String id, num portions) async =>
+      (await requete('PUT', '/v1/plats/$id/portions', corps: {'portions': portions}))! as Json;
   Future<void> ajouterRepas(Json repas) => _ecrireOuMettreEnAttente('/v1/repas', repas);
 
   // ----------------------------------------------------------------- Jeûne

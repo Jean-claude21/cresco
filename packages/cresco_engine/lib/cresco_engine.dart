@@ -192,6 +192,21 @@ Json nutrimentsPlat(Json e) {
     'glucides100': par100(somme('glucides100')),
     'lipides100': par100(somme('lipides100')),
     'masse': masse,
+    'massePortion': masse / (_n(e['portions']) > 0 ? _n(e['portions']) : 1),
+  };
+}
+
+/// C-ENERGIE-9 (portion): nutrients of what is eaten, from a mass in grams, or from a number of
+/// servings of a dish (servings × mass of one serving; 100 g when the serving is unknown).
+Json portion(Json e) {
+  final masse = e['masse'] != null ? _n(e['masse']) : _n(e['massePortion'], 100) * _n(e['portions'], 1);
+  final f = masse / 100;
+  return {
+    'masse': masse,
+    'kcal': _n(e['kcal100']) * f,
+    'proteines': _n(e['proteines100']) * f,
+    'glucides': _n(e['glucides100']) * f,
+    'lipides': _n(e['lipides100']) * f,
   };
 }
 
@@ -368,6 +383,7 @@ const Map<String, Json Function(Json)> fonctions = {
   'kcalMacros': kcalMacros,
   'ciblesMacros': ciblesMacros,
   'nutrimentsPlat': nutrimentsPlat,
+  'portion': portion,
   'scoreForme': scoreForme,
   'ajustementSeance': ajustementSeance,
   'penteE1rm': penteE1rm,

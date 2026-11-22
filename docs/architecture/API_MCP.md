@@ -17,7 +17,7 @@
 | `/gym` | `GET` salle principale, équipement coché, catalogue et listes proposées par chaîne ; `PUT` enregistre la salle et son équipement |
 | `/modeles-seance` | lire, créer, `PUT /:id`, `DELETE /:id`, `POST /modeles-seance/valider` (contrôles de sécurité) ; la réponse liste `unavailableAtGym` |
 | `/seances` | lire, créer (séance réalisée), `GET /seances/du-jour` (séance ajustée ; `?modele=<id>` pour une séance choisie) |
-| `/aliments`, `/plats` | rechercher (texte, code-barres), créer un plat à partir d'ingrédients (étiquettes facultatives `tags`), `PUT /plats/:id/tags` |
+| `/aliments`, `/plats` | rechercher (texte, code-barres), créer un plat à partir d'ingrédients (étiquettes facultatives `tags`, nombre de portions `portions`), `PUT /plats/:id/tags`, `PUT /plats/:id/portions` ; chaque plat donne `massePortion` (C-ENERGIE-9) |
 | `/repas` | CRUD |
 | `/nuits`, `/mesures`, `/ressentis` | lire, créer (import ou saisie) |
 | `/jeunes` | démarrer, terminer, ajouter un événement, `GET /jeunes/en-cours/decision` |

@@ -200,6 +200,8 @@ export const proteinesParRepas = (poids: number) => 0.4 * poids;
 export function nutrimentsPlat(e: {
   ingredients: readonly { masse: number; kcal100: number; proteines100?: number; glucides100?: number; lipides100?: number }[];
   masseCuite?: number;
+  /** Servings the recipe makes (1 by default: the whole dish). */
+  portions?: number;
 }) {
   const crue = e.ingredients.reduce((s, i) => s + i.masse, 0);
   const masse = e.masseCuite && e.masseCuite > 0 ? e.masseCuite : crue;
@@ -212,6 +214,31 @@ export function nutrimentsPlat(e: {
     glucides100: par100(somme('glucides100')),
     lipides100: par100(somme('lipides100')),
     masse,
+    massePortion: masse / (e.portions && e.portions > 0 ? e.portions : 1),
+  };
+}
+
+/**
+ * C-ENERGIE-9 (portion) : nutrients of what is eaten, from a mass in grams, or from a number of
+ * servings of a dish (servings × mass of one serving; 100 g when the serving is unknown).
+ */
+export function portion(e: {
+  kcal100: number;
+  proteines100?: number;
+  glucides100?: number;
+  lipides100?: number;
+  masse?: number;
+  massePortion?: number;
+  portions?: number;
+}) {
+  const masse = e.masse ?? (e.massePortion ?? 100) * (e.portions ?? 1);
+  const f = masse / 100;
+  return {
+    masse,
+    kcal: e.kcal100 * f,
+    proteines: (e.proteines100 ?? 0) * f,
+    glucides: (e.glucides100 ?? 0) * f,
+    lipides: (e.lipides100 ?? 0) * f,
   };
 }
 
@@ -420,6 +447,7 @@ export const FONCTIONS = {
   kcalMacros,
   ciblesMacros,
   nutrimentsPlat,
+  portion,
   scoreForme,
   ajustementSeance,
   penteE1rm,
