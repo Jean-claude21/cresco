@@ -1,0 +1,207 @@
+# Matrix Fitness strength catalog, read on 22/11/2026 from https://fr.matrixfitness.com/fra/strength/catalog
+# (all products, "Afficher plus" expanded). One line per product: category/slug || official name.
+free-weights/mac-push-sled-xult-push-sled || Xult Push Sled
+free-weights/mac-3t-db-ft-rac-xult-3tier-flat-tray-dumbbell-rack || Xult Dumbbell Flat Rack — 10-pair
+free-weights/mac-3t-dbs-rac-10r-xult-3tier-saddle-dumbbell-rack || Xult Dumbbell Saddle Rack — 10-pair
+free-weights/mac-afdb-rac-sf-8-xult-aframe-dumbbell-rack-kettlebell-storage || Xult A-frame Dumbbell Rack w/Kettlebell Storage
+free-weights/mac-db-rac-stu-xult-studio-dumbbell-rack || Studio Dumbbell Rack
+free-weights/mac-stbb-rack-3-xult-stability-ball-rack || Xult Stability Ball Rack
+free-weights/mac-groupx-rack-xult-groupx-plate-bar-rack || Xult Group X Plate and Bar Rack
+free-weights/mac-kb-rac-xult-2tier-kettlebell-rack || Kettlebell Rack
+free-weights/mac-mb-rac-5-xult-5ball-med-ball-rack || Xult 5-ball Med Ball Rack
+free-weights/mac-mb-rac-10-xult-10ball-med-ball-rack || Xult 10-ball Med Ball Rack
+free-weights/mac-wm-rac-xult-fit-mat-wall-rack || Xult Fit Mat Wall Rack
+single-station/g3-s10-chest-press || Aura Chest Press
+single-station/g3-s12-pectoral-fly || Aura Pectoral Fly
+single-station/g3-s13-converging-chest-press || Aura Converging Chest Press
+single-station/g3-s20-shoulder-press || Aura Shoulder Press
+single-station/g3-s21-lateral-raise || Aura Lateral Raise
+single-station/g3-s22-rear-delt-fly || Aura Rear Delt / Fly
+single-station/g3-s23-converging-shoulder-press || Aura Converging Shoulder Press
+single-station/g3-s30-lat-pulldown || Aura Lat Pulldown
+single-station/g3-s31-seated-row || Aura Seated Row
+single-station/g3-s33-diverging-lat-pulldown || Aura Diverging Lat Pulldown
+single-station/g3-s34-diverging-seated-row || Aura Diverging Seated Row
+single-station/g3-s40-arm-curl || Aura Arm Curl
+single-station/g3-s42-triceps-press || Aura Triceps Press
+single-station/g3-s45-triceps-extension || Aura Tricep Extension
+single-station/g3-s50-abdominal || Aura Abdominal
+single-station/g3-s51-abdominal-crunch || Aura Abdominal Crunch
+single-station/g3-s52-back-extension || Aura Back Extension
+single-station/g3-s55-rotary-torso || Aura Rotary Torso
+single-station/g3-s60-dip-chin-assist || Aura Dip / Chin Assist
+single-station/g3-s70-leg-press || Aura Leg Press
+single-station/g3-s71-leg-extension || Aura Leg Extension
+single-station/g3-s72-seated-leg-curl || Aura Seated Leg Curl
+single-station/g3-s73-prone-leg-curl || Aura Prone Leg Curl
+single-station/g3-s74-hip-adductor || Aura Hip Adductor
+single-station/g3-s75-hip-abductor || Aura Hip Abductor
+single-station/g3-s76-rotary-hip || Aura Rotary Hip
+single-station/g3-s77-calf-press || Aura Calf Press
+multi-station/g3-ms20-adjustable-cable-crossover || Aura Adjustable Cable Crossover
+multi-station/adjustable-pulley || Aura Adjustable Pulley
+multi-station/lat-pulldown || Aura Lat Pulldown (multi-station)
+multi-station/triceps-pressdown || Aura Triceps Pressdown
+multi-station/low-row || Aura Low Row
+multi-station/blank-station || Blank Station
+multi-station/g3-ms40p-4-stack || Aura 4-Stack Multi-Station
+multi-station/g3-ms50p-5-stack || Aura 5-Stack Multi-Station
+multi-station/g3-ms80p-8-stack || Aura 8-Stack Multi-Station
+multi-station/g3-msft3-functional-trainer || Aura Functional Trainer
+free-weights/mg-a52-back-extension-bench || Magnum Back Extension Bench
+free-weights/mg-a59-02-flat-bench || Magnum Flat Bench
+free-weights/mg-a61-adjustable-decline-bench || Magnum Adjustable Decline Bench
+free-weights/mg-a62-preacher-curl || Magnum Preacher Curl
+free-weights/mg-a63c-vkr-with-chin || Magnum VKR w/Chin
+free-weights/mg-a67b-weight-tree-with-bar-holders || Magnum Weight Tree w/Bar Holders
+free-weights/mg-a71-standing-arm-curl || Magnum Standing Arm Curl
+free-weights/mg-a73-power-station || Magnum Power Station
+free-weights/mg-a77-adjustable-ab-bench || Magnum Adjustable Ab Bench
+free-weights/mg-a81-05-squat-rack || Magnum Squat Rack
+free-weights/mg-a82-multi-adjustable-bench-lp || Magnum Multi-adjustable Bench LP
+free-weights/mg-a85-multi-adjustable-bench || Magnum Multi-adjustable Bench
+free-weights/mg-a86-multi-adjustable-bench-with-decline || Magnum Multi-adjustable Bench w/Decline
+free-weights/mg-a87-utility-bench || Magnum Utility Bench
+free-weights/mg-a94-olympic-weight-tree || Magnum Olympic Weight Tree
+free-weights/mg-a96-glute-ham-bench || Magnum Glute Ham Bench
+free-weights/mg-a97-accessory-rack || Magnum Accessory Rack
+free-weights/mg-a98-barbell-rack || Magnum Barbell Rack
+free-weights/mg-a99-portable-seat || Magnum Portable Seat
+free-weights/mg-a505-5-pair-pro-style-dumbbell-rack || Magnum 5-Pair Pro-Style Dumbbell Rack
+free-weights/mg-a510-10-pair-pro-style-dumbbell-rack || Magnum 10-Pair Pro-Style Dumbbell Rack
+free-weights/mg-a515-15-pair-pro-style-dumbbell-rack || Magnum 15-Pair Pro-Style Dumbbell Rack
+free-weights/mg-a528-2-tier-flat-tray-dumbbell-rack || Magnum 2-tier Flat-tray Dumbbell Rack
+free-weights/mg-a538-3-tier-flat-tray-dumbbell-rack || Magnum 3-tier Flat-tray Dumbbell Rack
+free-weights/mg-a541-10-pair-studio-pro-style-dumbbell-rack || Magnum 10-Pair Studio Pro-Style Dumbbell Rack
+free-weights/mg-a544-studio-flat-tray-dumbbell-rack || Magnum Studio Flat-tray Dumbbell Rack
+free-weights/mg-a45-olympic-shoulder-bench || Magnum Olympic Shoulder Bench
+free-weights/mg-a645-breaker-olympic-shoulder-bench || Magnum Breaker Olympic Shoulder Bench
+free-weights/mg-a78-olympic-flat-bench || Magnum Olympic Flat Bench
+free-weights/mg-a78s-olympic-flat-bench-with-safety-arms || Magnum Olympic Flat Bench w/Safety Arms
+free-weights/mg-a678-breaker-olympic-flat-bench || Magnum Breaker Olympic Flat Bench
+free-weights/mg-a79-olympic-incline-bench || Magnum Olympic Incline Bench
+free-weights/mg-a679-breaker-olympic-incline-bench || Magnum Breaker Olympic Incline Bench
+free-weights/mg-a80-olympic-decline-bench || Magnum Olympic Decline Bench
+free-weights/mg-a680-breaker-olympic-decline-bench || Magnum Breaker Olympic Decline Bench
+free-weights/mg-c895-3-way-olympic-bench || Magnum 3-way Olympic Bench
+free-weights/md-fw52-mi-back-trainer || Magnum MI Back Trainer
+plate-loaded/mg-pl12-vertical-bench-press || Magnum Vertical Bench Press
+plate-loaded/mg-pl13-supine-bench-press || Magnum Supine Bench Press
+plate-loaded/mg-pl14-incline-bench-press || Magnum Incline Bench Press
+plate-loaded/mg-pl15-vertical-decline-bench-press || Magnum Vertical Decline Bench Press
+plate-loaded/mg-pl21-seated-lateral-raise || Magnum Seated Lateral Raise
+plate-loaded/mg-pl22-decline-pec-fly || Magnum Decline Pec Fly
+plate-loaded/mg-pl23-shoulder-press || Magnum Shoulder Press
+plate-loaded/mg-pl33-lat-pulldown || Magnum Lat Pulldown
+plate-loaded/mg-pl34-seated-row || Magnum Seated Row
+plate-loaded/mg-pl35-tbar-row || Magnum T-bar Row
+plate-loaded/mg-pl36-lever-row || Magnum Incline Lever Row
+plate-loaded/mg-pl37-high-row || Magnum High Row
+plate-loaded/mg-pl38-low-row || Magnum Low Row
+plate-loaded/mg-pl41-elevated-biceps-curl || Magnum Elevated Biceps Curl
+plate-loaded/mg-pl50-ab-crunch-bench || Magnum Ab Crunch Bench
+plate-loaded/mg-pl62-smith-machine || Magnum Smith Machine
+plate-loaded/mg-pl70-45-degree-leg-press || Magnum 45-degree Leg Press
+plate-loaded/mg-pl71-hack-squat || Magnum Hack Squat
+plate-loaded/mg-pl72-kneeling-leg-curl || Magnum Kneeling Leg Curl
+plate-loaded/mg-pl73-reclining-leg-extension || Magnum Reclining Leg Extension
+plate-loaded/mg-pl75-standing-hip-abductor || Magnum Standing Hip Abductor
+plate-loaded/mg-pl76-standing-calf || Magnum Standing Calf
+plate-loaded/mg-pl77-seated-calf || Magnum Seated Calf
+plate-loaded/mg-pl78-glute-trainer || Magnum Glute Trainer
+plate-loaded/mg-pl79-squat-lunge || Magnum Squat / Lunge
+plate-loaded/mg-pl80-pendulum-squat || Magnum Pendulum Squat
+plate-loaded/mg-pl81-belt-squat || Magnum Belt Squat
+plate-loaded/mg-pl82-standing-hip-thrust || Magnum Standing Hip Thrust
+plate-loaded/mg-405-reverse-back-extension || Magnum Reverse Back Extension
+racks-and-platforms/mr47-mega-power-rack || Magnum MEGA Power Rack
+racks-and-platforms/mr690-mega-half-rack || Magnum MEGA Half Rack
+racks-and-platforms/mg-pro47c-pro-configurable-power-rack || Magnum PRO Configurable Power Rack (Châssis de puissance configurable)
+racks-and-platforms/mg-pro690c-pro-configurable-half-rack || Magnum PRO Configurable Half Rack (Demi-châssis configurable)
+racks-and-platforms/mg-pro691c-pro-configurable-double-half-rack || Magnum PRO Configurable Double Half Rack (Double demi-châssis configurable)
+racks-and-platforms/mg-plat-platforms || Magnum Platforms
+racks-and-platforms/mg-proplat-pro-platform || Magnum PRO Platforms
+racks-and-platforms/mg-vrsplat || Magnum VRS Platforms
+multi-station/g1-ms20-adjustable-cable-crossover || G1 Adjustable Cable Crossover
+multi-station/g1-mg30-3-stack || Xult 3-Stack Multi-Gym
+multi-station/g1-ms40-4-stack || G1 4-stack Multi-Station
+multi-station/g1-ms50-5-stack || G1 5-stack Multi-Station
+multi-station/g1-ms80-8-stack || G1 8-stack Multi-Station
+free-weights/g1-fw151-flat-bench || G1 Flat Bench
+free-weights/g1-fw152-adjustable-decline-bench || G1 Adjustable Decline Bench
+free-weights/g1-fw155-preacher-curl || G1 Preacher Curl Bench
+free-weights/g1-fw156-upright-bench || G1 Upright Bench
+free-weights/g1-fw157-weight-rack || G1 Weight Rack
+free-weights/g1-fw158-single-tier-dumbbell-rack || G1 5-Pair Dumbbell Rack
+free-weights/g1-fw159-double-tier-dumbbell-rack || G1 10-Pair Dumbbell Rack
+free-weights/g1-fw160-dumbbell-rack || G1 Barbell Rack
+free-weights/g1-fw161-smith-machine || Xult Smith Machine
+free-weights/g1-fw162-back-extension || G1 Back Extension Bench
+free-weights/g1-fw163-olympic-flat-bench || G1 Olympic Flat Bench
+free-weights/g1-fw164-olympic-incline-bench || G1 Olympic Incline Bench
+free-weights/g1-fw165-olympic-decline-bench || G1 Olympic Decline Bench
+single-station/go-s13-chest-press || Go Series Chest Press
+single-station/go-s23-shoulder-press || Go Series Shoulder Press
+single-station/go-s33-lat-pulldown || Go Series Lat Pulldown
+single-station/go-s34-seated-row || Go Series Seated Row
+single-station/go-s40-biceps-curl || Go Series Biceps Curl
+single-station/go-s42-seated-triceps-press || Go Series Seated Triceps Press
+single-station/go-s53-abdominal || Go Series Abdominal
+single-station/go-s70-leg-press || Go Series Leg Press
+single-station/go-s71-leg-extension || Go Series Leg Extension
+single-station/go-s72-seated-leg-curl || Go Series Seated Leg Curl
+free-weights/go-ab-adjustable-bench || Go Series Adjustable Bench
+multi-station/go-ft-functional-trainer || Go Series Functional Trainer
+single-station/g7-s13-converging-chest-press || Ultra Converging Chest Press
+single-station/g7-s21-lateral-raise || Ultra Lateral Raise
+single-station/g7-s22-pectoral-fly || Ultra Pec Fly / Rear Delt
+single-station/g7-s23-converging-shoulder-press || Ultra Converging Shoulder Press
+single-station/g7-s33-diverging-lat-pulldown || Ultra Diverging Lat Pulldown
+single-station/g7-s34-diverging-seated-row || Ultra Diverging Seated Row
+single-station/g7-s40-independent-biceps-curl || Ultra Independent Biceps Curl
+single-station/g7-s41-dependent-arm-curl || Ultra Dependent Arm Curl
+single-station/g7-s42-triceps-press || Ultra Triceps Press
+single-station/g7-s45-triceps-extension || Ultra Triceps Extension
+single-station/g7-s51-abdominal-crunch || Ultra Abdominal Crunch
+single-station/g7-s52-back-extension || Ultra Back Extension
+single-station/g7-s55-rotary-torso || Ultra Rotary Torso
+single-station/g7-s70-leg-press || Ultra Leg Press
+single-station/g7-s71-leg-extension || Ultra Leg Extension
+single-station/g7-s72-seated-leg-curl || Ultra Seated Leg Curl
+single-station/g7-s73-prone-leg-curl || Ultra Prone Leg Curl
+single-station/g7-s74-hip-adduction || Ultra Hip Adductor
+single-station/g7-s75-hip-abduction || Ultra Hip Abductor
+single-station/g7-s77-calf-extension || Ultra Calf Extension
+single-station/g7-s78-glute || Ultra Glute
+single-station/g7-s79-hip-thrust || Ultra Hip Thrust
+plate-loaded/vy-400-03-perfect-squat || Xult Perfect Squat
+plate-loaded/vy-401-leg-extension || Xult Leg Extension
+plate-loaded/vy-402-prone-leg-curl || Xult Prone Leg Curl
+plate-loaded/vy-431-biceps-curl || Xult Biceps Curl
+plate-loaded/vy-432-triceps-extension || Xult Triceps Extension
+plate-loaded/vy-m49-02-angled-smith-machine || Xult Angled Smith Machine
+single-station/vs-s13-converging-chest-press || Versa Converging Chest Press
+single-station/vs-s22-pectoral-fly-rear-delt || Versa Pec Fly / Rear Delt
+single-station/vs-s23-converging-shoulder-press || Versa Converging Shoulder Press
+single-station/vs-s33-diverging-lat-pulldown || Versa Diverging Lat Pulldown
+single-station/vs-s34-diverging-seated-row || Versa Diverging Seated Row
+single-station/vs-s40-biceps-curl || Versa Bicep Curl
+single-station/vs-s42-triceps-press || Versa Triceps Press
+single-station/vs-s52-back-extension || Versa Back Extension
+single-station/vs-s53-abdominal || Versa Abdominal
+single-station/vs-s70-leg-press-calf-press || Versa Leg Press / Calf Press
+single-station/vs-s71-leg-extension || Versa Leg Extension
+single-station/vs-s72-seated-leg-curl || Versa Seated Leg Curl
+single-station/vs-s74-hip-abductor-adductor || Versa Hip Abductor / Adductor
+single-station/vs-s78-glute || Versa Glute
+single-station/vs-s131-multi-press || Versa Multi Press
+single-station/vs-s331-lat-pulldown-seated-row || Versa Lat Pulldown / Seated Row
+single-station/vs-s401-bicep-tricep || Versa Bicep / Tricep
+single-station/vs-s531-abdominal-back-extension || Versa Ab / Low Back
+single-station/vs-s601-chin-dip-assist || Versa Chin / Dip Assist
+single-station/vs-s711-leg-extension-seated-leg-curl || Versa Leg Extension / Leg Curl
+single-station/md-ap-adjustable-pulley || Versa MD Adjustable Pulley
+single-station/md-s70-leg-press || Versa MD Leg Press
+single-station/md-s711-leg-extension-leg-curl || Versa MD Leg Extension / Leg Curl
+multi-station/vs-vft-functional-trainer-30 || Versa Functional Trainer w/30" Storage
+multi-station/vs-vft-functional-trainer-18 || Versa Functional Trainer w/18" Storage

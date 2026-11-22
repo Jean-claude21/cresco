@@ -1,5 +1,7 @@
 # Machines de musculation à ajouter à « Ma salle »
 
+Première liste, par type de machine. Le catalogue Matrix complet, modèle par modèle (205 produits), est dans [CATALOGUE-MATRIX.md](CATALOGUE-MATRIX.md).
+
 Recherche du 22/11/2026. Le catalogue d’une marque sert à **reconnaître** les machines qu’on trouve en salle ; les photos sont génériques (sans logo ni marque, voir CONFORMITE.md), une par type de machine. ✓ = photo déjà dans l’app.
 
 ## 1. Matrix Fitness

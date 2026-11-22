@@ -29,6 +29,12 @@ SHEETS = {
         'leg-curl-genoux', 'hip-thrust-machine', 'smith', 'rack',
     ],
     HERE / 'planche-5.png': ['rowing-bas-disques', 'rowing-haut-disques', 'rowing-incline-levier', 'rowing-t-bar', 'curl-biceps-surleve'],
+    # Stations of the full Matrix catalog (machines-3).
+    HERE.parent / 'machines-3' / 'planche-1.png': [
+        'developpe-disques', 'developpe-decline-disques', 'ecarte-decline-disques', 'dips-assis-machine',
+        'pupitre', 'banc-abdos', 'extension-inversee', 'ghd',
+    ],
+    HERE.parent / 'machines-3' / 'planche-2.png': ['squat-fentes-disques', 'traineau', 'banc', 'banc-olympique'],
     # Redone with a sharper brief (machines-2): they overwrite the first versions.
     HERE.parent / 'machines-2' / 'planche.png': [
         'abdominaux-machine', 'extension-lombaire-machine', 'pull-over-machine', 'extension-triceps-machine',

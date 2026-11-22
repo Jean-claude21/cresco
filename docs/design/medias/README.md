@@ -17,6 +17,7 @@ Tous les médias de l’app ont été **générés avec ChatGPT** (outil de gén
 | Photos des 9 familles de plats | [plats/BRIEF.md](plats/BRIEF.md), [notes](plats/NOTES.md) | `assets/dishes/` | 900 px, JPEG |
 | Photos noir et blanc (salle, chest press, tapis, presse à cuisses) | idem | `assets/photos/` | 1200 px, JPEG |
 | Démonstrations des 22 exercices de musculation : position de départ et d’arrivée, six planches 4 × 2 | [exercices/BRIEF.md](exercices/BRIEF.md), [notes](exercices/NOTES.md), découpe `exercices/decouper.py` | `assets/exercises/<id>-depart.jpg`, `-arrivee.jpg` (`ExerciseDemo`) | 512 × 384, JPEG, 1,6 Mo en tout |
+| Machines et postes de salle (49 photos : gammes Matrix et machines courantes, sans marque) ; liste [machines/LISTE.md](machines/LISTE.md), catalogue Matrix complet [machines/CATALOGUE-MATRIX.md](machines/CATALOGUE-MATRIX.md) | [machines/BRIEF.md](machines/BRIEF.md), [machines-2](machines-2/BRIEF.md), [machines-3](machines-3/BRIEF.md) ; découpe `machines/decouper.py` | `assets/equipment/<id>.jpg` | 400 px carré, JPEG |
 | Équipements de « Ma salle » (8 machines, poids libres, cardio) : deux planches 4 × 2 | [equipements/BRIEF.md](equipements/BRIEF.md), découpe `equipements/decouper.py` | `assets/equipment/<id>.jpg` (`EquipmentPhoto`) | 400 px carré, JPEG, 350 Ko en tout |
 
 Les poses sont : `salue`, `explique`, `carnet`, `pouce`, `reflechit`, `celebre`. Chaque dossier contient la consigne envoyée (`BRIEF.md`) et la note de ChatGPT (`NOTES.md`). Les planches de référence des coachs sont en JPEG dans leur dossier.

@@ -198,6 +198,18 @@ abstract final class EquipmentPhoto {
     'rowing-incline-levier',
     'rowing-t-bar',
     'curl-biceps-surleve',
+    'developpe-disques',
+    'developpe-decline-disques',
+    'ecarte-decline-disques',
+    'dips-assis-machine',
+    'pupitre',
+    'banc-abdos',
+    'extension-inversee',
+    'ghd',
+    'squat-fentes-disques',
+    'traineau',
+    'banc',
+    'banc-olympique',
   };
 
   /// Asset of [key]: its own photo, or the closest gym photo until it has one.
