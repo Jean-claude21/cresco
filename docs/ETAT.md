@@ -6,11 +6,14 @@ Mis à jour le 21/11/2026.
 
 | Élément | Adresse |
 |---|---|
-| API et MCP (staging) | https://cresco-staging.169.58.86.123.sslip.io — santé : `/api/health`, API : `/v1`, MCP : `/mcp` |
-| Base | Neon, projet `cresco` (Francfort, PostgreSQL 17), branche `dev` pour le staging |
-| Hébergement | Coolify, projet « Cresco », environnement `staging`, construit depuis `main` (Dockerfile) |
+| **Production** (API et MCP) | https://cresco.kete.digital — santé : `/api/health`, API : `/v1`, MCP : `/mcp`, OAuth : `/.well-known/oauth-authorization-server` |
+| Test (staging) | https://cresco-staging.kete.digital (mêmes chemins) |
+| Base | Neon, projet `cresco` (Francfort, PostgreSQL 17) : branche `main` pour la production, `dev` pour le test |
+| Hébergement | Coolify (serveur kete-contabo, domaine générique `kete.digital`), projet « Cresco », environnements `production` et `staging`, construits depuis `main` (Dockerfile) |
+| IA intégrée | OpenAI, `OPENAI_API_KEY` transmise par le script de déploiement ; modèle `gpt-5.5` (`OPENAI_MODEL`) |
+| App Android | `dist/cresco-1.0.0.apk` (non versionné), signée avec la clé d’envoi `../.secrets/keystores/cresco-upload.jks` (mot de passe dans `../.secrets/cresco.env`, `android/key.properties` non versionné) ; pointe sur la production |
 
-Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.secrets/cresco.env`, n'affiche aucun secret). Production : `pnpm deploy:production` (branche Neon `main`).
+Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.secrets/cresco.env`, n'affiche aucun secret). Production : `pnpm deploy:production` (branche Neon `main`). APK : `fvm flutter build apk --release` dans `apps/cresco_app`. Le parcours de test sur téléphone se construit contre le staging (`-Pdart-defines` avec `CRESCO_API=https://cresco-staging.kete.digital`) pour ne jamais écrire dans la production.
 
 ## Fait et vérifié
 

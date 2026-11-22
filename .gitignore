@@ -30,3 +30,6 @@ Thumbs.db
 
 # Codex run logs
 docs/design/**/codex.log
+
+# Built apps handed out for testing
+/dist/
