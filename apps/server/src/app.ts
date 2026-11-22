@@ -5,6 +5,7 @@ import { z, ZodError } from 'zod';
 import { createToken, hashPassword, limiteConnexion, resolveToken, SCOPES, verifyPassword, type Principal } from './auth.ts';
 import { asUser, type Db, type Tx } from './db.ts';
 import { handleMcp } from './mcp.ts';
+import { registerOauth } from './oauth.ts';
 import * as ia from './ia.ts';
 import * as svc from './services.ts';
 import type { Source } from './sources.ts';
@@ -59,6 +60,8 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
     const jeton = await createToken(db, rows[0].id, 'app mobile', ALL);
     return c.json({ utilisateurId: rows[0].id, jeton: jeton.token });
   });
+
+  registerOauth(app, db);
 
   // ------------------------------------------------------------ Tout le reste exige un jeton
   app.use('/v1/*', async (c, next) => {
@@ -331,7 +334,12 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
   // ------------------------------------------------------------ MCP
   app.all('/mcp', async (c) => {
     const principal = await resolveToken(db, c.req.header('authorization'));
-    if (!principal) return c.json({ erreur: 'Jeton manquant ou invalide (Authorization: Bearer cr_…)' }, 401);
+    if (!principal) {
+      // MCP authorization: tells the client where to find the OAuth server (RFC 9728).
+      const b = process.env['APP_BASE_URL'] ?? new URL(c.req.url).origin;
+      c.header('WWW-Authenticate', `Bearer resource_metadata="${b}/.well-known/oauth-protected-resource"`);
+      return c.json({ erreur: 'Jeton manquant ou invalide (Authorization: Bearer cr_…)' }, 401);
+    }
     return handleMcp(c.req.raw, { db, principal, sources: deps.sources });
   });
 

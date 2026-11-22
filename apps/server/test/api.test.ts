@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 // Test de bout en bout de l'API et du MCP sur un vrai PostgreSQL (TEST_DATABASE_URL, rôle propriétaire).
 // Ignoré sans base : `node scripts/db-local.mjs start` puis TEST_DATABASE_URL=… pnpm test.
 import path from 'node:path';
@@ -224,6 +225,57 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     const today = await appel('GET', '/v1/aujourdhui');
     expect(today.corps.forme.poidsPersonnels).toBe(false);
     expect(today.corps.forme.poids.sommeil).toBeCloseTo(0.35, 5);
+  });
+
+  it('lets a third-party app connect with OAuth 2.1 and PKCE', async () => {
+    const meta = await appel('GET', '/.well-known/oauth-authorization-server', undefined, '');
+    expect(meta.corps.code_challenge_methods_supported).toEqual(['S256']);
+    const unauth = await app.request('/mcp', { method: 'POST' });
+    expect(unauth.status).toBe(401);
+    expect(unauth.headers.get('www-authenticate')).toContain('oauth-protected-resource');
+
+    const reg = await appel('POST', '/oauth/register', { client_name: 'Mon assistant', redirect_uris: ['https://assistant.test/cb'] }, '');
+    expect(reg.status).toBe(201);
+    const clientId = reg.corps.client_id as string;
+    const verifier = 'v'.repeat(64);
+    const challenge = createHash('sha256').update(verifier).digest('base64url');
+    const query = new URLSearchParams({
+      response_type: 'code', client_id: clientId, redirect_uri: 'https://assistant.test/cb',
+      code_challenge: challenge, code_challenge_method: 'S256', state: 'xyz', scope: 'entrainement:lecture foi:lecture',
+    });
+    const page = await app.request(`/oauth/authorize?${query}`);
+    const htmlPage = await page.text();
+    expect(htmlPage).toContain('Mon assistant');
+    expect(htmlPage).not.toMatch(/value="foi:lecture" checked/u);
+
+    const form = new URLSearchParams(query);
+    form.set('demandes', 'entrainement:lecture foi:lecture');
+    form.set('email', 'test@cresco.test');
+    form.set('motDePasse', 'un-mot-de-passe-long');
+    form.append('accorde', 'entrainement:lecture');
+    const ok = await app.request('/oauth/authorize', { method: 'POST', body: form, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    expect(ok.status).toBe(302);
+    const back = new URL(ok.headers.get('location')!);
+    expect(back.searchParams.get('state')).toBe('xyz');
+    const code = back.searchParams.get('code')!;
+
+    const token = (body: Record<string, string>) =>
+      app.request('/oauth/token', { method: 'POST', body: new URLSearchParams(body), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    const bad = await token({ grant_type: 'authorization_code', code, client_id: clientId, redirect_uri: 'https://assistant.test/cb', code_verifier: 'w'.repeat(64) });
+    expect(bad.status).toBe(400);
+    // The code is single-use: the failed attempt consumed it, so ask again.
+    const ok2 = await app.request('/oauth/authorize', { method: 'POST', body: form, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    const code2 = new URL(ok2.headers.get('location')!).searchParams.get('code')!;
+    const t = await (await token({ grant_type: 'authorization_code', code: code2, client_id: clientId, redirect_uri: 'https://assistant.test/cb', code_verifier: verifier })).json() as Record<string, string>;
+    expect(t.scope).toBe('entrainement:lecture');
+    expect((await appel('GET', '/v1/exercices', undefined, t.access_token!)).status).toBe(200);
+    expect((await appel('GET', '/v1/moi', undefined, t.access_token!)).status).toBe(200);
+    expect((await appel('GET', '/v1/repas', undefined, t.access_token!)).status).toBe(403);
+
+    const r = await (await token({ grant_type: 'refresh_token', refresh_token: t.refresh_token!, client_id: clientId })).json() as Record<string, string>;
+    expect(r.access_token).toMatch(/^cr_/u);
+    expect((await appel('GET', '/v1/exercices', undefined, t.access_token!)).status).toBe(401);
+    expect((await token({ grant_type: 'refresh_token', refresh_token: t.refresh_token!, client_id: clientId })).status).toBe(400);
   });
 
   it('the integrated AI is off without an API key', async () => {

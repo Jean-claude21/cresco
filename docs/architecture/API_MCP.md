@@ -3,7 +3,11 @@
 ## API REST
 
 - Contrat **OpenAPI**, versionné (`/v1`), JSON, unités SI
-- Authentification **OAuth2** : PKCE pour l'app, clients enregistrés pour les tiers, jetons personnels pour l'usage avec sa propre IA
+- Authentification : jetons `cr_…` à permissions (app mobile, jetons personnels créés dans Profil) et **OAuth 2.1** pour les tiers et les assistants IA (`src/oauth.ts`) :
+  - découverte : `/.well-known/oauth-authorization-server` et `/.well-known/oauth-protected-resource` (ressource `/mcp`) ; `/mcp` sans jeton répond 401 avec `WWW-Authenticate` qui pointe vers ces métadonnées ;
+  - enregistrement dynamique des clients publics (`POST /oauth/register`, redirections https ou boucle locale) ;
+  - code d'autorisation avec **PKCE S256 obligatoire** (`/oauth/authorize` : page de consentement, `foi:*`, `jeune:*` et `export` jamais cochés par défaut), `POST /oauth/token` (`authorization_code`, `refresh_token` avec rotation), `POST /oauth/revoke` ;
+  - le jeton d'accès est un jeton Cresco ordinaire : il apparaît dans Profil et s'y révoque
 - Pagination par curseur, `updated_since` pour la synchronisation
 - **Webhooks** : `seance.terminee`, `repas.ajoute`, `jeune.demarre`, `jeune.termine`, `verdict.hebdo`
 - Export complet : `GET /v1/export` (JSON), CSV par domaine
