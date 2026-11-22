@@ -1,6 +1,7 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/ui/messages.dart';
+import 'package:cresco_app/ui/tabs.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,8 @@ class CrescoApp extends StatelessWidget {
       scaffoldMessengerKey: locator<Messages>().cle,
       onGenerateRoute: StackedRouter().onGenerateRoute,
       initialRoute: connecte ? Routes.accueilView : Routes.welcomeView,
+      navigatorObservers: [TabsObserver()],
+      builder: tabShell,
     );
   }
 }

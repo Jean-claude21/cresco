@@ -14,6 +14,7 @@ import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/seance/seance_view.dart';
 import 'package:cresco_app/features/training/training_view.dart';
 import 'package:cresco_app/features/welcome/welcome_view.dart';
+import 'package:cresco_app/ui/tabs.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,6 +38,8 @@ void main() {
           : MaterialApp(
               debugShowCheckedModeBanner: false,
               theme: crescoTheme(fontFamily: 'Roboto', brightness: brightness),
+              navigatorObservers: [TabsObserver()],
+              builder: tabShell,
               home: ecran,
             ),
     );

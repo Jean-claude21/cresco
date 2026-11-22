@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/ui/commun.dart' show maintenant;
 import 'package:cresco_app/ui/messages.dart';
+import 'package:cresco_app/ui/tabs.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
@@ -267,6 +268,7 @@ final reponses = <String, Object?>{
 /// Prépare le localisateur avec une fausse API et les polices réelles (pour des captures lisibles).
 Future<void> preparer() async {
   maintenant = () => heureDesCaptures;
+  Tabs.instance.reset();
   TestWidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('fr_FR');
   SharedPreferences.setMockInitialValues({'jeton': 'cr_test'});
@@ -323,6 +325,8 @@ Future<void> _chargerPolices() async {
 /// Enveloppe un écran dans le thème Cresco, au format d'un iPhone (402 × 874 pt).
 Widget enveloppe(Widget ecran) => MaterialApp(
   debugShowCheckedModeBanner: false,
+  navigatorObservers: [TabsObserver()],
+  builder: tabShell,
   theme: crescoTheme(fontFamily: 'Roboto'),
   home: ecran,
 );

@@ -1,16 +1,15 @@
 import 'package:cresco_app/app/app.locator.dart';
-import 'package:cresco_app/features/accueil/saisie_rapide.dart';
 import 'package:cresco_app/features/nutrition/nutrition_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/today/today_view.dart';
 import 'package:cresco_app/features/training/training_view.dart';
+import 'package:cresco_app/ui/tabs.dart';
 import 'package:cresco_data/cresco_data.dart';
-import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
-class AccueilViewModel extends IndexTrackingViewModel {
+class AccueilViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService nav = locator<NavigationService>();
 
@@ -33,127 +32,46 @@ class AccueilView extends StatelessWidget {
     return ViewModelBuilder<AccueilViewModel>.reactive(
       viewModelBuilder: AccueilViewModel.new,
       onViewModelReady: (vm) => vm.synchroniser(),
-      builder: (context, vm, _) => Scaffold(
-        // A tab is rebuilt on each visit: its data is always fresh
-        // (a finished session shows up at once in Progrès).
-        body: KeyedSubtree(
-          key: ValueKey(vm.currentIndex),
-          child: const [TodayView(), TrainingView(), NutritionView(), ProgresView()][vm.currentIndex],
-        ),
-        bottomNavigationBar: _TabBar(
-          index: vm.currentIndex,
-          onTap: vm.setIndex,
-          onAdd: () => ouvrirSaisieRapide(context),
+      // The tab bar lives in TabShell (lib/ui/tabs.dart), under every page opened from a tab.
+      builder: (context, vm, _) => _Home(
+        child: ListenableBuilder(
+          listenable: Tabs.instance,
+          builder: (context, _) => Scaffold(
+            // A tab is rebuilt on each visit: its data is always fresh
+            // (a finished session shows up at once in Progrès).
+            body: KeyedSubtree(
+              key: ValueKey(Tabs.instance.index),
+              child: const [TodayView(), TrainingView(), NutritionView(), ProgresView()][Tabs.instance.index],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// Bottom bar of mockup G: four labeled tabs around a round "+" (quick entry).
-class _TabBar extends StatelessWidget {
-  const new({required this.index, required this.onTap, required this.onAdd});
-  final int index;
-  final ValueChanged<int> onTap;
-  final VoidCallback onAdd;
-
-  // Phosphor line icons, as in mockup G2: regular stroke, bold for the active tab with its bold label and underline.
-  static const List<(IconData, IconData, String)> _items = [
-    (CrescoIcons.calendar, CrescoIcons.calendarBold, 'Aujourd’hui'),
-    (CrescoIcons.barbell, CrescoIcons.barbellBold, 'Entraînement'),
-    (CrescoIcons.forkKnife, CrescoIcons.forkKnifeBold, 'Nutrition'),
-    (CrescoIcons.chartBar, CrescoIcons.chartBarBold, 'Progrès'),
-  ];
+/// Tells [Tabs] that the home shell is in the navigation stack while it is mounted.
+class _Home extends StatefulWidget {
+  const new({required this.child});
+  final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    Widget tab(int i) {
-      final (icon, activeIcon, label) = _items[i];
-      final on = i == index;
-      return Expanded(
-        child: Semantics(
-          selected: on,
-          button: true,
-          label: label,
-          excludeSemantics: true,
-          child: InkWell(
-            key: ValueKey('onglet-$label'),
-            onTap: () => onTap(i),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 7, bottom: 3),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(on ? activeIcon : icon, size: 24, color: p.ink),
-                  const SizedBox(height: 3),
-                  FittedBox(
-                    child: Text(
-                      label,
-                      style: TextStyle(fontSize: 12, fontWeight: on ? FontWeight.w800 : FontWeight.w400, color: p.ink),
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  // Underline of the active tab.
-                  AnimatedContainer(
-                    duration: MediaQuery.disableAnimationsOf(context)
-                        ? Duration.zero
-                        : const Duration(milliseconds: 200),
-                    width: on ? 40 : 0,
-                    height: 2.5,
-                    color: p.ink,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+  State<_Home> createState() => _HomeState();
+}
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: p.background,
-        border: Border(
-          top: BorderSide(color: p.line, width: CrescoShape.border),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        // Grows with large text instead of clipping the labels.
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 60),
-          child: Row(
-            children: [
-              tab(0),
-              tab(1),
-              SizedBox(
-                width: 72,
-                // heightFactor 1: the bar stays as tall as its content, not the whole screen.
-                child: Center(
-                  heightFactor: 1,
-                  child: SizedBox.square(
-                    dimension: 40,
-                    child: FloatingActionButton(
-                      heroTag: 'plus',
-                      elevation: 0,
-                      highlightElevation: 0,
-                      shape: const CircleBorder(),
-                      backgroundColor: p.action,
-                      foregroundColor: p.onAction,
-                      tooltip: 'Ajouter une donnée',
-                      onPressed: onAdd,
-                      child: const Icon(Icons.add, size: 26),
-                    ),
-                  ),
-                ),
-              ),
-              tab(2),
-              tab(3),
-            ],
-          ),
-        ),
-      ),
-    );
+class _HomeState extends State<_Home> {
+  @override
+  void initState() {
+    super.initState();
+    Tabs.instance.homeMounted = true;
   }
+
+  @override
+  void dispose() {
+    Tabs.instance.homeMounted = false;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
