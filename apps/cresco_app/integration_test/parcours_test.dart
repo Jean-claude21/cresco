@@ -162,11 +162,12 @@ void main() {
     await attendre(t, find.textContaining(' équipement'));
 
     await toucher(t, find.text('Intervalles sur tapis'), defiler: true);
-    await attendre(t, find.text('TEMPS RESTANT'));
-    // Le minuteur démarre seul : on vérifie qu'il défile, puis on met en pause.
+    await attendre(t, find.text('restantes'));
+    // Start, check that the timer runs, then pause.
+    await toucher(t, find.byKey(const ValueKey('intervalles-lecture')));
     await t.pump(const Duration(seconds: 3));
     expect(find.text('05:00'), findsNothing);
-    await toucher(t, find.text('Mettre en pause'));
+    await toucher(t, find.text('Pause'));
     expect(find.text('Reprendre'), findsOneWidget);
     await retour(t);
     await t.pump(const Duration(seconds: 1));
