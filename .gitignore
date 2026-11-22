@@ -25,3 +25,5 @@ Thumbs.db
 
 # FVM Version Cache
 .fvm/
+# Flutter golden diffs
+**/test/golden/failures/
