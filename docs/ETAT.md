@@ -13,7 +13,7 @@ Mis à jour le 21/11/2026.
 | IA intégrée | OpenAI, `OPENAI_API_KEY` transmise par le script de déploiement ; modèle `gpt-5.5` (`OPENAI_MODEL`) |
 | App Android | `dist/cresco-1.0.0.apk` (non versionné), signée avec la clé d’envoi `../.secrets/keystores/cresco-upload.jks` (mot de passe dans `../.secrets/cresco.env`, `android/key.properties` non versionné) ; pointe sur la production |
 
-Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.secrets/cresco.env`, n'affiche aucun secret). Production : `pnpm deploy:production` (branche Neon `main`). APK : `fvm flutter build apk --release` dans `apps/cresco_app`. Le parcours de test sur téléphone se construit contre le staging (`-Pdart-defines` avec `CRESCO_API=https://cresco-staging.kete.digital`) pour ne jamais écrire dans la production.
+Redéployer : `pnpm deploy:staging` (lit `../.secrets/.admin.env`, écrit `../.secrets/cresco.env`, n'affiche aucun secret). Production : `pnpm deploy:production` (branche Neon `main`). APK : `fvm flutter build apk --release` dans `apps/cresco_app`. Le parcours de test sur téléphone se construit contre le staging, avec l’outil Flutter (pas Gradle seul, qui reprendrait la liste de plugins d’une version de production, sans `integration_test`) : `fvm flutter build apk --debug --target=integration_test/parcours_test.dart --dart-define=CRESCO_API=https://cresco-staging.kete.digital`, puis `node scripts/browserstack.mjs`. Ainsi aucun compte de test n’est créé en production.
 
 ## Fait et vérifié
 
