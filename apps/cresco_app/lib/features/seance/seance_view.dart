@@ -4,10 +4,13 @@ import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/features/exercises/exercise_picker.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_app/ui/messages.dart';
+import 'package:cresco_app/ui/workout_keep_alive.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_engine/cresco_engine.dart' as moteur;
 import 'package:cresco_ui/cresco_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,6 +55,10 @@ class SeanceViewModel extends BaseViewModel {
   int repos = 0;
   Timer? _minuteur;
   final debut = DateTime.now();
+
+  /// End of the rest on the wall clock: the rest keeps counting with the screen off.
+  DateTime? _finRepos;
+  final _tts = FlutterTts();
   String? erreur;
 
   SerieAFaire? get courante => index < series.length ? series[index] : null;
@@ -62,6 +69,15 @@ class SeanceViewModel extends BaseViewModel {
 
   Future<void> charger() async {
     unawaited(sansEchec(WakelockPlus.enable));
+    unawaited(sansEchec(() => _tts.setLanguage('fr-FR')));
+    unawaited(
+      sansEchec(
+        () => _tts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
+          IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+          IosTextToSpeechAudioCategoryOptions.duckOthers,
+        ]),
+      ),
+    );
     await runBusyFuture(
       Future(() async {
         try {
@@ -160,18 +176,53 @@ class SeanceViewModel extends BaseViewModel {
   void _lancerRepos(int secondes) {
     _minuteur?.cancel();
     repos = termine ? 0 : secondes;
-    _minuteur = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (repos <= 0) {
-        t.cancel();
-      } else {
-        repos--;
-      }
-      notifyListeners();
-    });
+    if (repos == 0) {
+      unawaited(WorkoutKeepAlive.stop());
+      return;
+    }
+    // First rest of the session: keep the app alive so the rest ends on time, screen off.
+    unawaited(WorkoutKeepAlive.start(title: 'Repos', text: _texteRepos));
+    _finRepos = DateTime.now().add(Duration(seconds: repos));
+    _minuteur = Timer.periodic(const Duration(milliseconds: 500), (_) => _ticRepos());
+  }
+
+  String get _texteRepos {
+    final s = courante;
+    final suite = s == null ? '' : ' · ensuite ${s.nom}';
+    return '${repos ~/ 60}:${(repos % 60).toString().padLeft(2, '0')}$suite';
+  }
+
+  void _ticRepos() {
+    final fin = _finRepos;
+    if (fin == null) return;
+    final avant = repos;
+    repos = (fin.difference(DateTime.now()).inMilliseconds / 1000).ceil().clamp(0, 3600);
+    if (repos == 0) {
+      _minuteur?.cancel();
+      _finRepos = null;
+      final s = courante;
+      unawaited(HapticFeedback.heavyImpact());
+      unawaited(
+        sansEchec(
+          () => _tts.speak(
+            s == null
+                ? 'Repos terminé.'
+                : 'Repos terminé. ${s.nom}, ${s.chargeKg == null ? '' : '${decimal(s.chargeKg)} kilos, '}${s.reps} répétitions.',
+          ),
+        ),
+      );
+      unawaited(
+        WorkoutKeepAlive.update(title: 'À toi', text: s == null ? 'Repos terminé' : '${s.nom} · série ${s.numero}'),
+      );
+    } else if (repos != avant) {
+      unawaited(WorkoutKeepAlive.update(title: 'Repos', text: _texteRepos));
+    }
+    if (repos != avant) notifyListeners();
   }
 
   void passerRepos() {
     _minuteur?.cancel();
+    _finRepos = null;
     repos = 0;
     notifyListeners();
   }
@@ -240,6 +291,8 @@ class SeanceViewModel extends BaseViewModel {
   @override
   void dispose() {
     _minuteur?.cancel();
+    unawaited(WorkoutKeepAlive.stop());
+    unawaited(sansEchec(_tts.stop));
     unawaited(sansEchec(WakelockPlus.disable));
     super.dispose();
   }
