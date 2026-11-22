@@ -3,6 +3,7 @@ import 'package:cresco_app/features/nutrition/nutrition_view.dart';
 import 'package:cresco_app/features/progres/progres_view.dart';
 import 'package:cresco_app/features/today/today_view.dart';
 import 'package:cresco_app/features/training/training_view.dart';
+import 'package:cresco_app/ui/health_sync.dart';
 import 'package:cresco_app/ui/tabs.dart';
 import 'package:cresco_data/cresco_data.dart';
 import 'package:flutter/material.dart';
@@ -13,12 +14,18 @@ class AccueilViewModel extends BaseViewModel {
   final CrescoApi _api = locator<CrescoApi>();
   final NavigationService nav = locator<NavigationService>();
 
-  /// Renvoie au serveur les saisies faites hors ligne.
+  /// Sends what was entered offline, then imports the last days from Health Connect or Apple
+  /// Santé when the user turned it on.
   Future<void> synchroniser() async {
     try {
       await _api.synchroniser();
     } on Exception {
-      // Réessayé au prochain lancement.
+      // Retried at the next launch.
+    }
+    try {
+      await HealthSync(_api).sync();
+    } on Object {
+      // Retried at the next launch.
     }
   }
 }

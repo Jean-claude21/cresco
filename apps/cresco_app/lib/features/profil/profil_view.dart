@@ -2,6 +2,7 @@ import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
 import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_app/ui/commun.dart';
+import 'package:cresco_app/ui/health_sync.dart';
 import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
@@ -22,9 +23,39 @@ class ProfilViewModel extends BaseViewModel {
   Json? profil;
   String? jetonMcp;
 
+  /// Health Connect / Apple Santé: whether the import is on.
+  late final HealthSync health = HealthSync(_api);
+  bool healthConnected = false;
+  bool healthBusy = false;
+
   Future<void> charger() async {
     await runBusyFuture(Future(() async => profil = await _api.profil()));
     if (profil != null) await syncCoachFrom(profil!);
+    healthConnected = HealthSync.supported && await health.connected;
+    notifyListeners();
+  }
+
+  Future<void> toggleHealth() async {
+    healthBusy = true;
+    notifyListeners();
+    try {
+      if (healthConnected) {
+        await health.disconnect();
+        healthConnected = false;
+      } else {
+        healthConnected = await health.connect();
+        _snack.afficher(
+          message: healthConnected
+              ? 'Sommeil, VFC, FC de repos, pas et poids importés depuis ${HealthSync.appName}.'
+              : '${HealthSync.appName} n’a pas donné accès à tes données.',
+        );
+      }
+    } on Object catch (e) {
+      _snack.afficher(message: 'Import impossible : $e');
+    } finally {
+      healthBusy = false;
+      notifyListeners();
+    }
   }
 
   Coach get coach => currentCoach();
@@ -169,6 +200,38 @@ class ProfilView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    if (HealthSync.supported) ...[
+                      CrescoCarte(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    HealthSync.appName,
+                                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                                  ),
+                                  Text(
+                                    vm.healthConnected
+                                        ? 'Sommeil, VFC, FC de repos, pas et poids arrivent seuls à chaque ouverture.'
+                                        : 'Importe ton sommeil, ta VFC, ta FC de repos, tes pas et ton poids.',
+                                    style: context.mutedStyle,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Switch(
+                              key: const ValueKey('sante-import'),
+                              value: vm.healthConnected,
+                              onChanged: vm.healthBusy ? null : (_) => vm.toggleHealth(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     CrescoCarte(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

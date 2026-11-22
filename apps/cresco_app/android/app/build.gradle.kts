@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "app.cresco.cresco_app"
-    compileSdk = flutter.compileSdkVersion
+    // The health plugin (Health Connect) compiles against API 37.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -19,7 +20,8 @@ android {
         applicationId = "app.cresco.cresco_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Health Connect needs Android 8 (API 26).
+        minSdk = maxOf(flutter.minSdkVersion, 26)
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)

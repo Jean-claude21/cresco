@@ -228,6 +228,12 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
     const { tags } = svc.DishTagsInput.parse(await c.req.json());
     return c.json(await tx(c, (t) => svc.setDishTags(t, c.req.param('id'), tags)));
   });
+  app.post('/v1/sante/import', async (c) => {
+    exige(c, 'sommeil:ecriture');
+    exige(c, 'corps:ecriture');
+    const h = svc.HealthImport.parse(await c.req.json());
+    return c.json(await tx(c, (t, u) => svc.importSante(t, u, h)));
+  });
   app.put('/v1/plats/:id/portions', async (c) => {
     exige(c, 'nutrition:ecriture');
     const { portions } = svc.DishPortionsInput.parse(await c.req.json());

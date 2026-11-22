@@ -206,6 +206,23 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect((await appel('PUT', `/v1/plats/${plat.corps.id}/tags`, { tags: [] }, autreJeton)).status).toBe(404);
   });
 
+  it('imports health data once per source', async () => {
+    const body = {
+      source: 'health_connect',
+      nuits: [{ coucher: '2026-11-20T22:40:00.000Z', lever: '2026-11-21T06:10:00.000Z', dormiMin: 420 }],
+      mesures: [
+        { type: 'vfc', valeur: 48, le: '2026-11-21T06:15:00.000Z' },
+        { type: 'fc_repos', valeur: 54, le: '2026-11-21T06:15:00.000Z' },
+        { type: 'pas', valeur: 8432, le: '2026-11-21T00:00:00.000Z' },
+      ],
+    };
+    const first = await appel('POST', '/v1/sante/import', body);
+    expect(first.corps).toEqual({ nuits: 1, mesures: 3 });
+    const again = await appel('POST', '/v1/sante/import', body);
+    expect(again.corps).toEqual({ nuits: 0, mesures: 0 });
+    expect((await appel('POST', '/v1/sante/import', { ...body, source: 'fitbit' })).status).toBe(400);
+  });
+
   it('gives the mass of one serving of a dish', async () => {
     const riz = await appel('POST', '/v1/aliments', { nom: 'Riz basmati cuit', kcal100: 130 });
     const plat = await appel('POST', '/v1/plats', { nom: 'Riz pour 4', ingredients: [{ alimentId: riz.corps.id, masse: 300 }], masseCuite: 800, portions: 4 });

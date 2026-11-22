@@ -92,7 +92,7 @@ export async function modifierProfil(tx: Tx, userId: string, patch: z.infer<type
 // ---------------------------------------------------------------- Mesures, sommeil, ressenti
 
 export const MesureEntree = z.object({
-  type: z.enum(['poids', 'tour_taille', 'masse_grasse', 'vfc', 'fc_repos']),
+  type: z.enum(['poids', 'tour_taille', 'masse_grasse', 'vfc', 'fc_repos', 'pas']),
   valeur: z.number().positive(),
   le: z.string().datetime().optional(),
   source: z.string().max(40).optional(),
@@ -129,6 +129,38 @@ export async function ajouterNuit(tx: Tx, userId: string, n: z.infer<typeof Nuit
   );
   return rows[0];
 }
+/** Nights and measures read from Health Connect or Apple Santé on the phone. */
+export const HealthImport = z.object({
+  source: z.enum(['health_connect', 'apple_sante']),
+  nuits: z.array(NuitEntree.omit({ source: true })).max(400).default([]),
+  mesures: z.array(MesureEntree.omit({ source: true }).required({ le: true })).max(5000).default([]),
+});
+
+/** Imports health data; what was already imported from the same source is skipped. */
+export async function importSante(tx: Tx, userId: string, h: z.infer<typeof HealthImport>) {
+  let nuitsAjoutees = 0;
+  let mesuresAjoutees = 0;
+  for (const n of h.nuits) {
+    const auLit = n.auLitMin ?? (new Date(n.lever).getTime() - new Date(n.coucher).getTime()) / 60_000;
+    const r = await tx.query(
+      `insert into nuit (user_id, coucher, lever, dormi_min, au_lit_min, profond_pct, source)
+       values ($1, $2, $3, $4, $5, $6, $7)
+       on conflict (user_id, lever, source) where source <> 'saisie' do nothing`,
+      [userId, n.coucher, n.lever, n.dormiMin, auLit, n.profondPct ?? null, h.source],
+    );
+    nuitsAjoutees += r.rowCount ?? 0;
+  }
+  for (const m of h.mesures) {
+    const r = await tx.query(
+      `insert into mesure (user_id, type, valeur, le, source) values ($1, $2, $3, $4, $5)
+       on conflict (user_id, type, le, source) where source <> 'saisie' do nothing`,
+      [userId, m.type, m.valeur, m.le, h.source],
+    );
+    mesuresAjoutees += r.rowCount ?? 0;
+  }
+  return { nuits: nuitsAjoutees, mesures: mesuresAjoutees };
+}
+
 export async function nuits(tx: Tx, jours = 30) {
   const { rows } = await tx.query<{ coucher: Date; lever: Date; dormi_min: number; au_lit_min: number; profond_pct: number | null }>(
     `select coucher, lever, dormi_min, au_lit_min, profond_pct from nuit where lever > now() - make_interval(days => $1) order by lever`,

@@ -19,7 +19,8 @@
 | `/seances` | lire, créer (séance réalisée), `GET /seances/du-jour` (séance ajustée ; `?modele=<id>` pour une séance choisie) |
 | `/aliments`, `/plats` | rechercher (texte, code-barres), créer un plat à partir d'ingrédients (étiquettes facultatives `tags`, nombre de portions `portions`), `PUT /plats/:id/tags`, `PUT /plats/:id/portions` ; chaque plat donne `massePortion` (C-ENERGIE-9) |
 | `/repas` | CRUD |
-| `/nuits`, `/mesures`, `/ressentis` | lire, créer (import ou saisie) |
+| `/nuits`, `/mesures`, `/ressentis` | lire, créer (import ou saisie) ; mesures : poids, tour de taille, masse grasse, VFC, FC de repos, pas |
+| `/sante/import` | `POST` nuits et mesures lues dans Health Connect ou Apple Santé (`source`) ; ce qui a déjà été importé de la même source est ignoré |
 | `/jeunes` | démarrer, terminer, ajouter un événement, `GET /jeunes/en-cours/decision` |
 | `/calculs/{regle}` | exécuter une règle sur des entrées (ex. `C-PERF-2`) : le moteur en libre-service |
 | `/progression` | tendances, verdict hebdo, séances de la semaine (`seancesSemaine`) et objectif (`objectifSeancesSemaine`, préférence `seancesParSemaine`, 3 par défaut), dernier record (`record`), bilan énergie |

@@ -215,6 +215,9 @@ class CrescoApi {
       await requete('POST', '/v1/exercices/$exerciceId/liens', corps: {'url': url});
 
   // ----------------------------------------------------------------- Corps et sommeil
+  /// Nights and measures read from Health Connect or Apple Santé; returns what was added.
+  Future<Json> importSante(Json data) async => (await requete('POST', '/v1/sante/import', corps: data))! as Json;
+
   Future<void> ajouterMesure(String type, double valeur) =>
       _ecrireOuMettreEnAttente('/v1/mesures', {'type': type, 'valeur': valeur});
   Future<void> ajouterNuit(DateTime coucher, DateTime lever, int dormiMin) => _ecrireOuMettreEnAttente('/v1/nuits', {
