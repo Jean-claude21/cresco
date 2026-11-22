@@ -127,7 +127,7 @@ void main() {
       await t.tap(find.byTooltip('Plus 2,5 kg'));
       await t.pump(const Duration(milliseconds: 60));
     }
-    expect(find.textContaining('40 kg', findRichText: true), findsOneWidget);
+    expect(load(), startsWith('40 kg'), reason: 'Charge : ${load()}. À l’écran : ${ecran()}');
     var series = 0;
     while (find.textContaining('Valider la').evaluate().isNotEmpty && series < 40) {
       await toucher(t, find.widgetWithText(ChoiceChip, '2'));
