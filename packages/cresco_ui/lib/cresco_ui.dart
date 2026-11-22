@@ -2,6 +2,7 @@
 library;
 
 export 'src/body_map.dart';
+export 'src/coach_move.dart';
 export 'src/composants.dart';
 export 'src/icons.dart';
 export 'src/media.dart';

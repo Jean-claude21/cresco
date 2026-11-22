@@ -1,3 +1,4 @@
+import 'package:cresco_ui/src/coach_move.dart';
 import 'package:flutter/material.dart';
 
 /// The two illustrated coaches (docs/design/medias). The user picks one at onboarding.
@@ -314,6 +315,19 @@ class _ExerciseDemoState extends State<ExerciseDemo> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final id = widget.exerciseId;
+    // The coach on the machine wins over the two-photo demo when it exists.
+    if (CoachMove.available.contains(id)) {
+      return Semantics(
+        image: true,
+        label: widget.semanticLabel,
+        child: ExcludeSemantics(
+          child: ColoredBox(
+            color: const Color(0xFFFFFFFF),
+            child: SizedBox(height: widget.height, width: widget.width, child: CoachMove(id!)),
+          ),
+        ),
+      );
+    }
     if (!_animated || id == null) {
       return CrescoPhotoImage(
         CrescoPhoto.forExercise(id),

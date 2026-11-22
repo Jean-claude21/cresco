@@ -66,6 +66,7 @@ final reponses = <String, Object?>{
       {'key': 'exercise:leg-curl', 'label': 'Leg curl', 'labelEn': 'Lying Leg Curl', 'kind': 'machine'},
       {'key': 'exercise:presse-cuisses', 'label': 'Presse à cuisses', 'labelEn': '45-Degree Leg Press', 'kind': 'machine'},
       {'key': 'exercise:tirage-vertical', 'label': 'Tirage vertical', 'labelEn': 'Lat Pulldown', 'kind': 'machine'},
+      {'key': 'material:pec-deck', 'label': 'Pec deck / oiseau inversé', 'labelEn': 'Pectoral Fly / Rear Delt', 'kind': 'machine'},
       {'key': 'material:poulie', 'label': 'Poulie double réglable', 'labelEn': 'Functional Trainer', 'kind': 'station'},
       {'key': 'material:barre', 'label': 'Barres et disques', 'kind': 'free'},
       {'key': 'material:halteres', 'label': 'Haltères', 'kind': 'free'},
@@ -167,6 +168,8 @@ final reponses = <String, Object?>{
       'muscles_primaires': ['pectoraux'],
       'muscles_secondaires': ['triceps'],
     },
+    {'id': 'pec-deck', 'nom': 'Pec deck', 'materiel': 'pec-deck', 'liens': <Object?>[]},
+    {'id': 'oiseau-machine', 'nom': 'Oiseau inversé', 'materiel': 'pec-deck', 'liens': <Object?>[]},
   ],
   '/v1/energie': {
     'bmr': 1780,

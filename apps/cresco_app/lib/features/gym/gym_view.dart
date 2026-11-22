@@ -20,6 +20,17 @@ class GymViewModel extends BaseViewModel {
   Map<String, List<String>> presets = {};
   String? loadError;
 
+  /// Catalog exercises per piece of equipment (`exercise:<id>` or `material:<materiel>`).
+  Map<String, List<CoachMoveItem>> _exercisesOf = {};
+
+  /// Exercises the coach can show for one piece of equipment.
+  List<CoachMoveItem> movesFor(String key) {
+    final all =
+        _exercisesOf[key] ??
+        (key.startsWith('exercise:') ? [(id: key.substring(9), name: '')] : const <CoachMoveItem>[]);
+    return all.where((m) => CoachMove.available.contains(m.id)).toList();
+  }
+
   /// True when the checked list comes from a chain preset and has not been saved yet.
   bool fromPreset = false;
 
@@ -45,10 +56,26 @@ class GymViewModel extends BaseViewModel {
       name.text = gym?['name'] as String? ?? '';
       chain = gym?['chain'] as String?;
       selected = {...(g['equipment']! as List<Object?>).cast<String>()};
+      await _loadExercises();
     } on Exception {
       loadError = 'Ta salle n’a pas pu se charger.';
     }
     setBusy(false);
+  }
+
+  Future<void> _loadExercises() async {
+    try {
+      final map = <String, List<CoachMoveItem>>{};
+      for (final e in await _api.exercises()) {
+        final id = e['id']! as String;
+        final materiel = e['materiel'] as String?;
+        final key = materiel == 'machine' ? 'exercise:$id' : 'material:$materiel';
+        (map[key] ??= []).add((id: id, name: e['nom'] as String? ?? id));
+      }
+      _exercisesOf = map;
+    } on Exception {
+      // The movements are a bonus: Ma salle works without them.
+    }
   }
 
   /// Picks a chain; on a first setup, its usual equipment is checked as a starting point.
@@ -198,6 +225,7 @@ class GymView extends StatelessWidget {
                           items: vm.ofKind(kind),
                           selected: vm.selected,
                           onToggle: vm.toggle,
+                          movesFor: vm.movesFor,
                         ),
                       ),
                     ),
@@ -222,12 +250,14 @@ class _Group extends StatelessWidget {
     required this.items,
     required this.selected,
     required this.onToggle,
+    required this.movesFor,
   });
   final String title;
   final IconData icon;
   final List<Equipment> items;
   final Set<String> selected;
   final ValueChanged<String> onToggle;
+  final List<CoachMoveItem> Function(String key) movesFor;
 
   @override
   Widget build(BuildContext context) {
@@ -262,6 +292,7 @@ class _Group extends StatelessWidget {
                     child: _EquipmentCard(
                       key: ValueKey('gym-${e.key}'),
                       equipment: e,
+                      moves: movesFor(e.key),
                       selected: selected.contains(e.key),
                       onTap: () => onToggle(e.key),
                     ),
@@ -277,8 +308,11 @@ class _Group extends StatelessWidget {
 
 /// One piece of equipment: its photo, its name, and a check in the corner when it is in the gym.
 class _EquipmentCard extends StatelessWidget {
-  const new({required this.equipment, required this.selected, required this.onTap, super.key});
+  const new({required this.equipment, required this.selected, required this.onTap, this.moves = const [], super.key});
   final Equipment equipment;
+
+  /// Exercises the coach shows for this equipment; empty hides the « Mouvement » button.
+  final List<CoachMoveItem> moves;
   final bool selected;
   final VoidCallback onTap;
 
@@ -308,6 +342,38 @@ class _EquipmentCard extends StatelessWidget {
                     aspectRatio: 1,
                     child: Opacity(opacity: selected ? 1 : 0.55, child: EquipmentPhotoImage(equipment.key)),
                   ),
+                  if (moves.isNotEmpty)
+                    Positioned(
+                      left: 8,
+                      bottom: 8,
+                      child: Material(
+                        color: p.action,
+                        shape: const StadiumBorder(),
+                        child: InkWell(
+                          key: ValueKey('mouvement-${equipment.key}'),
+                          customBorder: const StadiumBorder(),
+                          onTap: () => showCoachMove(
+                            context,
+                            title: equipment.label,
+                            moves: [for (final m in moves) (id: m.id, name: m.name.isEmpty ? equipment.label : m.name)],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 6, 12, 6),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.play_arrow_rounded, size: 18, color: p.onAction),
+                                const SizedBox(width: 2),
+                                Text(
+                                  'Mouvement',
+                                  style: TextStyle(color: p.onAction, fontWeight: FontWeight.w700, fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   Positioned(
                     top: 8,
                     right: 8,

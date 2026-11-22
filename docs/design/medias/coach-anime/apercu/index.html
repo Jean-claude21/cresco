@@ -1,0 +1,20 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Coach en mouvement</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+<style>body{margin:0;background:#F4EFEA;font-family:system-ui,sans-serif;padding:12px;color:#282421}
+h2{margin:16px 4px 8px;font-size:18px}.row{display:flex;gap:10px;align-items:stretch}
+.c{background:#fff;border-radius:16px;overflow:hidden;width:220px}.c .v{width:220px;height:240px;position:relative}
+.c img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .25s}
+.c img.on{opacity:1}.c p{margin:6px 10px 10px;font-size:13px;font-weight:600}</style></head><body>
+<script>
+const ids=[['developpe-convergent','Presse pectorale convergente'],['tirage-vertical','Tirage vertical'],['presse-cuisses','Presse à cuisses 45°'],['leg-curl-assis','Leg curl assis'],['hack-squat','Hack squat']];
+for(const [id,nom] of ids){
+ const h=document.createElement('h2');h.textContent=nom;document.body.appendChild(h);
+ const r=document.createElement('div');r.className='row';document.body.appendChild(r);
+ r.innerHTML=`<div class="c"><div class="v k" id="k-${id}">${[1,2,3].map(i=>`<img src="../../../../../packages/cresco_ui/assets/coach_moves/${id}-${i}.jpg">`).join('')}</div><p>A · images ChatGPT (3 poses)</p></div>
+ <div class="c"><div class="v" id="l-${id}"></div><p>B · coach animé (Lottie)</p></div>`;
+ fetch('../../../../../packages/cresco_ui/assets/animations/'+id+'.json').then(x=>x.json()).then(d=>lottie.loadAnimation({container:document.getElementById('l-'+id),renderer:'svg',loop:true,autoplay:true,animationData:d}));
+}
+// 1 → 2 → 3 → 2 → 1, holds at the ends, same 2.4 s loop as the Lottie.
+const seq=[0,0,1,2,2,1];let i=0;setInterval(()=>{i=(i+1)%seq.length;document.querySelectorAll('.k').forEach(k=>k.querySelectorAll('img').forEach((im,j)=>im.classList.toggle('on',j===seq[i])));},400);
+document.querySelectorAll('.k').forEach(k=>k.querySelector('img').classList.add('on'));
+</script></body></html>
