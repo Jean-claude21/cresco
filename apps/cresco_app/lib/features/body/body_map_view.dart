@@ -442,14 +442,10 @@ class _Detail extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         child: Text(
           'Séries à 3 répétitions en réserve ou moins, sur 7 jours. Muscle principal de l’exercice : 1 série ; '
-          'secondaire : 0,5. Repère : ${decimal(guideline)} séries par semaine (règle C-PERF-5).
-
-'
+          'secondaire : 0,5. Repère : ${decimal(guideline)} séries par semaine (règle C-PERF-5).\n\n'
           'Récupération (C-RECUP-4, indicative) : chaque série récente pèse moins d’heure en heure, '
           'davantage si elle est allée à l’échec ; prêt à partir de 80 %. Elle ne change jamais ta séance '
-          'à elle seule.
-
-'
+          'à elle seule.\n\n'
           'Tendance (C-PERF-7) : séries de cette semaine comparées à la moyenne des 3 précédentes.',
           style: CrescoTextes.corps,
         ),
