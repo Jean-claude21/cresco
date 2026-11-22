@@ -147,7 +147,21 @@ class CrescoPhotoImage extends StatelessWidget {
 /// Photo of a piece of equipment of "Ma salle", by catalog key (`exercise:<id>` or `material:<id>`).
 abstract final class EquipmentPhoto {
   /// Equipment with its own photo in `assets/equipment/<id>.jpg` (docs/design/medias/equipements).
-  static const own = <String>{};
+  static const own = {
+    'tirage-vertical',
+    'rowing-assis-poulie',
+    'presse-cuisses',
+    'leg-curl',
+    'leg-extension',
+    'mollets-debout',
+    'extension-triceps-poulie',
+    'crunch-poulie',
+    'barre',
+    'halteres',
+    'tapis',
+    'velo',
+    'rameur',
+  };
 
   /// Asset of [key]: its own photo, or the closest gym photo until it has one.
   static String asset(String key) {

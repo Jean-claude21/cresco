@@ -23,6 +23,7 @@ flutter:
     - assets/body/
     - assets/coach/
     - assets/dishes/
+    - assets/equipment/
     - assets/icons/
     - assets/photos/
   fonts:

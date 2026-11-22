@@ -15,6 +15,7 @@ Tous les médias de l’app ont été **générés avec ChatGPT** (outil de gén
 | Icônes 3D (séance, repas, jeûne, sommeil) | [icones-photos/BRIEF.md](icones-photos/BRIEF.md) | `assets/icons/` | 384 px |
 | Photos des 9 familles de plats | [plats/BRIEF.md](plats/BRIEF.md), [notes](plats/NOTES.md) | `assets/dishes/` | 900 px, JPEG |
 | Photos noir et blanc (salle, chest press, tapis, presse à cuisses) | idem | `assets/photos/` | 1200 px, JPEG |
+| Équipements de « Ma salle » (8 machines, poids libres, cardio) : deux planches 4 × 2 | [equipements/BRIEF.md](equipements/BRIEF.md), découpe `equipements/decouper.py` | `assets/equipment/<id>.jpg` (`EquipmentPhoto`) | 400 px carré, JPEG, 350 Ko en tout |
 
 Les poses sont : `salue`, `explique`, `carnet`, `pouce`, `reflechit`, `celebre`. Chaque dossier contient la consigne envoyée (`BRIEF.md`) et la note de ChatGPT (`NOTES.md`). Les planches de référence des coachs sont en JPEG dans leur dossier.
 

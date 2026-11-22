@@ -299,7 +299,7 @@ class _EquipmentCard extends StatelessWidget {
               Stack(
                 children: [
                   AspectRatio(
-                    aspectRatio: 4 / 3,
+                    aspectRatio: 1,
                     child: Opacity(opacity: selected ? 1 : 0.55, child: EquipmentPhotoImage(equipment.key)),
                   ),
                   Positioned(
