@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:cresco_app/main.dart' as app;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,7 +49,19 @@ void main() {
     await t.ensureVisible(f.first);
     await t.pump(const Duration(milliseconds: 200));
     // L'élément doit être au premier plan (pas sous un autre écran ni une animation en cours).
-    await attendre(t, f.hitTestable(), delai: const Duration(seconds: 15));
+    try {
+      await attendre(t, f.hitTestable(), delai: const Duration(seconds: 15));
+    } on TestFailure catch (e) {
+      // Say what is on top of the element at its center, to find what covers it.
+      final center = t.getCenter(f.first);
+      final result = HitTestResult();
+      WidgetsBinding.instance.hitTestInView(result, center, t.view.viewId);
+      final top = result.path
+          .take(8)
+          .map((h) => h.target is RenderObject ? '${(h.target as RenderObject).debugCreator}' : '${h.target}')
+          .join('\n  <- ');
+      throw TestFailure('${e.message}\nAu centre $center, de haut en bas :\n  $top');
+    }
     await t.tap(f.hitTestable().first);
     await t.pump(const Duration(milliseconds: 400));
   }

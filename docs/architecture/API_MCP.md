@@ -25,6 +25,7 @@
 | `/calculs/{regle}` | exécuter une règle sur des entrées (ex. `C-PERF-2`) : le moteur en libre-service |
 | `/progression` | tendances, verdict hebdo, séances de la semaine (`seancesSemaine`) et objectif (`objectifSeancesSemaine`, préférence `seancesParSemaine`, 3 par défaut), dernier record (`record`), bilan énergie |
 | `/muscles?jours=7` | séries efficaces par muscle (C-PERF-5) et repère hebdomadaire de 10 séries |
+| `/ia` | `GET` : l’IA intégrée est-elle configurée (`ANTHROPIC_API_KEY` sur le serveur, modèle `claude-opus-5-5`) ; `POST /ia/repas-texte` et `/ia/repas-photo` : aliments et grammes **proposés**, rapprochés de la base (Ciqual, Open Food Facts), à confirmer dans l’app ; `GET /ia/bilan` : bilan de la semaine rédigé à partir des chiffres du moteur. Sans clé : 503 |
 | `/regles`, `/sources` | lire le catalogue des règles (version, paramètres, sources) et la bibliothèque de sources |
 
 ### Permissions (scopes)

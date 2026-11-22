@@ -1,5 +1,6 @@
 import 'package:cresco_app/app/app.locator.dart';
 import 'package:cresco_app/app/app.router.dart';
+import 'package:cresco_app/features/nutrition/ia_repas.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_app/ui/messages.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
@@ -16,6 +17,10 @@ class NutritionViewModel extends BaseViewModel {
 
   Json? energie;
   List<Json> plats = [];
+
+  /// The integrated AI is on for this server (meal in words, plate photo).
+  bool ia = false;
+  CrescoApi get api => _api;
   List<Json> resultats = [];
   String? erreur;
 
@@ -25,6 +30,7 @@ class NutritionViewModel extends BaseViewModel {
         try {
           energie = await _api.energie();
           plats = await _api.plats();
+          ia = await _api.iaDisponible();
           erreur = null;
         } on ErreurApi catch (e) {
           erreur = e.message;
@@ -68,6 +74,18 @@ class NutritionViewModel extends BaseViewModel {
     });
     _snack.afficher(message: 'Ajouté au ${mealOf(maintenant()).$2}', duration: const Duration(seconds: 2));
     resultats = [];
+    await charger();
+  }
+
+  /// Saves the foods confirmed after the AI analysis as one meal.
+  Future<void> ajouterPortions(List<(String, double)> portions) async {
+    await _api.ajouterRepas({
+      'type': mealOf(maintenant()).$1,
+      'portions': [
+        for (final (id, masse) in portions) {'alimentId': id, 'masse': masse},
+      ],
+    });
+    _snack.afficher(message: 'Ajouté au ${mealOf(maintenant()).$2}', duration: const Duration(seconds: 2));
     await charger();
   }
 
@@ -193,6 +211,7 @@ class _NutritionViewState extends State<NutritionView> {
               onChanged: (_) => setState(() {}),
               onSubmitted: vm.chercher,
             ),
+            if (vm.ia) IaRepasEntrees(api: vm.api, onAdd: vm.ajouterPortions),
             _Filters(
               selected: _filters,
               onToggle: (tag) => setState(() => _filters.contains(tag) ? _filters.remove(tag) : _filters.add(tag)),

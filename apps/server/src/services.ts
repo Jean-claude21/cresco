@@ -16,7 +16,7 @@ const age = (naissance: string | null) =>
 
 export class Refus extends Error {
   constructor(
-    readonly status: 400 | 403 | 404 | 409 | 422,
+    readonly status: 400 | 403 | 404 | 409 | 422 | 503,
     message: string,
   ) {
     super(message);
@@ -562,6 +562,25 @@ export async function creerAliment(tx: Tx, userId: string, a: z.infer<typeof Ali
   );
   return rows[0];
 }
+/**
+ * Closest food for a name proposed by the AI: every word of 3 letters or more must appear, own
+ * foods first, then Ciqual (generic foods) before Open Food Facts (brands), then the shortest name.
+ * Falls back to fewer words when nothing has them all.
+ */
+export async function meilleurAliment(tx: Tx, recherche: string): Promise<Record<string, unknown> | null> {
+  const mots = recherche.toLowerCase().split(/[^\p{L}]+/u).filter((m) => m.length >= 3).slice(0, 5);
+  for (let n = mots.length; n >= 1; n--) {
+    const { rows } = await tx.query(
+      `select *, case source when 'ciqual' then 'Ciqual (Anses)' when 'off' then 'Open Food Facts' end as source_attribution
+       from aliment where nom ilike all($1)
+       order by user_id nulls last, (source = 'ciqual') desc, length(nom) limit 1`,
+      [mots.slice(0, n).map((m) => `%${m}%`)],
+    );
+    if (rows[0]) return rows[0] as Record<string, unknown>;
+  }
+  return null;
+}
+
 export async function chercherAliments(tx: Tx, q: string) {
   // Own foods first, then names that start with the words typed, then the shortest (raw foods
   // before recipes); Ciqual and Open Food Facts both answer.

@@ -59,7 +59,14 @@ class CrescoApi {
   final Session session;
   final http.Client _http;
 
-  Future<Object?> requete(String methode, String route, {Object? corps, bool authentifie = true}) async {
+  /// [delai]: the AI routes take longer than the default 20 s.
+  Future<Object?> requete(
+    String methode,
+    String route, {
+    Object? corps,
+    bool authentifie = true,
+    Duration delai = const Duration(seconds: 20),
+  }) async {
     final uri = Uri.parse('${session.api}$route');
     final entetes = {
       'Content-Type': 'application/json',
@@ -69,7 +76,7 @@ class CrescoApi {
     try {
       final req = http.Request(methode, uri)..headers.addAll(entetes);
       if (corps != null) req.body = jsonEncode(corps);
-      res = await http.Response.fromStream(await _http.send(req).timeout(const Duration(seconds: 20)));
+      res = await http.Response.fromStream(await _http.send(req).timeout(delai));
     } on Exception {
       throw ErreurApi(0, 'Pas de connexion au serveur');
     }
@@ -215,6 +222,33 @@ class CrescoApi {
       await requete('POST', '/v1/exercices/$exerciceId/liens', corps: {'url': url});
 
   // ----------------------------------------------------------------- Corps et sommeil
+  /// Whether the integrated AI is configured on the server.
+  Future<bool> iaDisponible() async {
+    try {
+      return ((await requete('GET', '/v1/ia'))! as Json)['disponible'] == true;
+    } on Object {
+      return false;
+    }
+  }
+
+  /// Foods and grams proposed by the AI from a meal in words; the user confirms before saving.
+  Future<Json> repasDepuisTexte(String texte) async =>
+      (await requete('POST', '/v1/ia/repas-texte', corps: {'texte': texte}, delai: const Duration(seconds: 90)))!
+          as Json;
+
+  /// Same from a photo of the plate ([base64] JPEG, PNG or WebP).
+  Future<Json> repasDepuisPhoto(String base64, String mediaType) async =>
+      (await requete(
+            'POST',
+            '/v1/ia/repas-photo',
+            corps: {'image': base64, 'mediaType': mediaType},
+            delai: const Duration(seconds: 90),
+          ))!
+          as Json;
+
+  /// The coach's weekly review, written from the engine's figures.
+  Future<Json> bilanIa() async => (await requete('GET', '/v1/ia/bilan', delai: const Duration(seconds: 90)))! as Json;
+
   /// Nights and measures read from Health Connect or Apple Santé; returns what was added.
   Future<Json> importSante(Json data) async => (await requete('POST', '/v1/sante/import', corps: data))! as Json;
 

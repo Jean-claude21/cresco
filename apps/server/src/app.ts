@@ -5,6 +5,7 @@ import { z, ZodError } from 'zod';
 import { createToken, hashPassword, limiteConnexion, resolveToken, SCOPES, verifyPassword, type Principal } from './auth.ts';
 import { asUser, type Db, type Tx } from './db.ts';
 import { handleMcp } from './mcp.ts';
+import * as ia from './ia.ts';
 import * as svc from './services.ts';
 import type { Source } from './sources.ts';
 
@@ -227,6 +228,22 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
     exige(c, 'nutrition:ecriture');
     const { tags } = svc.DishTagsInput.parse(await c.req.json());
     return c.json(await tx(c, (t) => svc.setDishTags(t, c.req.param('id'), tags)));
+  });
+  // Integrated AI: proposes, the user confirms; the engine computes (src/ia.ts).
+  app.get('/v1/ia', (c) => c.json({ disponible: ia.iaDisponible() }));
+  app.post('/v1/ia/repas-texte', async (c) => {
+    exige(c, 'nutrition:lecture');
+    const r = ia.RepasTexte.parse(await c.req.json());
+    return c.json(await tx(c, (t) => ia.repasDepuisTexte(t, r)));
+  });
+  app.post('/v1/ia/repas-photo', async (c) => {
+    exige(c, 'nutrition:lecture');
+    const r = ia.RepasPhoto.parse(await c.req.json());
+    return c.json(await tx(c, (t) => ia.repasDepuisPhoto(t, r)));
+  });
+  app.get('/v1/ia/bilan', async (c) => {
+    exige(c, 'entrainement:lecture');
+    return c.json(await tx(c, (t, u) => ia.bilanSemaine(t, u)));
   });
   app.post('/v1/sante/import', async (c) => {
     exige(c, 'sommeil:ecriture');

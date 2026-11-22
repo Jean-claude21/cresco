@@ -214,6 +214,13 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect(filet.source_attribution).toBe('Ciqual (Anses)');
   });
 
+  it('the integrated AI is off without an API key', async () => {
+    expect((await appel('GET', '/v1/ia')).corps).toEqual({ disponible: false });
+    const r = await appel('POST', '/v1/ia/repas-texte', { texte: 'un bol de riz et deux œufs' });
+    expect(r.status).toBe(503);
+    expect((await appel('POST', '/v1/ia/repas-texte', { texte: '' })).status).toBe(400);
+  });
+
   it('imports health data once per source', async () => {
     const body = {
       source: 'health_connect',

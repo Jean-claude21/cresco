@@ -1,4 +1,5 @@
 import 'package:cresco_app/app/app.locator.dart';
+import 'package:cresco_app/ui/coach.dart';
 import 'package:cresco_app/ui/commun.dart';
 import 'package:cresco_data/cresco_data.dart' hide Json;
 import 'package:cresco_ui/cresco_ui.dart';
@@ -9,8 +10,30 @@ class ProgresViewModel extends FutureViewModel<Json> {
   final CrescoApi _api = locator<CrescoApi>();
   int exercice = 0;
 
+  /// The integrated AI is on: the coach can write the week's review.
+  bool ia = false;
+  String? bilan;
+  bool bilanEnCours = false;
+
   @override
-  Future<Json> futureToRun() => _api.progression();
+  Future<Json> futureToRun() async {
+    final p = await _api.progression();
+    ia = await _api.iaDisponible();
+    return p;
+  }
+
+  Future<void> lireBilan() async {
+    bilanEnCours = true;
+    notifyListeners();
+    try {
+      bilan = (await _api.bilanIa())['texte'] as String?;
+    } on ErreurApi catch (e) {
+      bilan = e.message;
+    } finally {
+      bilanEnCours = false;
+      notifyListeners();
+    }
+  }
 
   void choisir(int i) {
     exercice = i;
@@ -52,6 +75,7 @@ class ProgresView extends StatelessWidget {
                 goal: (d['objectifSeancesSemaine'] as num?)?.toInt(),
                 sleepMin: d['sommeilMoyenMin'],
               ),
+              if (vm.ia) _CoachReview(vm: vm),
               if (exercices.isNotEmpty)
                 _StrengthCard(
                   exercises: exercices,
@@ -280,6 +304,48 @@ class _InfoRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The coach's review of the week, written by the integrated AI from the engine's figures.
+class _CoachReview extends StatelessWidget {
+  const new({required this.vm});
+  final ProgresViewModel vm;
+
+  @override
+  Widget build(BuildContext context) {
+    final texte = vm.bilan;
+    return CrescoCarte(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const MyCoach(CoachPose.carnet, height: 96),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Le bilan de ton coach', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                const SizedBox(height: 6),
+                if (texte != null)
+                  Text(texte, style: CrescoTextes.corps)
+                else
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton(
+                      key: const ValueKey('bilan-ia'),
+                      onPressed: vm.bilanEnCours ? null : vm.lireBilan,
+                      style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
+                      child: Text(vm.bilanEnCours ? 'Il écrit…' : 'Lire mon bilan'),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
