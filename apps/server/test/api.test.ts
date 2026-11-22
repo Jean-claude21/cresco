@@ -206,6 +206,14 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     expect((await appel('PUT', `/v1/plats/${plat.corps.id}/tags`, { tags: [] }, autreJeton)).status).toBe(404);
   });
 
+  it('searches the Ciqual table', async () => {
+    const r = await appel('GET', `/v1/aliments?q=${encodeURIComponent('Poulet, filet')}`);
+    const filet = r.corps.find((a: { source: string }) => a.source === 'ciqual');
+    expect(filet.nom).toMatch(/^Poulet, filet/u);
+    expect(Number(filet.proteines100)).toBeGreaterThan(20);
+    expect(filet.source_attribution).toBe('Ciqual (Anses)');
+  });
+
   it('imports health data once per source', async () => {
     const body = {
       source: 'health_connect',

@@ -33,7 +33,7 @@ Le sommeil, la fréquence cardiaque, le poids, l'alimentation, le jeûne et les 
 | Source | Licence | Obligations |
 |---|---|---|
 | Open Food Facts | ODbL (base), CC BY-SA (photos) | Citer la source, repartager les améliorations de la base |
-| Ciqual (ANSES) | Licence ouverte Etalab | Citer la source |
+| Ciqual 2020 (ANSES), 2 298 aliments intégrés (`0007_ciqual.sql`, généré par `docs/science/ciqual/generer.py`) | Licence ouverte Etalab, CC BY 4.0 sur Zenodo | Citer « Anses. 2020. Table de composition nutritionnelle des aliments Ciqual » ; la source est affichée à côté de chaque aliment |
 | Animations d'exercices | À produire (Rive/Lottie) ou à acheter sous licence | Ne jamais récupérer les vidéos d'autres plateformes |
 
 ## Marques tierces

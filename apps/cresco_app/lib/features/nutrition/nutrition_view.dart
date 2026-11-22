@@ -224,7 +224,10 @@ class _NutritionViewState extends State<NutritionView> {
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(a['nom']! as String, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text('${entier(a['kcal100'])} kcal · ${decimal(a['proteines100'])} g prot. / 100 g'),
+                  subtitle: Text(
+                    '${entier(a['kcal100'])} kcal · ${decimal(a['proteines100'])} g prot. / 100 g'
+                    '${a['source_attribution'] == null ? '' : ' · ${a['source_attribution']}'}',
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

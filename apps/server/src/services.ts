@@ -563,7 +563,14 @@ export async function creerAliment(tx: Tx, userId: string, a: z.infer<typeof Ali
   return rows[0];
 }
 export async function chercherAliments(tx: Tx, q: string) {
-  const { rows } = await tx.query(`select * from aliment where nom ilike $1 order by user_id nulls last, nom limit 30`, [`%${q}%`]);
+  // Own foods first, then names that start with the words typed, then the shortest (raw foods
+  // before recipes); Ciqual and Open Food Facts both answer.
+  const { rows } = await tx.query(
+    `select *, case source when 'ciqual' then 'Ciqual (Anses)' when 'off' then 'Open Food Facts' end as source_attribution
+     from aliment where nom ilike $1
+     order by user_id nulls last, (nom ilike $2) desc, length(nom), nom limit 30`,
+    [`%${q}%`, `${q}%`],
+  );
   return rows;
 }
 
