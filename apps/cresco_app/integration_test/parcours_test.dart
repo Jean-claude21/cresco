@@ -197,7 +197,10 @@ void main() {
     // ---------------------------------------------------------------- Mon corps : la séance colore les pectoraux
     await toucher(t, onglet('Aujourd’hui'));
     await toucher(t, find.text('Mon corps'), defiler: true);
-    await attendre(t, find.text('Séries efficaces de la semaine'));
+    // The muscle card sits below the body: scroll to it like a user.
+    await attendre(t, find.textContaining('/ 10 séries efficaces', findRichText: true), defiler: true);
+    // The tab bar stays under pages opened from a tab.
+    expect(find.byKey(const ValueKey('onglet-Progrès')), findsOneWidget);
     expect(find.textContaining('/ 10 séries efficaces', findRichText: true), findsOneWidget);
     expect(
       find.textContaining('aucune série efficace cette semaine'),
