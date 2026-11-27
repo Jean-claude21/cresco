@@ -46,9 +46,12 @@ describe.skipIf(!TEST_URL)('API Cresco (Postgres réel)', () => {
     await owner?.end();
   });
 
-  it('répond à la santé', async () => {
+  it('répond à la santé sans toucher la base, et vérifie la base à part', async () => {
     const r = await appel('GET', '/api/health');
     expect(r.corps.status).toBe('ok');
+    expect(r.corps).not.toHaveProperty('base');
+    const b = await appel('GET', '/api/health/db');
+    expect(b.corps.base).toBe('ok');
   });
 
   it('inscrit, connecte et refuse sans jeton', async () => {
