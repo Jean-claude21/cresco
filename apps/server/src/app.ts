@@ -26,9 +26,16 @@ export function createApp(deps: { db: Db; sources: Source[]; version: string }) 
     return c.json({ erreur: 'Erreur interne' }, 500);
   });
 
-  app.get('/api/health', async (c) => {
-    await db.query('select 1');
-    return c.json({ status: 'ok', version: deps.version });
+  // Docker probes /api/health every 30 s: it never touches the database, or Neon never sleeps
+  // (LEARNINGS-BASES-SERVERLESS.md). The database is checked by hand on /api/health/db.
+  app.get('/api/health', (c) => c.json({ status: 'ok', version: deps.version }));
+  app.get('/api/health/db', async (c) => {
+    try {
+      await db.query('select 1');
+      return c.json({ status: 'ok', base: 'ok' });
+    } catch {
+      return c.json({ status: 'degrade', base: 'injoignable' }, 503);
+    }
   });
   app.get('/', (c) => c.json({ nom: 'Cresco', api: '/v1', mcp: '/mcp', sante: '/api/health', documentation: 'https://github.com/Jean-claude21/cresco' }));
 
